@@ -82,6 +82,39 @@
                     </li>
                 @endcan
 
+                <!-- SAGES HOME MODULE -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarSagesHome" data-bs-toggle="collapse" role="button"
+                        aria-controls="sidebarSagesHome">
+                        <i class="ri-building-2-line"></i> <span>SAGES HOME</span>
+                    </a>
+                    <div class="collapse menu-dropdown {{ Route::is('admin.sages-home.*') || Route::is('admin.residences.*') || Route::is('admin.residence-types.*') || Route::is('admin.bookings.*') || Route::is('admin.clients.*') ? 'show' : '' }}"
+                        id="sidebarSagesHome">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.sages-home.dashboard') }}"
+                                    class="nav-link {{ Route::is('admin.sages-home.dashboard') ? 'active' : '' }}">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.residences.index') }}"
+                                    class="nav-link {{ Route::is('admin.residences.*') ? 'active' : '' }}">Résidences</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.residence-types.index') }}"
+                                    class="nav-link {{ Route::is('admin.residence-types.*') ? 'active' : '' }}">Types de Résidences</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.bookings.index') }}"
+                                    class="nav-link {{ Route::is('admin.bookings.*') ? 'active' : '' }}">Réservations</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('home') }}" target="_blank"
+                                    class="nav-link">Voir le site</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
 
 
 

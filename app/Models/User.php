@@ -11,12 +11,20 @@ use Spatie\Permission\Traits\HasPermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
+/**
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Booking[] $bookings
+ * @property-read int|null $bookings_count
+ * @method \Illuminate\Database\Eloquent\Relations\HasMany bookings()
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable  , HasPermissions, HasRoles , SoftDeletes;
+
+    public $incrementing = false;
+    protected $keyType = 'int';
 
     /**
      * The attributes that are mass assignable.
@@ -24,7 +32,6 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-
         'username',
         'phone',
         'email',
@@ -32,10 +39,12 @@ class User extends Authenticatable
         'password',
         'avatar',
         'role',
+        'address',
+        'city',
+        'country',
         'created_at',
         'updated_at',
         'deleted_at',
-
     ];
 
 
@@ -43,8 +52,11 @@ class User extends Authenticatable
     {
         parent::boot();
         self::creating(function ($model) {
-            $model->id = IdGenerator::generate(['table' => 'users', 'length' => 10, 'prefix' =>
-            mt_rand()]);
+            // Génération d'un ID entier unique avec mt_rand
+            do {
+                $id = mt_rand(1000000000, 9999999999); // ID de 10 chiffres
+            } while (self::where('id', $id)->exists());
+            $model->id = $id;
         });
     }
 
@@ -76,5 +88,36 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relations
+    /**
+     * Get the bookings for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Get the active bookings for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function activeBookings(): HasMany
+    {
+        return $this->hasMany(Booking::class)->whereIn('status', ['pending', 'confirmed']);
+    }
+
+    /**
+     * Get the completed bookings for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function completedBookings(): HasMany
+    {
+        return $this->hasMany(Booking::class)->where('status', 'completed');
     }
 }

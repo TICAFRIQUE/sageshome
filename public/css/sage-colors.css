@@ -1,0 +1,245 @@
+/* Couleurs et typographies pour Sages Home */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* Variables CSS pour les couleurs */
+:root {
+    /* Couleurs principales - Or dégradé */
+    --sage-gold-start: #F2D18A;
+    --sage-gold-end: #C29B32;
+    --sage-gold-gradient: linear-gradient(135deg, var(--sage-gold-start) 0%, var(--sage-gold-end) 100%);
+    
+    /* Couleurs vertes */
+    --sage-green-dark: #2F4A33;
+    --sage-green-secondary: #4A6B42;
+    
+    /* Couleurs neutres */
+    --sage-bg-light: #F8F8F8;
+    --sage-gray-secondary: #888888;
+    --sage-black-premium: #1A1A1A;
+    --sage-white: #FFFFFF;
+    
+    /* Typographies */
+    --sage-font-title: 'Poppins', sans-serif;
+    --sage-font-text: 'Inter', sans-serif;
+    
+    /* Ombres et effets */
+    --sage-shadow-soft: 0 4px 20px rgba(47, 74, 51, 0.1);
+    --sage-shadow-medium: 0 8px 32px rgba(47, 74, 51, 0.15);
+    --sage-shadow-strong: 0 12px 40px rgba(47, 74, 51, 0.2);
+    
+    /* Transitions */
+    --sage-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Styles de base */
+.sage-gradient {
+    background: var(--sage-gold-gradient);
+}
+
+.sage-gradient-text {
+    background: var(--sage-gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Classes utilitaires pour les couleurs */
+.bg-sage-green-dark { background-color: var(--sage-green-dark); }
+.bg-sage-green-secondary { background-color: var(--sage-green-secondary); }
+.bg-sage-gold-start { background-color: var(--sage-gold-start); }
+.bg-sage-gold-end { background-color: var(--sage-gold-end); }
+.bg-sage-light { background-color: var(--sage-bg-light); }
+.bg-sage-white { background-color: var(--sage-white); }
+.bg-sage-black { background-color: var(--sage-black-premium); }
+
+.text-sage-green-dark { color: var(--sage-green-dark); }
+.text-sage-green-secondary { color: var(--sage-green-secondary); }
+.text-sage-gold-start { color: var(--sage-gold-start); }
+.text-sage-gold-end { color: var(--sage-gold-end); }
+.text-sage-gray { color: var(--sage-gray-secondary); }
+.text-sage-black { color: var(--sage-black-premium); }
+.text-sage-white { color: var(--sage-white); }
+
+.border-sage-green-dark { border-color: var(--sage-green-dark); }
+.border-sage-green-secondary { border-color: var(--sage-green-secondary); }
+.border-sage-gold { border-color: var(--sage-gold-start); }
+
+/* Classes de typographie */
+.font-sage-title {
+    font-family: var(--sage-font-title);
+}
+
+.font-sage-text {
+    font-family: var(--sage-font-text);
+}
+
+/* Styles pour les boutons */
+.btn-sage-primary {
+    background: var(--sage-gold-gradient);
+    color: var(--sage-white);
+    font-family: var(--sage-font-text);
+    font-weight: 600;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--sage-shadow-soft);
+    transition: var(--sage-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-sage-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sage-shadow-medium);
+    color: var(--sage-white);
+    text-decoration: none;
+}
+
+.btn-sage-secondary {
+    background: transparent;
+    color: var(--sage-green-dark);
+    font-family: var(--sage-font-text);
+    font-weight: 500;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: 2px solid var(--sage-green-dark);
+    transition: var(--sage-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-sage-secondary:hover {
+    background: var(--sage-green-dark);
+    color: var(--sage-white);
+    text-decoration: none;
+}
+
+.btn-sage-outline-gold {
+    background: transparent;
+    color: var(--sage-gold-end);
+    font-family: var(--sage-font-text);
+    font-weight: 500;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: 2px solid var(--sage-gold-end);
+    transition: var(--sage-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-sage-outline-gold:hover {
+    background: var(--sage-gold-gradient);
+    color: var(--sage-white);
+    text-decoration: none;
+    border-color: transparent;
+}
+
+/* Styles pour les cartes */
+.sage-card {
+    background: var(--sage-white);
+    border-radius: 12px;
+    box-shadow: var(--sage-shadow-soft);
+    transition: var(--sage-transition);
+    overflow: hidden;
+}
+
+.sage-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sage-shadow-medium);
+}
+
+/* Styles pour le header/navbar */
+.sage-navbar {
+    background: var(--sage-white);
+    box-shadow: 0 2px 20px rgba(47, 74, 51, 0.08);
+    padding: 16px 0;
+}
+
+/* Styles pour le hero section */
+.sage-hero {
+    background: linear-gradient(135deg, var(--sage-green-dark) 0%, var(--sage-green-secondary) 100%);
+    min-height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sage-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/images/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+    z-index: 1;
+}
+
+.sage-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .btn-sage-primary,
+    .btn-sage-secondary,
+    .btn-sage-outline-gold {
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+    
+    .sage-hero {
+        min-height: 400px;
+    }
+}
+
+/* Styles pour le formulaire de recherche */
+.sage-search-form {
+    background: var(--sage-white);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--sage-shadow-medium);
+    margin-top: -40px;
+    position: relative;
+    z-index: 3;
+}
+
+.sage-input {
+    font-family: var(--sage-font-text);
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 12px 16px;
+    transition: var(--sage-transition);
+}
+
+.sage-input:focus {
+    outline: none;
+    border-color: var(--sage-gold-end);
+    box-shadow: 0 0 0 3px rgba(194, 155, 50, 0.1);
+}

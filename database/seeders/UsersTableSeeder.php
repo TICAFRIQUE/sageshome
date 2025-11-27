@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UsersTableSeeder extends Seeder
 {
@@ -14,28 +16,24 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-        
+        User::create([
+            'username' => 'developpeur',
+            'phone' => '0142855584',
+            'email' => 'developpeur@gmail.com',
+            'email_verified_at' => null,
+            'password' => Hash::make('password'),
+            'avatar' => null,
+            'role' => 'developpeur',
+        ]);
 
-        \DB::table('users')->delete();
-        
-        \DB::table('users')->insert(array (
-            0 => 
-            array (
-                'id' => 13029781151,
-                'username' => 'developpeur',
-                'phone' => '0142855584',
-                'email' => 'developpeur@gmail.com',
-                'email_verified_at' => NULL,
-                'password' => '$2y$12$xVJkKjsoY/E5ZjJL.jbu7ufYS5gFtxkXEo.Ue2cjONLTQlgo7Vc22',
-                'avatar' => NULL,
-                'role' => 'developpeur',
-                'remember_token' => NULL,
-                'created_at' => '2025-04-22 11:16:21',
-                'updated_at' => '2025-04-24 14:55:19',
-                'deleted_at' => NULL,
-            ),
-        ));
-        
-        
+        User::create([
+            'username' => 'Client Test',
+            'phone' => '0766554433',
+            'email' => 'client@test.com',
+            'email_verified_at' => null,
+            'password' => Hash::make('password'),
+            'avatar' => null,
+            'role' => 'client',
+        ]);
     }
 }

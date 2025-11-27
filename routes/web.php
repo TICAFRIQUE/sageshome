@@ -1,18 +1,89 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\backend\DashboardController;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ResidenceController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\backend\DashboardController as BackendDashboardController;
 use App\Http\Controllers\backend\AdminController;
 use App\Http\Controllers\backend\ModuleController;
 use App\Http\Controllers\backend\RoleController;
 use App\Http\Controllers\backend\ParametreController;
 use App\Http\Controllers\backend\PermissionController;
+use App\Http\Controllers\backend\ResidenceController as AdminResidenceController;
+use App\Http\Controllers\backend\BookingController as AdminBookingController;
+use App\Http\Controllers\backend\ResidenceTypeController;
 
 
 
 Route::fallback(function () {
     return view('backend.utility.auth-404-basic');
 });
+
+// Routes publiques (front-end)
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/search', [HomeController::class, 'search'])->name('search');
+
+// Routes d'authentification
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// Routes des résidences
+Route::prefix('residences')->group(function () {
+    Route::get('/', [ResidenceController::class, 'index'])->name('residences.index');
+    Route::get('/{residence:slug}', [ResidenceController::class, 'show'])->name('residences.show');
+    Route::post('/{residence}/check-availability', [ResidenceController::class, 'checkAvailability'])->name('residences.check-availability');
+});
+
+// Routes de réservation (authentification requise)
+Route::middleware(['auth'])->prefix('client')->group(function () {
+    // Dashboard client
+    Route::prefix('dashboard')->controller(DashboardController::class)->group(function () {
+        Route::get('/', 'index')->name('dashboard.index');
+        Route::get('/bookings', 'bookings')->name('dashboard.bookings');
+        Route::get('/bookings/{booking}', 'bookingShow')->name('dashboard.booking.show');
+        Route::patch('/bookings/{booking}/cancel', 'cancelBooking')->name('dashboard.booking.cancel');
+        Route::get('/profile', 'profile')->name('dashboard.profile');
+        Route::patch('/profile', 'updateProfile')->name('dashboard.profile.update');
+        Route::patch('/profile/password', 'updatePassword')->name('dashboard.profile.password');
+    });
+    
+    Route::prefix('booking')->group(function () {
+        Route::get('/create/{residence}', [BookingController::class, 'create'])->name('booking.create');
+        Route::post('/store', [BookingController::class, 'store'])->name('booking.store');
+        Route::get('/payment/{booking}', [BookingController::class, 'payment'])->name('booking.payment');
+        Route::post('/process-payment/{booking}', [BookingController::class, 'processPayment'])->name('booking.process-payment');
+        Route::get('/confirmation/{booking}', [BookingController::class, 'confirmation'])->name('booking.confirmation');
+        
+        // Redirections vers le dashboard
+        Route::get('/my-bookings', function () {
+            return redirect()->route('dashboard.bookings');
+        })->name('booking.my-bookings');
+        
+        Route::get('/{booking}', function ($booking) {
+            return redirect()->route('dashboard.booking.show', $booking);
+        })->name('booking.show');
+        
+        Route::post('/{booking}/cancel', function ($booking) {
+            return redirect()->route('dashboard.booking.cancel', $booking);
+        })->name('booking.cancel');
+    });
+});
+
+// Routes de paiement (callback)
+Route::post('/payment/{payment}/confirm', [BookingController::class, 'confirmPayment'])->name('payment.confirm');
+
+// Routes d'authentification Laravel par défaut
+// require __DIR__.'/auth.php';
 
 Route::middleware(['admin'])->prefix('admin')->group(function () {
 
@@ -26,7 +97,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
 
 
     // dashboard admin
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/', [BackendDashboardController::class, 'index'])->name('dashboard.index');
 
     // parametre application
     Route::prefix('parametre')->controller(ParametreController::class)->group(function () {
@@ -73,5 +144,66 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         route::post('store', 'store')->name('module.store');
         route::post('update/{id}', 'update')->name('module.update');
         route::get('delete/{id}', 'delete')->name('module.delete');
+    });
+
+    // Nouvelles routes pour la gestion des résidences et réservations
+    Route::prefix('sages-home')->group(function () {
+        // Dashboard Sages Home
+        Route::get('/', [BackendDashboardController::class, 'sagesHomeDashboard'])->name('admin.sages-home.dashboard');
+        
+        // Route de compatibilité (redirection)
+        Route::get('/dashboard', function () {
+            return redirect()->route('admin.sages-home.dashboard');
+        })->name('admin.dashboard');
+        
+        // Gestion des résidences
+        Route::prefix('residences')->controller(AdminResidenceController::class)->group(function () {
+            Route::get('/', 'index')->name('admin.residences.index');
+            Route::get('/create', 'create')->name('admin.residences.create');
+            Route::post('/store', 'store')->name('admin.residences.store');
+            Route::get('/{residence}', 'show')->name('admin.residences.show');
+            Route::get('/{residence}/edit', 'edit')->name('admin.residences.edit');
+            Route::put('/{residence}', 'update')->name('admin.residences.update');
+            Route::delete('/{residence}', 'destroy')->name('admin.residences.destroy');
+            Route::delete('/{image}/image', 'deleteImage')->name('admin.residences.delete-image');
+            Route::post('/{image}/make-primary', 'setPrimaryImage')->name('admin.residences.make-primary');
+        });
+
+        // Gestion des types de résidences
+        Route::prefix('residence-types')->controller(ResidenceTypeController::class)->group(function () {
+            Route::get('/', 'index')->name('admin.residence-types.index');
+            Route::get('/create', 'create')->name('admin.residence-types.create');
+            Route::post('/', 'store')->name('admin.residence-types.store');
+            Route::get('/{residenceType:slug}', 'show')->name('admin.residence-types.show');
+            Route::get('/{residenceType:slug}/edit', 'edit')->name('admin.residence-types.edit');
+            Route::put('/{residenceType:slug}', 'update')->name('admin.residence-types.update');
+            Route::delete('/{residenceType:slug}', 'destroy')->name('admin.residence-types.destroy');
+        });
+
+        // Gestion des réservations
+        Route::prefix('bookings')->controller(AdminBookingController::class)->group(function () {
+            Route::get('/', 'index')->name('admin.bookings.index');
+            Route::get('/calendar', 'calendar')->name('admin.bookings.calendar');
+            Route::get('/calendar-data', 'calendarData')->name('admin.bookings.calendar-data');
+            Route::get('/{booking}', 'show')->name('admin.bookings.show');
+            Route::get('/{booking}/quick-view', 'quickView')->name('admin.bookings.quick-view');
+            Route::patch('/{booking}/confirm', 'confirm')->name('admin.bookings.confirm');
+            Route::patch('/{booking}/cancel', 'cancel')->name('admin.bookings.cancel');
+            Route::post('/{booking}/status', 'updateStatus')->name('admin.bookings.update-status');
+            Route::post('/{booking}/payment', 'confirmPayment')->name('admin.bookings.confirm-payment');
+        });
+
+        // Gestion des clients
+        Route::prefix('clients')->controller(\App\Http\Controllers\backend\ClientController::class)->group(function () {
+            Route::get('/', 'index')->name('admin.clients.index');
+            Route::get('/create', 'create')->name('admin.clients.create');
+            Route::post('/', 'store')->name('admin.clients.store');
+            Route::get('/export', 'export')->name('admin.clients.export');
+            Route::get('/{user}', 'show')->name('admin.clients.show');
+            Route::get('/{user}/edit', 'edit')->name('admin.clients.edit');
+            Route::put('/{user}', 'update')->name('admin.clients.update');
+            Route::delete('/{user}', 'destroy')->name('admin.clients.destroy');
+            Route::post('/{user}/restore', 'restore')->name('admin.clients.restore');
+        });
     });
 });
