@@ -256,13 +256,34 @@
                 <h4 class="card-title mb-0">Localisation</h4>
             </div>
             <div class="card-body">
-                <p class="mb-2">
-                    <i class="ri-map-pin-line text-muted me-2"></i>
-                    {{ $residence->address }}
-                </p>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="ri-map-pin-line text-primary me-2"></i>
+                        <strong>
+                            @if($residence->commune)
+                                {{ $residence->commune }}, {{ $residence->ville }}
+                            @else
+                                {{ $residence->ville }}
+                            @endif
+                        </strong>
+                    </div>
+                    <p class="text-muted mb-0">{{ $residence->address }}</p>
+                </div>
+                
+                @if($residence->google_maps_url)
+                <div class="mb-3">
+                    <a href="{{ $residence->google_maps_url }}" 
+                       target="_blank" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="ri-external-link-line me-1"></i>
+                        Voir sur Google Maps
+                    </a>
+                </div>
+                @endif
                 
                 @if($residence->latitude && $residence->longitude)
                 <p class="text-muted small mb-0">
+                    <i class="ri-navigation-line me-1"></i>
                     Coordonnées : {{ $residence->latitude }}, {{ $residence->longitude }}
                 </p>
                 @endif

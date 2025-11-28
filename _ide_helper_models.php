@@ -263,8 +263,11 @@ namespace App\Models{
  * @property numeric $price_per_night
  * @property array<array-key, mixed>|null $amenities
  * @property string $address
+ * @property string $ville
+ * @property string|null $commune
  * @property numeric|null $latitude
  * @property numeric|null $longitude
+ * @property string|null $google_maps_url
  * @property bool $is_available
  * @property bool $is_featured
  * @property int $sort_order
@@ -275,6 +278,7 @@ namespace App\Models{
  * @property-read int|null $availability_calendar_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Booking> $bookings
  * @property-read int|null $bookings_count
+ * @property-read mixed $location_display
  * @property-read mixed $type_display
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ResidenceImage> $images
  * @property-read int|null $images_count
@@ -282,7 +286,10 @@ namespace App\Models{
  * @property-read \App\Models\ResidenceType $residenceType
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence available()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byCapacity($capacity)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byCommune($commune)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byLocation($ville = null, $commune = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byType($typeId)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byVille($ville)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence featured()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence findSimilarSlugs(string $attribute, array $config, string $slug)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence newModelQuery()
@@ -293,10 +300,12 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereAmenities($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereCapacity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereCommune($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereFullDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereGoogleMapsUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereIsAvailable($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereIsFeatured($value)
@@ -308,6 +317,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereSortOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence whereVille($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence withUniqueSlugConstraints(\Illuminate\Database\Eloquent\Model $model, string $attribute, array $config, string $slug)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence withoutTrashed()

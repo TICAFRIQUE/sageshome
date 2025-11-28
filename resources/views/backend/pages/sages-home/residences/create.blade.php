@@ -119,6 +119,40 @@
                     </h4>
                 </div>
                 <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ville" class="form-label">Ville <span class="text-danger">*</span></label>
+                                <select class="form-select @error('ville') is-invalid @enderror" id="ville" name="ville" required>
+                                    <option value="">Sélectionner une ville</option>
+                                    @php
+                                        $villesCommunes = config('ville-commune');
+                                    @endphp
+                                    @foreach($villesCommunes as $ville => $communes)
+                                        <option value="{{ $ville }}" {{ old('ville') == $ville ? 'selected' : '' }}>
+                                            {{ $ville }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('ville')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="commune" class="form-label">Commune</label>
+                                <select class="form-select @error('commune') is-invalid @enderror" id="commune" name="commune">
+                                    <option value="">Sélectionner une commune</option>
+                                </select>
+                                @error('commune')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Obligatoire si la ville sélectionnée a des communes</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="address" class="form-label">Adresse complète <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('address') is-invalid @enderror" 
@@ -127,28 +161,19 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="latitude" class="form-label">Latitude</label>
-                                <input type="number" step="any" class="form-control @error('latitude') is-invalid @enderror" 
-                                       id="latitude" name="latitude" value="{{ old('latitude') }}">
-                                @error('latitude')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+
+                    <div class="mb-3">
+                        <label for="google_maps_link" class="form-label">Lien Google Maps <span class="text-danger">*</span></label>
+                        <input type="url" class="form-control @error('google_maps_link') is-invalid @enderror" 
+                               id="google_maps_link" name="google_maps_link" value="{{ old('google_maps_link') }}" 
+                               placeholder="https://maps.google.com/..." required>
+                        <div class="form-text">
+                            <i class="ri-information-line me-1"></i>
+                            Copiez le lien de partage Google Maps de la localisation exacte
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="longitude" class="form-label">Longitude</label>
-                                <input type="number" step="any" class="form-control @error('longitude') is-invalid @enderror" 
-                                       id="longitude" name="longitude" value="{{ old('longitude') }}">
-                                @error('longitude')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+                        @error('google_maps_link')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -324,6 +349,61 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Configuration ville-commune
+    const villesCommunes = @json(config('ville-commune'));
+    
+    const villeSelect = document.getElementById('ville');
+    const communeSelect = document.getElementById('commune');
+    
+    // Fonction pour mettre à jour les communes
+    function updateCommunes() {
+        const selectedVille = villeSelect.value;
+        const communes = villesCommunes[selectedVille] || [];
+        
+        // Vider la liste des communes
+        communeSelect.innerHTML = '<option value="">Sélectionner une commune</option>';
+        
+        if (communes.length > 0) {
+            // Ajouter les communes disponibles
+            communes.forEach(function(commune) {
+                const option = document.createElement('option');
+                option.value = commune;
+                option.textContent = commune;
+                if ('{{ old('commune') }}' === commune) {
+                    option.selected = true;
+                }
+                communeSelect.appendChild(option);
+            });
+            
+            // Rendre le champ commune obligatoire
+            communeSelect.required = true;
+            communeSelect.disabled = false;
+            
+            // Mettre à jour le label pour indiquer que c'est obligatoire
+            const communeLabel = document.querySelector('label[for="commune"]');
+            if (!communeLabel.querySelector('.text-danger')) {
+                communeLabel.innerHTML = 'Commune <span class="text-danger">*</span>';
+            }
+        } else {
+            // Pas de communes pour cette ville
+            communeSelect.required = false;
+            communeSelect.disabled = true;
+            
+            // Mettre à jour le label pour indiquer que c'est optionnel
+            const communeLabel = document.querySelector('label[for="commune"]');
+            communeLabel.innerHTML = 'Commune';
+        }
+    }
+    
+    // Événement sur le changement de ville
+    villeSelect.addEventListener('change', updateCommunes);
+    
+    // Initialiser les communes si une ville est déjà sélectionnée (cas de validation échouée)
+    if (villeSelect.value) {
+        updateCommunes();
+    }
+
+    // Gestion des images
     let selectedFiles = [];
     let primaryImageIndex = 0;
     
@@ -498,11 +578,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Ajout d'un champ caché pour indiquer l'image principale
+    // Validation du formulaire
     document.getElementById('residenceForm').addEventListener('submit', function(e) {
+        // Vérifier les images
         if (selectedFiles.length === 0) {
             e.preventDefault();
             alert('Veuillez sélectionner au moins une image');
+            return;
+        }
+        
+        // Vérifier la commune pour Abidjan
+        const selectedVille = villeSelect.value;
+        const communes = villesCommunes[selectedVille] || [];
+        if (communes.length > 0 && !communeSelect.value) {
+            e.preventDefault();
+            alert('Veuillez sélectionner une commune pour la ville d\'Abidjan');
             return;
         }
         

@@ -25,12 +25,37 @@ class ResidenceController extends Controller
             $query->priceRange($request->min_price, $request->max_price);
         }
 
+        // Filtres de localisation
+        if ($request->ville) {
+            $query->byVille($request->ville);
+        }
+
+        if ($request->commune) {
+            $query->byCommune($request->commune);
+        }
+
         $residences = $query->orderBy('sort_order')->paginate(12);
 
         // Récupérer les types de résidences actifs pour les filtres
         $residenceTypes = ResidenceType::active()->ordered()->get();
 
-        return view('frontend.residences.index', compact('residences', 'residenceTypes'));
+        // Récupérer TOUTES les villes et communes disponibles pour les filtres
+        $allVillesCommunes = config('ville-commune');
+        $availableVilles = collect(array_keys($allVillesCommunes));
+        $availableCommunes = collect();
+        
+        // Si une ville est sélectionnée, récupérer ses communes
+        if ($request->ville && isset($allVillesCommunes[$request->ville])) {
+            $availableCommunes = collect($allVillesCommunes[$request->ville]);
+        }
+
+        return view('frontend.residences.index', compact(
+            'residences', 
+            'residenceTypes', 
+            'availableVilles', 
+            'availableCommunes',
+            'allVillesCommunes'
+        ));
     }
 
     public function show(Residence $residence)

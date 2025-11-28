@@ -125,6 +125,55 @@
                         @enderror
                     </div>
 
+                    <!-- Section Localisation -->
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label for="ville" class="form-label">Ville <span class="text-danger">*</span></label>
+                                <select name="ville" id="ville" class="form-select @error('ville') is-invalid @enderror" required>
+                                    <option value="">Sélectionner une ville</option>
+                                    @foreach(config('ville-commune') as $ville => $communes)
+                                        <option value="{{ $ville }}" {{ old('ville', $residence->ville) == $ville ? 'selected' : '' }}>
+                                            {{ $ville }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('ville')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label for="commune" class="form-label">Commune</label>
+                                <select name="commune" id="commune" class="form-select @error('commune') is-invalid @enderror" disabled>
+                                    <option value="">Sélectionner une commune</option>
+                                </select>
+                                @error('commune')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Requis uniquement pour Abidjan</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="google_maps_url" class="form-label">
+                            <i class="ri-map-pin-line me-2"></i>Lien Google Maps
+                        </label>
+                        <input type="url" 
+                               name="google_maps_url" 
+                               id="google_maps_url" 
+                               class="form-control @error('google_maps_url') is-invalid @enderror"
+                               value="{{ old('google_maps_url', $residence->google_maps_url) }}"
+                               placeholder="https://maps.google.com/...">
+                        @error('google_maps_url')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">Optionnel : Lien vers la localisation sur Google Maps</div>
+                    </div>
+
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="mb-3">
@@ -601,6 +650,71 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Erreur lors de la mise à jour');
             });
         });
+    });
+
+    // Gestion ville-commune
+    const villesCommunes = @json(config('ville-commune'));
+    const villeSelect = document.getElementById('ville');
+    const communeSelect = document.getElementById('commune');
+    
+    function updateCommunes() {
+        const selectedVille = villeSelect.value;
+        const communes = villesCommunes[selectedVille] || [];
+        
+        // Vider la liste des communes
+        communeSelect.innerHTML = '<option value="">Sélectionner une commune</option>';
+        
+        if (communes.length > 0) {
+            // Ajouter les communes disponibles
+            communes.forEach(function(commune) {
+                const option = document.createElement('option');
+                option.value = commune;
+                option.textContent = commune;
+                if ('{{ old('commune', $residence->commune ?? '') }}' === commune) {
+                    option.selected = true;
+                }
+                communeSelect.appendChild(option);
+            });
+            
+            // Rendre le champ commune obligatoire
+            communeSelect.required = true;
+            communeSelect.disabled = false;
+            
+            // Mettre à jour le label pour indiquer que c'est obligatoire
+            const communeLabel = document.querySelector('label[for="commune"]');
+            if (!communeLabel.querySelector('.text-danger')) {
+                communeLabel.innerHTML = 'Commune <span class="text-danger">*</span>';
+            }
+        } else {
+            // Pas de communes pour cette ville
+            communeSelect.required = false;
+            communeSelect.disabled = true;
+            
+            // Mettre à jour le label pour indiquer que c'est optionnel
+            const communeLabel = document.querySelector('label[for="commune"]');
+            communeLabel.innerHTML = 'Commune';
+        }
+    }
+    
+    // Événement sur le changement de ville
+    villeSelect.addEventListener('change', updateCommunes);
+    
+    // Initialiser les communes si une ville est déjà sélectionnée
+    if (villeSelect.value) {
+        updateCommunes();
+    }
+    
+    // Validation du formulaire avant soumission
+    document.getElementById('residenceForm').addEventListener('submit', function(e) {
+        const selectedVille = villeSelect.value;
+        const communes = villesCommunes[selectedVille] || [];
+        
+        // Vérifier la commune pour les villes qui en ont
+        if (communes.length > 0 && !communeSelect.value) {
+            e.preventDefault();
+            alert('Veuillez sélectionner une commune pour ' + selectedVille);
+            return false;
+        }
     });
 });
 </script>

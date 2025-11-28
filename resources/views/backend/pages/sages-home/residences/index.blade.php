@@ -44,6 +44,7 @@
                                     <th>Image</th>
                                     <th>Nom</th>
                                     <th>Type</th>
+                                    <th>Localisation</th>
                                     <th>Prix/nuit</th>
                                     <th>Capacité</th>
                                     <th>Statut</th>
@@ -67,10 +68,27 @@
                                     </td>
                                     <td>
                                         <h6 class="mb-1">{{ $residence->name }}</h6>
-                                        <p class="text-muted mb-0 small">{{ Str::limit($residence->location, 30) }}</p>
+                                        <p class="text-muted mb-0 small">{{ Str::limit($residence->description, 30) }}</p>
                                     </td>
                                     <td>
                                         <span class="badge bg-info">{{ $residence->residenceType->name ?? 'Non défini' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            <i class="ri-map-pin-line text-primary me-1"></i>
+                                            @if($residence->commune)
+                                                <strong>{{ $residence->commune }}</strong>, {{ $residence->ville }}
+                                            @else
+                                                {{ $residence->ville }}
+                                            @endif
+                                            @if($residence->google_maps_url)
+                                                <br><a href="{{ $residence->google_maps_url }}" 
+                                                       target="_blank" 
+                                                       class="text-decoration-none small">
+                                                    <i class="ri-external-link-line"></i> Maps
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <strong>{{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA</strong>

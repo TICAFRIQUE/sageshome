@@ -412,7 +412,7 @@
     position: relative;
     background: 
         linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
-        url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+        url('{{ asset('images/banner.jpg') }}');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;

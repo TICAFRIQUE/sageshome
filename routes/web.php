@@ -44,6 +44,15 @@ Route::prefix('residences')->group(function () {
     Route::post('/{residence}/check-availability', [ResidenceController::class, 'checkAvailability'])->name('residences.check-availability');
 });
 
+// API routes pour les filtres
+Route::prefix('api')->group(function () {
+    Route::get('/communes/{ville}', function($ville) {
+        return response()->json(
+            \App\Models\Residence::getAvailableCommunes($ville)
+        );
+    })->name('api.communes');
+});
+
 // Routes de réservation (authentification requise)
 Route::middleware(['auth'])->prefix('client')->group(function () {
     // Dashboard client

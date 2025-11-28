@@ -25,8 +25,11 @@ class Residence extends Model
         'price_per_night',
         'amenities',
         'address',
+        'ville',
+        'commune',
         'latitude',
         'longitude',
+        'google_maps_url',
         'is_available',
         'is_featured',
         'sort_order',
@@ -120,6 +123,27 @@ class Residence extends Model
         return $query;
     }
 
+    public function scopeByVille($query, $ville)
+    {
+        return $query->where('ville', $ville);
+    }
+
+    public function scopeByCommune($query, $commune)
+    {
+        return $query->where('commune', $commune);
+    }
+
+    public function scopeByLocation($query, $ville = null, $commune = null)
+    {
+        if ($ville) {
+            $query->where('ville', $ville);
+        }
+        if ($commune) {
+            $query->where('commune', $commune);
+        }
+        return $query;
+    }
+
     // Méthodes utilitaires
     public static function getAmenityLabels()
     {
@@ -160,6 +184,41 @@ class Residence extends Model
     public function getTypeDisplayAttribute()
     {
         return $this->residenceType ? $this->residenceType->name : 'Non défini';
+    }
+
+    public function getLocationDisplayAttribute()
+    {
+        if ($this->commune) {
+            return $this->commune . ', ' . $this->ville;
+        }
+        return $this->ville;
+    }
+
+    public function hasGoogleMaps()
+    {
+        return !empty($this->google_maps_url);
+    }
+
+    public static function getAvailableVilles()
+    {
+        return self::select('ville')
+            ->distinct()
+            ->orderBy('ville')
+            ->pluck('ville');
+    }
+
+    public static function getAvailableCommunes($ville = null)
+    {
+        $query = self::select('commune')
+            ->whereNotNull('commune')
+            ->distinct()
+            ->orderBy('commune');
+        
+        if ($ville) {
+            $query->where('ville', $ville);
+        }
+        
+        return $query->pluck('commune');
     }
 
     public function isAvailableForDates($checkIn, $checkOut)
