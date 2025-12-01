@@ -51,11 +51,15 @@ class AuthController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
+            'role' => 'client',
         ]);
+
+        // Assigner le rôle client
+        $user->assignRole('client');
 
         Auth::login($user);
 
-        return redirect(route('home'));
+       return redirect()->intended(route('home'));
     }
 
     public function logout(Request $request)

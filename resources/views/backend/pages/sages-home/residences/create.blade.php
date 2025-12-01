@@ -166,7 +166,7 @@
                         <label for="google_maps_link" class="form-label">Lien Google Maps <span class="text-danger">*</span></label>
                         <input type="url" class="form-control @error('google_maps_link') is-invalid @enderror" 
                                id="google_maps_link" name="google_maps_link" value="{{ old('google_maps_link') }}" 
-                               placeholder="https://maps.google.com/..." required>
+                               placeholder="https://maps.google.com/..." >
                         <div class="form-text">
                             <i class="ri-information-line me-1"></i>
                             Copiez le lien de partage Google Maps de la localisation exacte
