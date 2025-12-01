@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('residence_types', function (Blueprint $table) {
-            $table->id();
+            $table->string('id', 10)->primary(); // Utiliser string ID comme les autres tables
             $table->string('name')->unique(); // studio, appartement_1ch, appartement_2ch, villa, etc.
-            $table->string('display_name'); // Nom d'affichage : "Studio", "Appartement 1 chambre", etc.
+            $table->string('slug')->unique(); // Slug pour URL (ajouté directement)
             $table->text('description')->nullable();
             $table->integer('min_capacity')->default(1);
             $table->integer('max_capacity')->default(10);

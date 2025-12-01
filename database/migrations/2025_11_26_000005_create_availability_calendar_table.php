@@ -19,6 +19,9 @@ return new class extends Migration
             
             $table->unique(['residence_id', 'date']);
             $table->index(['date', 'is_available']);
+            
+            // Contrainte de clé étrangère ajoutée directement
+            $table->foreign('residence_id')->references('id')->on('residences')->onDelete('cascade');
         });
     }
 

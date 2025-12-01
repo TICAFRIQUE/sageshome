@@ -21,7 +21,7 @@ namespace App\Models{
  * @property int|null $min_stay
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Residence|null $residence
+ * @property-read \App\Models\Residence $residence
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AvailabilityCalendar available()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AvailabilityCalendar forDateRange($start, $end)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AvailabilityCalendar forResidence($residenceId)
@@ -44,16 +44,16 @@ namespace App\Models{
 /**
  * @property string $id
  * @property string $booking_number
- * @property int $user_id
+ * @property string $user_id
+ * @property string $residence_id
  * @property string|null $first_name
  * @property string|null $last_name
  * @property string|null $email
  * @property string|null $phone
  * @property string|null $country
- * @property string $residence_id
  * @property \Illuminate\Support\Carbon $check_in
- * @property \Illuminate\Support\Carbon|null $check_in_date
  * @property \Illuminate\Support\Carbon $check_out
+ * @property \Illuminate\Support\Carbon|null $check_in_date
  * @property \Illuminate\Support\Carbon|null $check_out_date
  * @property int $guests
  * @property int $guests_count
@@ -130,9 +130,15 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @property int $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate whereUpdatedAt($value)
  */
 	class CurrencyRate extends \Eloquent {}
 }
@@ -225,15 +231,15 @@ namespace App\Models{
  * @property numeric $amount
  * @property string $status
  * @property array<array-key, mixed>|null $payment_details
- * @property array<array-key, mixed>|null $payment_data
  * @property string|null $transaction_id
  * @property \Illuminate\Support\Carbon|null $processed_at
+ * @property array<array-key, mixed>|null $payment_data
  * @property \Illuminate\Support\Carbon|null $completed_at
  * @property string|null $failure_reason
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Booking|null $booking
+ * @property-read \App\Models\Booking $booking
  * @property-read mixed $method_display
  * @property-read mixed $status_display
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment byMethod($method)
@@ -269,9 +275,9 @@ namespace App\Models{
  * @property string $id
  * @property string $name
  * @property string $slug
- * @property int $residence_type_id
  * @property string $description
  * @property string|null $full_description
+ * @property int|null $residence_type_id
  * @property int $capacity
  * @property numeric $price_per_night
  * @property array<array-key, mixed>|null $amenities
@@ -296,7 +302,7 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ResidenceImage> $images
  * @property-read int|null $images_count
  * @property-read \App\Models\ResidenceImage|null $primaryImage
- * @property-read \App\Models\ResidenceType $residenceType
+ * @property-read \App\Models\ResidenceType|null $residenceType
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence available()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byCapacity($capacity)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Residence byCommune($commune)
@@ -349,7 +355,7 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read mixed $full_url
- * @property-read \App\Models\Residence|null $residence
+ * @property-read \App\Models\Residence $residence
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResidenceImage newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResidenceImage newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ResidenceImage query()
@@ -369,7 +375,7 @@ namespace App\Models{
 /**
  * @property int $id
  * @property string $name
- * @property string|null $slug
+ * @property string $slug
  * @property string|null $description
  * @property int $min_capacity
  * @property int $max_capacity
@@ -407,17 +413,17 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Booking[] $bookings
  * @property-read int|null $bookings_count
  * @method \Illuminate\Database\Eloquent\Relations\HasMany bookings()
- * @property int $id
+ * @property string $id
  * @property string|null $username
  * @property string|null $phone
- * @property string|null $address
- * @property string|null $city
- * @property string|null $country
  * @property string|null $email
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string|null $password
  * @property string|null $avatar
  * @property string|null $role
+ * @property string|null $address
+ * @property string|null $city
+ * @property string|null $country
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at

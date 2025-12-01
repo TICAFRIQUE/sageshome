@@ -14,21 +14,33 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description');
             $table->text('full_description')->nullable();
-            $table->enum('type', ['studio_1ch', 'appartement_2ch', 'appartement_3ch']);
+            $table->string('residence_type_id', 10)->nullable(); // Référence vers residence_types
             $table->integer('capacity'); // nombre de voyageurs
             $table->decimal('price_per_night', 10, 2);
             $table->json('amenities')->nullable(); // équipements
             $table->string('address');
+            
+            // Champs de localisation ajoutés directement
+            $table->string('ville');
+            $table->string('commune')->nullable();
+            
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('google_maps_url')->nullable();
+            
             $table->boolean('is_available')->default(true);
             $table->boolean('is_featured')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
             $table->softDeletes();
             
-            $table->index(['type', 'is_available']);
+            $table->index(['residence_type_id', 'is_available']);
             $table->index(['is_featured', 'is_available']);
+            $table->index(['ville', 'commune']);
+            $table->index('ville');
+            
+            // Contrainte de clé étrangère ajoutée directement
+            $table->foreign('residence_type_id')->references('id')->on('residence_types')->onDelete('set null');
         });
     }
 

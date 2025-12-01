@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
+            $table->string('id', 15)->primary(); // Utiliser string dès le début
             $table->string('username')->nullable(); //nom
             $table->string('phone')->nullable()->unique();
             $table->string('email')->nullable()->unique();
@@ -20,6 +20,12 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->text('avatar')->nullable();
             $table->string('role')->nullable();
+            
+            // Champs de profil ajoutés directement
+            $table->string('address', 500)->nullable();
+            $table->string('city', 100)->nullable();
+            $table->string('country', 100)->nullable();
+            
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

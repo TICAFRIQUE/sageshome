@@ -13,16 +13,29 @@ class ResidenceSeeder extends Seeder
 {
     public function run(): void
     {
+        // Récupérer les types de résidences créés par ResidenceTypesSeeder
+        $residenceTypes = [
+            'Studio' => \App\Models\ResidenceType::where('name', 'Studio')->first(),
+            'Appartement 1 chambre' => \App\Models\ResidenceType::where('name', 'Appartement 1 chambre')->first(),
+            'Appartement 2 chambres' => \App\Models\ResidenceType::where('name', 'Appartement 2 chambres')->first(),
+            'Appartement 3 chambres' => \App\Models\ResidenceType::where('name', 'Appartement 3 chambres')->first(),
+            'Villa' => \App\Models\ResidenceType::where('name', 'Villa')->first(),
+            'Duplex' => \App\Models\ResidenceType::where('name', 'Duplex')->first(),
+            'Penthouse' => \App\Models\ResidenceType::where('name', 'Penthouse')->first(),
+        ];
+
         $residences = [
             [
                 'name' => 'Villa Opale Ocean View',
                 'description' => 'Magnifique studio moderne avec vue panoramique sur l\'océan, parfait pour un séjour romantique à Dakar.',
                 'full_description' => 'Ce studio d\'exception offre une vue imprenable sur l\'océan Atlantique. Situé dans le quartier huppé des Almadies, il combine modernité et confort avec des finitions haut de gamme. L\'espace optimisé comprend un lit king-size, une kitchenette entièrement équipée, un salon avec canapé-lit et une terrasse privée. Idéal pour les couples en quête d\'un cadre idyllique.',
-                'type' => 'studio_1ch',
+                'residence_type_id' => $residenceTypes['Studio']?->id,
                 'capacity' => 2,
                 'price_per_night' => 35000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'refrigerateur', 'micro_onde', 'bouilloire', 'couverts', 'canal_plus', 'chauffe_eau', 'menage', 'securite', 'arrivee_autonome'],
                 'address' => 'Route des Almadies, Pointe des Almadies, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Almadies',
                 'latitude' => 14.7208,
                 'longitude' => -17.5108,
                 'is_available' => true,
@@ -38,11 +51,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Résidence Emeraude Garden',
                 'description' => 'Studio spacieux avec jardin privé et terrasse, situé dans un écrin de verdure au cœur de Dakar.',
                 'full_description' => 'Un studio lumineux et spacieux niché dans un jardin tropical luxuriant. Cette résidence offre une expérience unique alliant intimité et nature. Équipé d\'une cuisine moderne, d\'une chambre confortable et d\'une terrasse donnant sur le jardin privé. Parfait pour se ressourcer tout en restant proche du centre-ville.',
-                'type' => 'studio_1ch',
+                'residence_type_id' => $residenceTypes['Studio']?->id,
                 'capacity' => 2,
                 'price_per_night' => 28000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'refrigerateur', 'micro_onde', 'ustensiles', 'couverts', 'chauffe_eau', 'menage', 'securite', 'arrivee_autonome'],
                 'address' => 'Mermoz-Sacré-Cœur, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Mermoz-Sacré-Cœur',
                 'latitude' => 14.7128,
                 'longitude' => -17.4647,
                 'is_available' => true,
@@ -58,11 +73,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Appartement Saphir Lagune',
                 'description' => 'Élégant appartement 1 chambre avec vue sur la lagune, décoré avec goût et entièrement équipé.',
                 'full_description' => 'Cet appartement raffiné d\'une chambre offre une vue exceptionnelle sur la lagune de Ngor. L\'intérieur, décoré dans un style contemporain africain, comprend une chambre spacieuse, un salon lumineux, une cuisine moderne et une terrasse avec vue. Idéal pour les voyageurs en quête d\'authenticité et de confort.',
-                'type' => 'studio_1ch',
+                'residence_type_id' => $residenceTypes['Appartement 1 chambre']?->id,
                 'capacity' => 3,
                 'price_per_night' => 42000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'micro_onde', 'refrigerateur', 'mixeur', 'ustensiles', 'couverts', 'canal_plus', 'chauffe_eau', 'menage', 'securite', 'arrivee_autonome', 'annulation_gratuite'],
                 'address' => 'Ngor Virage, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Ngor',
                 'latitude' => 14.7530,
                 'longitude' => -17.5151,
                 'is_available' => true,
@@ -78,11 +95,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Villa Diamant Familiale',
                 'description' => 'Spacieuse villa 2 chambres avec piscine privée, parfaite pour les familles ou groupes d\'amis.',
                 'full_description' => 'Une villa familiale exceptionnelle avec deux chambres confortables, salon spacieux et piscine privée. Cette propriété combine l\'art de vivre sénégalais et le confort moderne. Elle dispose d\'un grand jardin, d\'une terrasse couverte et d\'une cuisine entièrement équipée. Idéale pour des vacances en famille mémorables.',
-                'type' => 'appartement_2ch',
+                'residence_type_id' => $residenceTypes['Villa']?->id,
                 'capacity' => 6,
                 'price_per_night' => 65000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'micro_onde', 'refrigerateur', 'mixeur', 'ustensiles', 'couverts', 'bouilloire', 'canal_plus', 'chauffe_eau', 'menage', 'securite', 'piscine', 'arrivee_autonome', 'annulation_gratuite'],
                 'address' => 'Virage, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Virage',
                 'latitude' => 14.7392,
                 'longitude' => -17.4963,
                 'is_available' => true,
@@ -98,11 +117,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Penthouse Rubis Premium',
                 'description' => 'Luxueux penthouse 2 chambres avec terrasse panoramique et vue à 360° sur Dakar.',
                 'full_description' => 'Le summum du luxe avec ce penthouse d\'exception offrant une vue panoramique à 360° sur Dakar et l\'océan. Deux chambres master avec salle de bain privée, salon de prestige, cuisine gourmet et terrasse de 100m². Service concierge inclus pour un séjour inoubliable.',
-                'type' => 'appartement_2ch',
+                'residence_type_id' => $residenceTypes['Penthouse']?->id,
                 'capacity' => 4,
                 'price_per_night' => 95000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'micro_onde', 'refrigerateur', 'mixeur', 'ustensiles', 'couverts', 'bouilloire', 'canal_plus', 'chauffe_eau', 'menage', 'securite', 'arrivee_autonome', 'annulation_gratuite'],
                 'address' => 'Mamelles, Ouakam, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Ouakam',
                 'latitude' => 14.6965,
                 'longitude' => -17.4616,
                 'is_available' => true,
@@ -118,11 +139,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Villa Perle Royale',
                 'description' => 'Majestueuse villa 3 chambres avec piscine, jardin tropical et service de conciergerie.',
                 'full_description' => 'Une villa de prestige dans un écrin tropical exceptionnel. Trois chambres luxueuses, salon cathédrale, cuisine gastronomique, piscine à débordement et jardin paysagé. Service de conciergerie 24h/24, chef à domicile sur demande. L\'excellence à l\'état pur pour un séjour royal.',
-                'type' => 'appartement_3ch',
+                'residence_type_id' => $residenceTypes['Villa']?->id,
                 'capacity' => 8,
                 'price_per_night' => 120000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'micro_onde', 'refrigerateur', 'mixeur', 'ustensiles', 'couverts', 'bouilloire', 'canal_plus', 'chauffe_eau', 'menage', 'securite', 'piscine', 'arrivee_autonome', 'annulation_gratuite'],
                 'address' => 'Yoff Tonghor, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Yoff',
                 'latitude' => 14.7583,
                 'longitude' => -17.4925,
                 'is_available' => true,
@@ -138,11 +161,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Résidence Topaze Moderne',
                 'description' => 'Villa contemporaine 3 chambres avec design moderne, idéale pour les groupes exigeants.',
                 'full_description' => 'Une architecture contemporaine remarquable pour cette villa de 3 chambres aux lignes épurées. Conçue par un architecte de renom, elle offre des espaces généreux et lumineux, une cuisine design, une piscine moderne et un jardin zen. Pour les amateurs de design et de modernité.',
-                'type' => 'appartement_3ch',
+                'residence_type_id' => $residenceTypes['Villa']?->id,
                 'capacity' => 7,
                 'price_per_night' => 85000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'micro_onde', 'refrigerateur', 'mixeur', 'ustensiles', 'couverts', 'bouilloire', 'canal_plus', 'chauffe_eau', 'menage', 'securite', 'piscine', 'arrivee_autonome', 'annulation_gratuite'],
                 'address' => 'Les Maristes, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Les Maristes',
                 'latitude' => 14.7245,
                 'longitude' => -17.4580,
                 'is_available' => true,
@@ -158,11 +183,13 @@ class ResidenceSeeder extends Seeder
                 'name' => 'Villa Ambre Traditionnelle',
                 'description' => 'Charmante villa traditionnelle rénovée, mélange parfait entre authenticité sénégalaise et confort moderne.',
                 'full_description' => 'Une villa traditionnelle sénégalaise magnifiquement rénovée qui préserve l\'âme du patrimoine architectural local tout en offrant le confort moderne. Trois chambres décorées avec des œuvres d\'art local, salon traditionnel, terrasse ombragée et jardin aux essences locales. Une immersion culturelle authentique.',
-                'type' => 'appartement_3ch',
+                'residence_type_id' => $residenceTypes['Villa']?->id,
                 'capacity' => 6,
                 'price_per_night' => 75000,
                 'amenities' => ['wifi', 'climatiseur', 'cuisiniere', 'four', 'micro_onde', 'refrigerateur', 'ustensiles', 'couverts', 'chauffe_eau', 'menage', 'securite', 'arrivee_autonome', 'annulation_gratuite'],
                 'address' => 'Plateau, Dakar, Sénégal',
+                'ville' => 'Dakar',
+                'commune' => 'Plateau',
                 'latitude' => 14.6937,
                 'longitude' => -17.4441,
                 'is_available' => true,
@@ -177,12 +204,19 @@ class ResidenceSeeder extends Seeder
         ];
 
         foreach ($residences as $residenceData) {
+            // Vérifier que le residence_type_id existe
+            if (!$residenceData['residence_type_id']) {
+                echo "⚠️ ResidenceType non trouvé pour la résidence: {$residenceData['name']}\n";
+                continue;
+            }
+            
             // Séparer les images des autres données
             $images = $residenceData['images'];
             unset($residenceData['images']);
             
             // Créer la résidence
             $residence = Residence::create($residenceData);
+            echo "✅ Résidence créée: {$residence->name} (Type: {$residenceData['residence_type_id']})\n";
 
             // Télécharger et sauvegarder les images
             foreach ($images as $index => $imageUrl) {
@@ -206,10 +240,10 @@ class ResidenceSeeder extends Seeder
                         'sort_order' => $index,
                     ]);
                     
-                    echo "✅ Image téléchargée pour {$residence->name}: {$filename}\n";
+                    echo "  📸 Image téléchargée: {$filename}\n";
                     
                 } catch (\Exception $e) {
-                    echo "❌ Erreur lors du téléchargement de l'image pour {$residence->name}: " . $e->getMessage() . "\n";
+                    echo "  ❌ Erreur lors du téléchargement de l'image: " . $e->getMessage() . "\n";
                     
                     // En cas d'erreur, créer une image par défaut
                     ResidenceImage::create([

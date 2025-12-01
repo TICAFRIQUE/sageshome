@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
+use Haruncpi\LaravelIdGenerator\IdGenerator;
 
 class ResidenceType extends Model
 {
     use Sluggable;
+    
+    public $incrementing = false;
+    protected $keyType = 'string';
     
     protected $fillable = [
         'name',
@@ -25,6 +29,22 @@ class ResidenceType extends Model
         'max_capacity' => 'integer',
         'sort_order' => 'integer',
     ];
+    
+    /**
+     * Boot method to generate ID automatically
+     */
+    public static function boot()
+    {
+        parent::boot();
+        
+        self::creating(function ($model) {
+            $model->id = IdGenerator::generate([
+                'table' => 'residence_types',
+                'length' => 10,
+                'prefix' => 'RT'
+            ]);
+        });
+    }
     
     /**
      * Return the sluggable configuration array for this model.

@@ -18,6 +18,9 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index(['residence_id', 'is_primary']);
+            
+            // Contrainte de clé étrangère ajoutée directement
+            $table->foreign('residence_id')->references('id')->on('residences')->onDelete('cascade');
         });
     }
 
