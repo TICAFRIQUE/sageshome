@@ -163,19 +163,15 @@ class BookingController extends Controller
         $successUrl = route('payment.confirm', ['payment' => $payment->id]);
         $errorUrl = route('booking.payment', ['booking' => $payment->booking_id]) . '?error=wave_payment_failed';
         
-        // Métadonnées pour le suivi
-        $metadata = [
-            'booking_id' => $payment->booking_id,
-            'payment_id' => $payment->id,
-            'user_id' => $payment->booking->user_id,
-        ];
+        // Référence client pour le suivi (format: payment_ID)
+        $clientReference = 'payment_' . $payment->id;
 
         // Créer la session de checkout Wave
         $result = $this->wavePaymentService->createCheckoutSession(
             $payment->amount,
             $successUrl,
             $errorUrl,
-            $metadata
+            $clientReference
         );
 
         if ($result['success']) {
@@ -218,13 +214,15 @@ class BookingController extends Controller
             if ($statusResult['success']) {
                 $sessionData = $statusResult['data'];
                 
-                // Vérifier si le paiement a réussi
-                if (isset($sessionData['status']) && $sessionData['status'] === 'completed') {
+                // Vérifier si le paiement a réussi selon la structure Wave
+                if (isset($sessionData['checkout_status']) && $sessionData['checkout_status'] === 'complete' && 
+                    isset($sessionData['payment_status']) && $sessionData['payment_status'] === 'succeeded') {
                     // Mettre à jour les données de paiement avec les informations de Wave
                     $payment->update([
                         'status' => 'completed',
                         'payment_data' => json_encode($sessionData),
                         'completed_at' => now(),
+                        'transaction_id' => $sessionData['transaction_id'] ?? $payment->transaction_id,
                     ]);
                     
                     // Confirmer la réservation
@@ -279,25 +277,34 @@ class BookingController extends Controller
             // Log du webhook pour debug
             \Log::info('Wave Webhook reçu:', $payload);
             
-            // Vérifier si c'est un événement de paiement
-            if (!isset($payload['event']) || $payload['event'] !== 'checkout.session.completed') {
-                return response()->json(['status' => 'ignored'], 200);
-            }
-            
-            // Récupérer les données de la session
-            $sessionData = $payload['data'] ?? [];
+            // Récupérer les données de la session directement si c'est un checkout
+            $sessionData = $payload;
             $sessionId = $sessionData['id'] ?? null;
+            $clientReference = $sessionData['client_reference'] ?? null;
+            $checkoutStatus = $sessionData['checkout_status'] ?? null;
+            $paymentStatus = $sessionData['payment_status'] ?? null;
             
-            if (!$sessionId) {
-                \Log::error('Wave Webhook: Session ID manquant');
-                return response()->json(['error' => 'Session ID manquant'], 400);
+            if (!$sessionId && !$clientReference) {
+                \Log::error('Wave Webhook: Session ID et client_reference manquants');
+                return response()->json(['error' => 'Données manquantes'], 400);
             }
             
             // Trouver le paiement correspondant
-            $payment = Payment::where('transaction_id', $sessionId)->first();
+            $payment = null;
+            
+            if ($clientReference && strpos($clientReference, 'payment_') === 0) {
+                // Extraire l'ID du paiement depuis client_reference (format: payment_123)
+                $paymentId = str_replace('payment_', '', $clientReference);
+                $payment = Payment::find($paymentId);
+            }
+            
+            // Si pas trouvé par client_reference, essayer par transaction_id
+            if (!$payment && $sessionId) {
+                $payment = Payment::where('transaction_id', $sessionId)->first();
+            }
             
             if (!$payment) {
-                \Log::error('Wave Webhook: Paiement non trouvé pour la session: ' . $sessionId);
+                \Log::error('Wave Webhook: Paiement non trouvé pour la session: ' . $sessionId . ' ref: ' . $clientReference);
                 return response()->json(['error' => 'Paiement non trouvé'], 404);
             }
             
@@ -306,24 +313,40 @@ class BookingController extends Controller
                 return response()->json(['status' => 'already_processed'], 200);
             }
             
-            // Mettre à jour le paiement
-            $payment->update([
-                'status' => 'completed',
-                'payment_data' => $sessionData,
-                'completed_at' => now(),
-            ]);
-            
-            // Confirmer la réservation
-            $payment->booking->update([
-                'status' => 'confirmed',
-                'payment_status' => 'paid',
-                'confirmed_at' => now(),
-            ]);
-            
-            // Envoyer un email de confirmation (optionnel)
-            // Mail::to($payment->booking->user)->send(new BookingConfirmation($payment->booking));
-            
-            return response()->json(['status' => 'success'], 200);
+            // Vérifier si le paiement a réussi
+            if ($checkoutStatus === 'complete' && $paymentStatus === 'succeeded') {
+                // Mettre à jour le paiement
+                $payment->update([
+                    'status' => 'completed',
+                    'payment_data' => json_encode($sessionData),
+                    'completed_at' => now(),
+                    'transaction_id' => $sessionData['transaction_id'] ?? $payment->transaction_id,
+                ]);
+                
+                // Confirmer la réservation
+                $payment->booking->update([
+                    'status' => 'confirmed',
+                    'payment_status' => 'paid',
+                    'confirmed_at' => now(),
+                ]);
+                
+                \Log::info('Paiement Wave confirmé via webhook pour payment ID: ' . $payment->id);
+                
+                // Envoyer un email de confirmation (optionnel)
+                // Mail::to($payment->booking->user)->send(new BookingConfirmation($payment->booking));
+                
+                return response()->json(['status' => 'success'], 200);
+            } else {
+                // Le paiement a échoué ou est en attente
+                $payment->update([
+                    'status' => $paymentStatus === 'failed' ? 'failed' : 'pending',
+                    'payment_data' => json_encode($sessionData),
+                ]);
+                
+                \Log::warning('Paiement Wave non réussi via webhook: ' . $checkoutStatus . '/' . $paymentStatus);
+                
+                return response()->json(['status' => 'payment_not_completed'], 200);
+            }
             
         } catch (\Exception $e) {
             \Log::error('Erreur Webhook Wave: ' . $e->getMessage());

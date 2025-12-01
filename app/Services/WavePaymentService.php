@@ -19,7 +19,7 @@ class WavePaymentService
     /**
      * Créer une session de checkout Wave
      */
-    public function createCheckoutSession($amount, $successUrl, $errorUrl, $metadata = [])
+    public function createCheckoutSession($amount, $successUrl, $errorUrl, $clientReference = null)
     {
         try {
             $checkoutParams = [
@@ -29,9 +29,9 @@ class WavePaymentService
                 'error_url' => $errorUrl,
             ];
 
-            // Ajouter les métadonnées si fournies
-            if (!empty($metadata)) {
-                $checkoutParams['metadata'] = $metadata;
+            // Ajouter la référence client si fournie (champ autorisé par Wave)
+            if (!empty($clientReference)) {
+                $checkoutParams['client_reference'] = (string) $clientReference;
             }
 
             $response = Http::withHeaders([
@@ -82,13 +82,63 @@ class WavePaymentService
                     'data' => $response->json(),
                 ];
             } else {
+                Log::error('Erreur vérification statut Wave: ' . $response->body());
                 return [
                     'success' => false,
                     'error' => 'Impossible de vérifier le statut du paiement',
+                    'details' => $response->json(),
                 ];
             }
         } catch (\Exception $e) {
             Log::error('Erreur vérification statut Wave: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => 'Erreur de connexion: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Vérifier si un webhook Wave est valide
+     */
+    public function validateWebhook($payload, $signature = null)
+    {
+        // Pour l'instant, validation basique
+        // Dans un environnement de production, vous devriez vérifier la signature du webhook
+        return isset($payload['id']) && isset($payload['checkout_status']);
+    }
+
+    /**
+     * Obtenir les détails d'un paiement via client_reference
+     */
+    public function getPaymentByReference($clientReference)
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])
+            ->timeout(10)
+            ->get($this->apiUrl . '/checkout/sessions', [
+                'client_reference' => $clientReference,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return [
+                    'success' => true,
+                    'data' => $data['result'] ?? $data,
+                ];
+            } else {
+                Log::error('Erreur recherche paiement Wave: ' . $response->body());
+                return [
+                    'success' => false,
+                    'error' => 'Impossible de trouver le paiement',
+                    'details' => $response->json(),
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur recherche paiement Wave: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => 'Erreur de connexion: ' . $e->getMessage(),

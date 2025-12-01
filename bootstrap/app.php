@@ -15,7 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => App\Http\Middleware\Admin::class,
         ]);
-      
+        
+        // Exclure le webhook Wave de la vérification CSRF
+        $middleware->validateCsrfTokens(except: [
+            'webhook/wave/payment',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

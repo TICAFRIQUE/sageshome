@@ -277,7 +277,7 @@ namespace App\Models{
  * @property string $slug
  * @property string $description
  * @property string|null $full_description
- * @property int|null $residence_type_id
+ * @property string|null $residence_type_id
  * @property int $capacity
  * @property numeric $price_per_night
  * @property array<array-key, mixed>|null $amenities
@@ -373,7 +373,7 @@ namespace App\Models{
 
 namespace App\Models{
 /**
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property string $slug
  * @property string|null $description
