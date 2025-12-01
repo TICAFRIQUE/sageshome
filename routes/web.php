@@ -51,6 +51,9 @@ Route::prefix('api')->group(function () {
             \App\Models\Residence::getAvailableCommunes($ville)
         );
     })->name('api.communes');
+    
+    // Route pour vérifier le statut d'un paiement
+    Route::get('/payment/{payment}/status', [BookingController::class, 'getPaymentStatus'])->name('api.payment.status');
 });
 
 // Routes de réservation (authentification requise)
@@ -89,7 +92,11 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
 });
 
 // Routes de paiement (callback)
-Route::post('/payment/{payment}/confirm', [BookingController::class, 'confirmPayment'])->name('payment.confirm');
+Route::get('/payment/{payment}/confirm', [BookingController::class, 'confirmPayment'])->name('payment.confirm');
+Route::post('/payment/{payment}/confirm', [BookingController::class, 'confirmPayment']);
+
+// Webhook Wave pour les notifications de paiement
+Route::post('/webhook/wave/payment', [BookingController::class, 'waveWebhook'])->name('wave.webhook');
 
 // Routes d'authentification Laravel par défaut
 // require __DIR__.'/auth.php';

@@ -12,50 +12,53 @@
                 </div>
                 
                 <div class="card-body text-center">
+                    @if(request()->get('error') === 'wave_payment_failed')
+                        <div class="alert alert-danger mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Le paiement Wave a échoué. Veuillez réessayer.
+                        </div>
+                    @endif
+
                     <div class="mb-4">
-                        <img src="/images/wave-logo.png" alt="Wave" style="height: 60px;"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <i class="bi bi-phone-fill text-primary" style="font-size: 4rem; display: none;"></i>
+                        <i class="fas fa-mobile-alt text-primary" style="font-size: 4rem;"></i>
                     </div>
 
                     <h4 class="text-green mb-3">Montant à payer</h4>
-                    <div class="display-4 text-gold mb-4">{{ number_format($payment->amount, 0) }} FCFA</div>
+                    <div class="display-4 text-gold mb-4">{{ number_format($payment->amount, 0, ',', ' ') }} FCFA</div>
                     
                     <p class="text-muted mb-4">
                         Réservation #{{ $payment->booking->booking_number }}<br>
                         {{ $payment->booking->residence->name }}
                     </p>
 
-                    <!-- Simulation d'interface Wave -->
-                    <div class="wave-payment-simulation p-4 bg-light rounded mb-4">
-                        <h6 class="mb-3">Instructions de paiement Wave:</h6>
-                        <ol class="text-start">
-                            <li>Composez *145# sur votre téléphone</li>
-                            <li>Sélectionnez "Payer une facture"</li>
-                            <li>Entrez le code marchand: <strong>SAGES001</strong></li>
-                            <li>Entrez le montant: <strong>{{ number_format($payment->amount, 0) }} FCFA</strong></li>
-                            <li>Confirmez avec votre code PIN</li>
-                        </ol>
-                        
-                        <div class="alert alert-info mt-3">
-                            <strong>Référence:</strong> {{ $payment->payment_reference }}
+                    <!-- Redirection automatique vers Wave -->
+                    <div class="wave-payment-info p-4 bg-light rounded mb-4">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Chargement...</span>
                         </div>
+                        <h6 class="mb-3">Redirection vers Wave en cours...</h6>
+                        <p class="text-muted">
+                            Si vous n'êtes pas automatiquement redirigé, cliquez sur le bouton ci-dessous.
+                        </p>
                     </div>
 
-                    <form method="POST" action="{{ route('payment.confirm', $payment) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-green btn-lg me-3">
-                            <i class="bi bi-check-circle me-2"></i>J'ai effectué le paiement
-                        </button>
-                        
-                        <a href="{{ route('booking.payment', $payment->booking) }}" class="btn btn-outline-secondary">
-                            Retour
-                        </a>
-                    </form>
+                    <!-- Bouton de redirection manuelle -->
+                    <a href="{{ route('booking.process-payment', $payment->booking) }}" 
+                       class="btn btn-primary btn-lg me-3"
+                       onclick="this.innerHTML='<i class=&quot;fas fa-spinner fa-spin me-2&quot;></i>Redirection...'; this.disabled=true;">
+                        <i class="fas fa-external-link-alt me-2"></i>
+                        Payer avec Wave
+                    </a>
+                    
+                    <a href="{{ route('booking.payment', $payment->booking) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour
+                    </a>
 
                     <div class="mt-4">
                         <small class="text-muted">
-                            Vous avez des difficultés ? <a href="tel:+221123456789">Appelez-nous</a>
+                            Vous rencontrez des difficultés ? 
+                            <a href="tel:+221123456789">Contactez notre support</a>
                         </small>
                     </div>
                 </div>
@@ -64,34 +67,13 @@
     </div>
 </div>
 
-<!-- Auto-check payment status -->
+<!-- Auto redirection après 3 secondes -->
 <script>
-let checkCount = 0;
-const maxChecks = 30; // Check for 5 minutes (every 10 seconds)
-
-function checkPaymentStatus() {
-    if (checkCount >= maxChecks) {
-        return; // Stop checking after 5 minutes
+setTimeout(function() {
+    if (!window.location.href.includes('error=')) {
+        // Redirection automatique vers la page de traitement du paiement
+        window.location.href = "{{ route('booking.process-payment', $payment->booking) }}";
     }
-    
-    fetch('/api/payment/{{ $payment->id }}/status', {
-        method: 'GET',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'completed') {
-            window.location.href = "{{ route('booking.confirmation', $payment->booking) }}";
-        }
-    })
-    .catch(error => console.error('Error checking payment status:', error));
-    
-    checkCount++;
-}
-
-// Check payment status every 10 seconds
-setInterval(checkPaymentStatus, 10000);
+}, 3000);
 </script>
 @endsection

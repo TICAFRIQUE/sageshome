@@ -21,15 +21,19 @@ class Payment extends Model
         'amount',
         'status',
         'payment_details',
+        'payment_data', // Pour les données JSON de l'API externe (Wave, PayPal, etc.)
         'transaction_id',
         'processed_at',
+        'completed_at',
         'failure_reason',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'payment_details' => 'array',
+        'payment_data' => 'array', // Pour les données JSON de l'API externe
         'processed_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public static function boot()

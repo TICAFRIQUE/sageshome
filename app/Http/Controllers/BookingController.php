@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Residence;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\WavePaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -13,6 +14,13 @@ use Carbon\Carbon;
 
 class BookingController extends Controller
 {
+    protected $wavePaymentService;
+
+    public function __construct(WavePaymentService $wavePaymentService)
+    {
+        $this->wavePaymentService = $wavePaymentService;
+    }
+
     public function create(Residence $residence, Request $request)
     {
         $request->validate([
@@ -151,9 +159,46 @@ class BookingController extends Controller
 
     private function redirectToWave($payment)
     {
-        // Simulation de redirection vers Wave
-        // Dans une vraie implémentation, vous utiliseriez l'API Wave
-        return view('frontend.payment.wave', compact('payment'));
+        // URLs de retour
+        $successUrl = route('payment.confirm', ['payment' => $payment->id]);
+        $errorUrl = route('booking.payment', ['booking' => $payment->booking_id]) . '?error=wave_payment_failed';
+        
+        // Métadonnées pour le suivi
+        $metadata = [
+            'booking_id' => $payment->booking_id,
+            'payment_id' => $payment->id,
+            'user_id' => $payment->booking->user_id,
+        ];
+
+        // Créer la session de checkout Wave
+        $result = $this->wavePaymentService->createCheckoutSession(
+            $payment->amount,
+            $successUrl,
+            $errorUrl,
+            $metadata
+        );
+
+        if ($result['success']) {
+            $checkoutSession = $result['data'];
+            
+            // Sauvegarder l'ID de session Wave pour le suivi
+            $payment->update([
+                'transaction_id' => $checkoutSession['id'] ?? null,
+                'payment_data' => json_encode($checkoutSession),
+            ]);
+
+            // Rediriger vers Wave
+            if (isset($checkoutSession['wave_launch_url'])) {
+                return redirect()->away($checkoutSession['wave_launch_url']);
+            } else {
+                return redirect()->route('booking.payment', $payment->booking)
+                    ->with('error', 'Erreur: URL de paiement Wave non disponible.');
+            }
+        } else {
+            // Erreur lors de la création de la session
+            return redirect()->route('booking.payment', $payment->booking)
+                ->with('error', 'Erreur lors de l\'initialisation du paiement Wave: ' . $result['error']);
+        }
     }
 
     private function redirectToPaypal($payment)
@@ -163,9 +208,55 @@ class BookingController extends Controller
         return view('frontend.payment.paypal', compact('payment'));
     }
 
-    public function confirmPayment(Payment $payment)
+    public function confirmPayment(Request $request, Payment $payment)
     {
-        // Cette route sera appelée après un paiement réussi
+        // Vérifier si le paiement est via Wave et a un transaction_id
+        if ($payment->payment_method === 'wave' && $payment->transaction_id) {
+            // Vérifier le statut du paiement auprès de Wave
+            $statusResult = $this->wavePaymentService->getPaymentStatus($payment->transaction_id);
+            
+            if ($statusResult['success']) {
+                $sessionData = $statusResult['data'];
+                
+                // Vérifier si le paiement a réussi
+                if (isset($sessionData['status']) && $sessionData['status'] === 'completed') {
+                    // Mettre à jour les données de paiement avec les informations de Wave
+                    $payment->update([
+                        'status' => 'completed',
+                        'payment_data' => json_encode($sessionData),
+                        'completed_at' => now(),
+                    ]);
+                    
+                    // Confirmer la réservation
+                    $payment->booking->update([
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid',
+                        'confirmed_at' => now(),
+                    ]);
+
+                    // Envoyer un email de confirmation
+                    // Mail::to($payment->booking->user)->send(new BookingConfirmation($payment->booking));
+
+                    return redirect()->route('booking.confirmation', $payment->booking)
+                        ->with('success', 'Votre paiement Wave a été traité avec succès.');
+                } else {
+                    // Le paiement n'est pas encore complété ou a échoué
+                    $payment->update([
+                        'status' => 'failed',
+                        'payment_data' => json_encode($sessionData),
+                    ]);
+                    
+                    return redirect()->route('booking.payment', $payment->booking)
+                        ->with('error', 'Le paiement Wave a échoué ou n\'est pas encore confirmé.');
+                }
+            } else {
+                // Erreur lors de la vérification du statut
+                return redirect()->route('booking.payment', $payment->booking)
+                    ->with('error', 'Impossible de vérifier le statut du paiement Wave.');
+            }
+        }
+
+        // Traitement pour les autres méthodes de paiement (logique existante)
         $payment->markAsCompleted();
         $payment->booking->confirm();
 
@@ -174,6 +265,83 @@ class BookingController extends Controller
 
         return redirect()->route('booking.confirmation', $payment->booking)
             ->with('success', 'Votre paiement a été traité avec succès.');
+    }
+
+    /**
+     * Webhook pour recevoir les notifications de paiement Wave
+     */
+    public function waveWebhook(Request $request)
+    {
+        try {
+            // Récupérer les données du webhook
+            $payload = $request->all();
+            
+            // Log du webhook pour debug
+            \Log::info('Wave Webhook reçu:', $payload);
+            
+            // Vérifier si c'est un événement de paiement
+            if (!isset($payload['event']) || $payload['event'] !== 'checkout.session.completed') {
+                return response()->json(['status' => 'ignored'], 200);
+            }
+            
+            // Récupérer les données de la session
+            $sessionData = $payload['data'] ?? [];
+            $sessionId = $sessionData['id'] ?? null;
+            
+            if (!$sessionId) {
+                \Log::error('Wave Webhook: Session ID manquant');
+                return response()->json(['error' => 'Session ID manquant'], 400);
+            }
+            
+            // Trouver le paiement correspondant
+            $payment = Payment::where('transaction_id', $sessionId)->first();
+            
+            if (!$payment) {
+                \Log::error('Wave Webhook: Paiement non trouvé pour la session: ' . $sessionId);
+                return response()->json(['error' => 'Paiement non trouvé'], 404);
+            }
+            
+            // Vérifier si le paiement n'est pas déjà traité
+            if ($payment->status === 'completed') {
+                return response()->json(['status' => 'already_processed'], 200);
+            }
+            
+            // Mettre à jour le paiement
+            $payment->update([
+                'status' => 'completed',
+                'payment_data' => $sessionData,
+                'completed_at' => now(),
+            ]);
+            
+            // Confirmer la réservation
+            $payment->booking->update([
+                'status' => 'confirmed',
+                'payment_status' => 'paid',
+                'confirmed_at' => now(),
+            ]);
+            
+            // Envoyer un email de confirmation (optionnel)
+            // Mail::to($payment->booking->user)->send(new BookingConfirmation($payment->booking));
+            
+            return response()->json(['status' => 'success'], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erreur Webhook Wave: ' . $e->getMessage());
+            return response()->json(['error' => 'Erreur serveur'], 500);
+        }
+    }
+
+    /**
+     * API pour vérifier le statut d'un paiement
+     */
+    public function getPaymentStatus(Payment $payment)
+    {
+        return response()->json([
+            'status' => $payment->status,
+            'payment_method' => $payment->payment_method,
+            'amount' => $payment->amount,
+            'booking_status' => $payment->booking->status,
+        ]);
     }
 
     public function confirmation(Booking $booking)

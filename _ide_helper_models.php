@@ -130,6 +130,15 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CurrencyRate query()
+ */
+	class CurrencyRate extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * @property int $id
  * @property string|null $name
  * @property string|null $slug
@@ -216,8 +225,10 @@ namespace App\Models{
  * @property numeric $amount
  * @property string $status
  * @property array<array-key, mixed>|null $payment_details
+ * @property array<array-key, mixed>|null $payment_data
  * @property string|null $transaction_id
  * @property \Illuminate\Support\Carbon|null $processed_at
+ * @property \Illuminate\Support\Carbon|null $completed_at
  * @property string|null $failure_reason
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -234,10 +245,12 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment successful()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereBookingId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereCompletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereFailureReason($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment wherePaymentData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment wherePaymentDetails($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment wherePaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment wherePaymentReference($value)
