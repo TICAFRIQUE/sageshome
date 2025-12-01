@@ -39,7 +39,7 @@ class BookingController extends Controller
         }
 
         $priceInfo = $residence->calculateTotalPrice($checkIn, $checkOut);
-        $taxAmount = $priceInfo['total_price'] * 0.10; // 10% de taxes
+        $taxAmount = $priceInfo['total_price'] * 0; // 10% de taxes
         $finalAmount = $priceInfo['total_price'] + $taxAmount;
 
         return view('frontend.booking.create', compact(
