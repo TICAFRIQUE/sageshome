@@ -68,7 +68,9 @@
                             <div class="position-absolute bottom-0 start-0 p-3">
                                 <div class="d-flex align-items-center bg-white bg-opacity-90 rounded-pill px-3 py-1">
                                     <i class="fas fa-map-marker-alt me-1" style="color: var(--sage-gold-end);"></i>
-                                    <small class="fw-medium">{{ Str::limit($residence->address ?? 'Abidjan', 20) }}</small>
+                                    <small class="fw-medium">
+                                        {{ $residence->ville ?? 'Abidjan' }}{{ $residence->commune ? ', ' . $residence->commune : '' }}
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -78,11 +80,24 @@
                                 {{ $residence->name }}
                             </h5>
                             
+                            <!-- Localisation -->
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                                <small class="text-muted">
+                                    {{ $residence->ville ?? 'Abidjan' }}{{ $residence->commune ? ', ' . $residence->commune : '' }}
+                                    @if($residence->address)
+                                        <br><span class="text-muted">{{ Str::limit($residence->address, 30) }}</span>
+                                    @endif
+                                </small>
+                            </div>
+                            
                             <p class="card-text text-muted mb-3">
-                                {{ Str::limit($residence->description, 120) }}
+                                {{ Str::limit($residence->description, 80) }}
                             </p>
                             
-                            <div class="row g-3 mb-3">
+                           
+                            
+                            <div class="row g-2 mb-3">
                                 <div class="col-6">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-users me-2" style="color: var(--sage-gold-end);"></i>
@@ -216,9 +231,36 @@
                                             {{ $residence->name }}
                                         </h5>
                                         
-                                        <p class="card-text text-muted mb-3 small">
-                                            {{ Str::limit($residence->description, 80) }}
+                                        <!-- Localisation -->
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-map-marker-alt me-1 text-muted" style="font-size: 0.8rem;"></i>
+                                            <small class="text-muted">
+                                                {{ $residence->ville ?? 'Abidjan' }}{{ $residence->commune ? ', ' . $residence->commune : '' }}
+                                            </small>
+                                        </div>
+                                        
+                                        <p class="card-text text-muted mb-2 small">
+                                            {{ Str::limit($residence->description, 60) }}
                                         </p>
+                                        
+                                        <!-- Équipements compacts -->
+                                        @if($residence->equipements && count($residence->equipements) > 0)
+                                        <div class="mb-2">
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach($residence->equipements->take(2) as $equipement)
+                                                    <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">
+                                                        <i class="fas fa-check me-1" style="color: var(--sage-gold-end); font-size: 0.7rem;"></i>
+                                                        {{ Str::limit($equipement->name, 8) }}
+                                                    </span>
+                                                @endforeach
+                                                @if(count($residence->equipements) > 2)
+                                                    <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                        +{{ count($residence->equipements) - 2 }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
                                         
                                         <div class="row g-2 mb-3 text-center">
                                             <div class="col-4">
@@ -274,6 +316,7 @@
 </section>
 
 <!-- Features Section -->
+<div id="contact" style="position: relative; top: -100px;"></div>
 <section class="py-5 bg-light">
     <div class="container">
         <div class="row mb-5">
@@ -359,7 +402,7 @@
             </div>
         </div>
         
-        <!-- CTA Section -->
+        <!-- CTA Section avec Contact -->
         <div class="row mt-5">
             <div class="col-12">
                 <div class="card cta-card border-0 overflow-hidden">
@@ -369,18 +412,97 @@
                                 <div class="p-5 h-100 d-flex flex-column justify-content-center"
                                      style="background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary));">
                                     <h3 class="text-white fw-bold mb-3">
-                                        Prêt à vivre une expérience exceptionnelle ?
+                                        <i class="fas fa-envelope me-3" style="color: var(--sage-gold-end);"></i>
+                                        Contactez-Nous
                                     </h3>
-                                    <p class="text-white-50 mb-4 fs-5">
-                                        Découvrez dès maintenant notre collection exclusive de résidences de luxe 
-                                        et réservez votre séjour d'exception.
+                                    <p class="text-white-50 mb-4">
+                                        Notre équipe est à votre disposition pour vous accompagner
                                     </p>
+                                    
+                                    <!-- Informations de contact -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-sm-6">
+                                            <div class="d-flex align-items-center">
+                                                <div class="contact-icon me-3">
+                                                    <div class="icon-circle d-flex align-items-center justify-content-center"
+                                                         style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+                                                        <i class="fas fa-map-marker-alt text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="text-white fw-bold mb-1">Adresse</h6>
+                                                    <small class="text-white-50">Cocody, Abidjan</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="d-flex align-items-center">
+                                                <div class="contact-icon me-3">
+                                                    <div class="icon-circle d-flex align-items-center justify-content-center"
+                                                         style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+                                                        <i class="fas fa-phone text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="text-white fw-bold mb-1">Téléphone</h6>
+                                                    <small class="text-white-50">+225 27 20 XX XX XX</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="d-flex align-items-center">
+                                                <div class="contact-icon me-3">
+                                                    <div class="icon-circle d-flex align-items-center justify-content-center"
+                                                         style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+                                                        <i class="fas fa-envelope text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="text-white fw-bold mb-1">Email</h6>
+                                                    <small class="text-white-50">
+                                                        <a href="mailto:contact@sageshome.com" class="text-white-50 text-decoration-none">contact@sageshome.com</a>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="d-flex align-items-center">
+                                                <div class="contact-icon me-3">
+                                                    <div class="icon-circle d-flex align-items-center justify-content-center"
+                                                         style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
+                                                        <i class="fas fa-share-alt text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="text-white fw-bold mb-1">Suivez-nous</h6>
+                                                    <div class="d-flex gap-2">
+                                                        <a href="#" class="social-link" title="Facebook">
+                                                            <div class="social-icon-small" style="background: #1877f2;">
+                                                                <i class="fab fa-facebook-f text-white"></i>
+                                                            </div>
+                                                        </a>
+                                                        <a href="#" class="social-link" title="Instagram">
+                                                            <div class="social-icon-small" style="background: #e1306c;">
+                                                                <i class="fab fa-instagram text-white"></i>
+                                                            </div>
+                                                        </a>
+                                                        <a href="#" class="social-link" title="WhatsApp">
+                                                            <div class="social-icon-small" style="background: #25d366;">
+                                                                <i class="fab fa-whatsapp text-white"></i>
+                                                            </div>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="d-flex flex-wrap gap-3">
                                         <a href="{{ route('residences.index') }}" class="btn btn-light btn-lg px-4">
                                             <i class="fas fa-search me-2"></i>Explorer nos résidences
                                         </a>
-                                        <a href="#" class="btn btn-outline-light btn-lg px-4">
-                                            <i class="fas fa-phone me-2"></i>Nous contacter
+                                        <a href="tel:+22527200000" class="btn btn-outline-light btn-lg px-4">
+                                            <i class="fas fa-phone me-2"></i>Appelez-nous
                                         </a>
                                     </div>
                                 </div>
@@ -402,6 +524,7 @@
         </div>
     </div>
 </section>
+
 @endsection
 
 @push('styles')
@@ -530,11 +653,62 @@
     overflow: hidden;
 }
 
+/* Contact Section Styles */
+.contact-card {
+    transition: all 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+}
+
+.social-link {
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.social-link:hover {
+    transform: scale(1.1);
+}
+
+.social-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.social-icon-small {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.contact-icon .icon-circle {
+    transition: transform 0.3s ease;
+}
+
+.contact-card:hover .contact-icon .icon-circle {
+    transform: scale(1.05);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .hero-banner {
         min-height: 50vh;
         background-attachment: scroll;
+    }
+    
+    .contact-card {
+        margin-bottom: 1rem;
     }
 }
 

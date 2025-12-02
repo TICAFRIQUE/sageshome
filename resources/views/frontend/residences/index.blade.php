@@ -8,7 +8,7 @@
 <div class="container py-5">
     <!-- En-tête de page -->
     <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold mb-3">
+        <h1 class="display-4 fw-bold mb-3 pt-4">
             Nos <span style="color: var(--sage-gold-end);">Résidences</span>
         </h1>
         <p class="lead text-muted mx-auto" style="max-width: 600px;">
@@ -207,7 +207,7 @@
                                     @endif
                                 </div>
                                 <div class="d-flex">
-                                    @php $rating = rand(3, 5); @endphp
+                                    @php $rating = rand(4, 5); @endphp
                                     @for($i = 1; $i <= 5; $i++)
                                         <i class="fas fa-star small" style="color: {{ $i <= $rating ? 'var(--sage-gold-end)' : '#E0E0E0' }};"></i>
                                     @endfor

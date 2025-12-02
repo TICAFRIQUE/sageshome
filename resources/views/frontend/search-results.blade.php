@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Résultats de recherche - Sages Home')
-
+@section('title', 'Résultats de recherche - Sages Home'
 @push('styles')
 <style>
 .btn-reservation {
@@ -217,7 +216,10 @@
                                 <!-- Amenities -->
                                 @if ($residence->amenities && count($residence->amenities) > 0)
                                     <div class="mb-2">
-                                        @foreach (array_slice($residence->getFormattedAmenities(), 0, 3) as $amenity)
+                                        @php
+                                            $formattedAmenities = $residence->getFormattedAmenities() ?? [];
+                                        @endphp
+                                        @foreach (array_slice($formattedAmenities, 0, 3) as $amenity)
                                             <span class="badge bg-light text-dark me-1">{{ $amenity }}</span>
                                         @endforeach
                                         @if (count($residence->amenities) > 3)
@@ -361,6 +363,25 @@
                 const checkInDate = new Date(this.value);
                 const nextDay = new Date(checkInDate);
                 nextDay.setDate(checkInDate.getDate() + 1);
+
+                checkOutInput.min = nextDay.toISOString().split('T')[0];
+
+                if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
+                    checkOutInput.value = nextDay.toISOString().split('T')[0];
+                }
+            });
+        });
+    </script>
+@endpush
+'T')[0];
+        
+        if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
+            checkOutInput.value = nextDay.toISOString().split('T')[0];
+        }
+    });
+});
+</script>
+@endpush    nextDay.setDate(checkInDate.getDate() + 1);
 
                 checkOutInput.min = nextDay.toISOString().split('T')[0];
 

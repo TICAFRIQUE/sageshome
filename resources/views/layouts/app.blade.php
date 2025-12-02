@@ -303,7 +303,6 @@
             display: flex;
             align-items: center;
             color: var(--sage-white);
-            margin-top: 80px;
         }
 
         .hero-banner h1 {
@@ -393,6 +392,14 @@
 
         /* Mobile responsive */
         @media (max-width: 768px) {
+            .navbar {
+                padding: 8px 0;
+            }
+            
+            main {
+                padding-top: 60px !important;
+            }
+            
             .navbar-brand img {
                 height: 35px;
             }
@@ -408,10 +415,6 @@
 
             .hero-banner h1 {
                 font-size: 2rem;
-            }
-
-            .hero-banner {
-                height: 60vh;
             }
 
             .search-section {
@@ -440,7 +443,7 @@
                         {{-- <h4 class="brand-text d-none d-md-inline">SAGES HOME</h4> --}}
                     </a>
                 </div>
-                
+
 
                 <!-- Formulaire de recherche au milieu (desktop) -->
                 <div class="search-section d-none d-lg-flex flex-column justify-content-center flex-grow-1">
@@ -477,7 +480,7 @@
                                         $villesCommunes = config('ville-commune');
                                         $availableVilles = collect(array_keys($villesCommunes));
                                     @endphp
-                                    @foreach($availableVilles as $ville)
+                                    @foreach ($availableVilles as $ville)
                                         <option value="{{ $ville }}">{{ $ville }}</option>
                                     @endforeach
                                 </select>
@@ -506,7 +509,8 @@
 
                     <!-- Icône de compte avec dropdown -->
                     <div class="dropdown">
-                        <button class="nav-icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Mon compte">
+                        <button class="nav-icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" title="Mon compte">
                             <i class="fas fa-user"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end account-dropdown">
@@ -515,7 +519,9 @@
                                     <i class="fas fa-user-circle me-2"></i>
                                     {{ Auth::user()->name ?? 'Mon compte' }}
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('dashboard.index') }}">
                                         <i class="fas fa-tachometer-alt me-2"></i>Dashboard
@@ -531,7 +537,9 @@
                                         <i class="fas fa-user-edit me-2"></i>Mon profil
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}" class="mb-0">
                                         @csrf
@@ -545,7 +553,9 @@
                                     <i class="fas fa-user-plus me-2"></i>
                                     Accès compte
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('login') }}">
                                         <i class="fas fa-sign-in-alt me-2"></i>Connexion
@@ -560,16 +570,18 @@
                         </ul>
                     </div>
 
-                    <!-- Icône de contact -->
+                  
+
+                    <!-- Menu toggle mobile -->
+                    <button class="navbar-toggler nav-icon-btn d-lg-none border-0" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#navbarNav" title="Menu">
+                        <i class="fas fa-search"></i>
+                    </button>
+
+                      <!-- Icône de contact -->
                     <a href="#contact" class="contact-icon" title="Nous contacter">
                         <i class="fas fa-phone"></i>
                     </a>
-
-                    <!-- Menu toggle mobile -->
-                    <button class="navbar-toggler nav-icon-btn d-lg-none border-0" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav" title="Menu">
-                        <i class="fas fa-bars"></i>
-                    </button>
                 </div>
             </div>
 
@@ -606,7 +618,7 @@
                                         $villesCommunes = config('ville-commune');
                                         $availableVilles = collect(array_keys($villesCommunes));
                                     @endphp
-                                    @foreach($availableVilles as $ville)
+                                    @foreach ($availableVilles as $ville)
                                         <option value="{{ $ville }}">{{ $ville }}</option>
                                     @endforeach
                                 </select>
@@ -626,7 +638,7 @@
                     </form>
 
                     <!-- Navigation mobile -->
-                    <ul class="navbar-nav">
+                    {{-- <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('home') }}">
                                 <i class="fas fa-home me-2"></i>Accueil
@@ -674,26 +686,24 @@
                                 </form>
                             </li>
                         @endauth
-                    </ul>
+                    </ul> --}}
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main style="padding-top: 100px;">
+    <main style="padding-top: 120px;">
         <!-- Alerts -->
         @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show m-3" role="alert"
-                style="margin-top: 100px !important;">
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
                 <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
 
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert"
-                style="margin-top: 100px !important;">
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -799,33 +809,33 @@
 
             // Gestion dynamique des communes
             const villesCommunes = @json(config('ville-commune'));
-            
+
             // Pour le formulaire desktop
             const headerVille = document.getElementById('header_ville');
             const headerCommune = document.getElementById('header_commune');
-            
+
             if (headerVille && headerCommune) {
                 headerVille.addEventListener('change', function() {
                     updateCommunes(this.value, headerCommune);
                 });
             }
-            
+
             // Pour le formulaire mobile
             const mobileVille = document.getElementById('mobile_ville');
             const mobileCommune = document.getElementById('mobile_commune');
-            
+
             if (mobileVille && mobileCommune) {
                 mobileVille.addEventListener('change', function() {
                     updateCommunes(this.value, mobileCommune);
                 });
             }
-            
+
             function updateCommunes(selectedVille, communeSelect) {
                 const communes = villesCommunes[selectedVille] || [];
-                
+
                 // Vider la liste des communes
                 communeSelect.innerHTML = '<option value="">Toutes</option>';
-                
+
                 if (communes.length > 0) {
                     // Ajouter les communes disponibles
                     communes.forEach(function(commune) {

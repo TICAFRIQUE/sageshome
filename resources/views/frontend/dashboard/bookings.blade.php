@@ -31,9 +31,9 @@
 @endsection
 
 @section('content')
-    <div style="padding:70px;">
+    <div class="container-fluid px-3 px-md-5 py-4">
         <!-- Filtres améliorés -->
-        <div class="dashboard-card mb-4 ">
+        <div class="dashboard-card mb-4 py-5">
             {{-- <div class="card-header bg-light border-0">
                 <h6 class="card-title mb-0">
                     <i class="fas fa-filter me-2 text-primary"></i>
@@ -124,9 +124,9 @@
 
         @if ($bookings->count() > 0)
             <!-- Liste des réservations optimisée -->
-            <div class="row g-4 px-5">
+            <div class="row g-3 g-md-4">
                 @foreach ($bookings as $booking)
-                    <div class="col-lg-6 col-xl-4 mb-4">
+                    <div class="col-12 col-sm-6 col-lg-4 mb-3 mb-md-4">
                         <div class="booking-card dashboard-card h-100 position-relative">
                             <!-- Badge de statut en overlay -->
                             <div class="position-absolute top-0 start-0 m-3" style="z-index: 10;">
@@ -237,10 +237,10 @@
                                 </div>
 
                                 <!-- Actions simplifiées -->
-                                <div class="d-grid gap-2">
+                                <div class="d-flex d-sm-grid gap-2">
                                     <a href="{{ route('dashboard.booking.show', $booking) }}"
-                                        class="btn btn-primary btn-modern btn-sm">
-                                        <i class="fas fa-eye me-1"></i>Détails
+                                        class="btn btn-primary btn-modern btn-sm flex-fill">
+                                        <i class="fas fa-eye me-1"></i><span class="d-none d-sm-inline">Détails</span><span class="d-sm-none">Voir</span>
                                     </a>
 
                                     @if ($booking->status === 'pending' || $booking->status === 'confirmed')
@@ -248,12 +248,12 @@
                                             <form action="{{ route('dashboard.booking.cancel', $booking) }}"
                                                 method="POST"
                                                 onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')"
-                                                class="cancel-form">
+                                                class="cancel-form flex-fill">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
                                                     class="btn btn-outline-danger btn-modern btn-sm w-100">
-                                                    <i class="fas fa-times me-1"></i>Annuler
+                                                    <i class="fas fa-times me-1"></i><span class="d-none d-sm-inline">Annuler</span><span class="d-sm-none">X</span>
                                                 </button>
                                             </form>
                                         @endif
@@ -385,6 +385,7 @@
             font-weight: 600;
             color: #495057;
             margin-bottom: 0.5rem;
+            /* padding-top: 1.25rem; */
         }
 
         /* Cartes de réservation simplifiées */
@@ -547,6 +548,68 @@
             
             .quick-stat {
                 margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Amélioration responsive pour mobile */
+        @media (max-width: 576px) {
+            /* Statistiques rapides en colonne sur très petit écran */
+            .d-flex.gap-3:first-child {
+                flex-direction: column;
+                gap: 0.75rem !important;
+            }
+            
+            .quick-stat {
+                min-width: auto;
+                padding: 0.5rem;
+            }
+            
+            .quick-stat-value {
+                font-size: 1.25rem;
+            }
+            
+            /* Boutons d'action compacts */
+            .d-flex.d-sm-grid {
+                gap: 1rem;
+            }
+            
+            .btn-modern {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.85rem;
+            }
+            
+            /* Images plus petites */
+            .booking-image {
+                height: 140px !important;
+            }
+            
+            /* Détails plus compacts */
+            .detail-row {
+                margin-bottom: 0.3rem;
+            }
+            
+            .detail-label, .detail-value {
+                font-size: 0.8rem;
+            }
+            
+            /* Prix plus compact */
+            .price-section {
+                padding: 0.5rem;
+            }
+            
+            .price-value {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Gestion des boutons responsifs */
+        .d-flex.d-sm-grid {
+            display: flex !important;
+        }
+        
+        @media (min-width: 576px) {
+            .d-flex.d-sm-grid {
+                display: grid !important;
             }
         }
 
