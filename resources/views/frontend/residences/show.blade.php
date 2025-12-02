@@ -1236,7 +1236,7 @@
                 document.getElementById('nightsCount').textContent = priceInfo.nights;
                 document.getElementById('subtotal').textContent = formatPrice(priceInfo.total_price);
 
-                const taxes = priceInfo.total_price * 0.10;
+                const taxes = priceInfo.total_price * 0;
                 document.getElementById('taxes').textContent = formatPrice(taxes);
 
                 const total = priceInfo.total_price + taxes;
