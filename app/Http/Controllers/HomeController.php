@@ -47,6 +47,8 @@ class HomeController extends Controller
             'check_out' => 'required|date|after:check_in',
             'guests' => 'required|integer|min:1|max:20',
             'type' => 'nullable|exists:residence_types,id',
+            'ville' => 'nullable|string',
+            'commune' => 'nullable|string',
             'min_price' => 'nullable|numeric|min:0',
             'max_price' => 'nullable|numeric|min:0',
         ]);
@@ -63,6 +65,15 @@ class HomeController extends Controller
         // Filtrer par type
         if ($request->type) {
             $query->byType($request->type);
+        }
+
+        // Filtrer par localisation
+        if ($request->ville) {
+            $query->byVille($request->ville);
+        }
+
+        if ($request->commune) {
+            $query->byCommune($request->commune);
         }
 
         // Filtrer par prix

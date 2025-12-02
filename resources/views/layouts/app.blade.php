@@ -124,38 +124,53 @@
         .search-form {
             background: var(--sage-white);
             border-radius: 15px;
-            padding: 8px;
+            padding: 1rem;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             border: 2px solid var(--sage-gold-start);
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
         }
 
-        .search-form .form-control {
-            border: none;
-            border-radius: 10px;
-            padding: 12px 15px;
+        .search-form .form-control,
+        .search-form .form-select {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px 12px;
             font-family: 'Inter', sans-serif;
-            background: var(--sage-bg-light);
+            background: var(--sage-white);
+            min-height: 42px;
+            transition: all 0.3s ease;
         }
 
-        .search-form .form-control:focus {
-            box-shadow: none;
+        .search-form .form-control:focus,
+        .search-form .form-select:focus {
+            box-shadow: 0 0 0 2px rgba(47, 74, 51, 0.15);
             background: var(--sage-white);
+            border-color: var(--sage-green-secondary);
+        }
+
+        .search-form .form-label {
+            color: var(--sage-green-dark);
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
         }
 
         .search-form .btn {
             border-radius: 10px;
-            padding: 12px 25px;
+            padding: 12px 20px;
             font-weight: 600;
             background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));
             border: none;
             color: var(--sage-white);
+            min-height: 42px;
+            transition: all 0.3s ease;
         }
 
         .search-form .btn:hover {
             background: linear-gradient(135deg, var(--sage-gold-end), var(--sage-gold-start));
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(194, 155, 50, 0.3);
         }
 
         /* Texte de recherche */
@@ -434,16 +449,19 @@
                     </div>
                     <form class="search-form d-flex align-items-center" method="GET"
                         action="{{ route('search', ['residences']) }}">
-                        <div class="row g-2 w-100 align-items-center">
-                            <div class="col-3">
-                                <input type="date" class="form-control" name="check_in" placeholder="Arrivée" required>
+                        <div class="row g-2 w-100 align-items-end">
+                            <div class="col-2">
+                                <label class="form-label small fw-medium text-dark mb-1">Arrivée</label>
+                                <input type="date" class="form-control" name="check_in" required>
                             </div>
-                            <div class="col-3">
-                                <input type="date" class="form-control" name="check_out" placeholder="Départ" required>
+                            <div class="col-2">
+                                <label class="form-label small fw-medium text-dark mb-1">Départ</label>
+                                <input type="date" class="form-control" name="check_out" required>
                             </div>
-                            <div class="col-3">
-                                <select class="form-control" name="guests" required>
-                                    <option value="">Voyageurs</option>
+                            <div class="col-2">
+                                <label class="form-label small fw-medium text-dark mb-1">Voyageurs</label>
+                                <select class="form-select" name="guests" required>
+                                    <option value="">Choisir</option>
                                     <option value="1">1 voyageur</option>
                                     <option value="2">2 voyageurs</option>
                                     <option value="3">3 voyageurs</option>
@@ -451,10 +469,28 @@
                                     <option value="5">5+ voyageurs</option>
                                 </select>
                             </div>
-                            <div class="col-3">
-                                <button type="submit" class="btn w-100">
-                                    <i class="fas fa-search me-1"></i>
-                                    {{-- Rechercher --}}
+                            <div class="col-2">
+                                <label class="form-label small fw-medium text-dark mb-1">Ville</label>
+                                <select class="form-select" name="ville" id="header_ville">
+                                    <option value="">Toutes</option>
+                                    @php
+                                        $villesCommunes = config('ville-commune');
+                                        $availableVilles = collect(array_keys($villesCommunes));
+                                    @endphp
+                                    @foreach($availableVilles as $ville)
+                                        <option value="{{ $ville }}">{{ $ville }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <label class="form-label small fw-medium text-dark mb-1">Commune</label>
+                                <select class="form-select" name="commune" id="header_commune">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </div>
                         </div>
@@ -544,27 +580,46 @@
                     <form class="search-form mb-3" method="GET" action="{{ route('search', ['residences']) }}">
                         <div class="row g-2">
                             <div class="col-6">
-                                <input type="date" class="form-control" name="check_in" placeholder="Arrivée"
-                                    required>
+                                <label class="form-label small fw-medium text-dark mb-1">Arrivée</label>
+                                <input type="date" class="form-control" name="check_in" required>
                             </div>
                             <div class="col-6">
-                                <input type="date" class="form-control" name="check_out" placeholder="Départ"
-                                    required>
+                                <label class="form-label small fw-medium text-dark mb-1">Départ</label>
+                                <input type="date" class="form-control" name="check_out" required>
                             </div>
-                            <div class="col-6">
-                                <select class="form-control" name="guests" required>
-                                    <option value="">Voyageurs</option>
-                                    <option value="1">1 voyageur</option>
-                                    <option value="2">2 voyageurs</option>
-                                    <option value="3">3 voyageurs</option>
-                                    <option value="4">4 voyageurs</option>
-                                    <option value="5">5+ voyageurs</option>
+                            <div class="col-4">
+                                <label class="form-label small fw-medium text-dark mb-1">Voyageurs</label>
+                                <select class="form-select" name="guests" required>
+                                    <option value="">Choisir</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5+</option>
                                 </select>
                             </div>
-                            <div class="col-6">
-                                <button type="submit" class="btn w-100">
-                                    <i class="fas fa-search me-1"></i>
-                                    {{-- Rechercher --}}
+                            <div class="col-4">
+                                <label class="form-label small fw-medium text-dark mb-1">Ville</label>
+                                <select class="form-select" name="ville" id="mobile_ville">
+                                    <option value="">Toutes</option>
+                                    @php
+                                        $villesCommunes = config('ville-commune');
+                                        $availableVilles = collect(array_keys($villesCommunes));
+                                    @endphp
+                                    @foreach($availableVilles as $ville)
+                                        <option value="{{ $ville }}">{{ $ville }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label small fw-medium text-dark mb-1">Commune</label>
+                                <select class="form-select" name="commune" id="mobile_commune">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </div>
                         </div>
@@ -741,6 +796,49 @@
                     }
                 });
             });
+
+            // Gestion dynamique des communes
+            const villesCommunes = @json(config('ville-commune'));
+            
+            // Pour le formulaire desktop
+            const headerVille = document.getElementById('header_ville');
+            const headerCommune = document.getElementById('header_commune');
+            
+            if (headerVille && headerCommune) {
+                headerVille.addEventListener('change', function() {
+                    updateCommunes(this.value, headerCommune);
+                });
+            }
+            
+            // Pour le formulaire mobile
+            const mobileVille = document.getElementById('mobile_ville');
+            const mobileCommune = document.getElementById('mobile_commune');
+            
+            if (mobileVille && mobileCommune) {
+                mobileVille.addEventListener('change', function() {
+                    updateCommunes(this.value, mobileCommune);
+                });
+            }
+            
+            function updateCommunes(selectedVille, communeSelect) {
+                const communes = villesCommunes[selectedVille] || [];
+                
+                // Vider la liste des communes
+                communeSelect.innerHTML = '<option value="">Toutes</option>';
+                
+                if (communes.length > 0) {
+                    // Ajouter les communes disponibles
+                    communes.forEach(function(commune) {
+                        const option = document.createElement('option');
+                        option.value = commune;
+                        option.textContent = commune;
+                        communeSelect.appendChild(option);
+                    });
+                    communeSelect.disabled = false;
+                } else {
+                    communeSelect.disabled = true;
+                }
+            }
 
             // Smooth scroll pour les liens d'ancrage
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
