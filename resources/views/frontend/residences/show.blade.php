@@ -418,6 +418,95 @@
             top: 100px;
         }
 
+        /* Bouton flottant mobile */
+        .floating-book-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-floating-book {
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, var(--sage-green-dark, #2F4A33), var(--sage-green-secondary, #4A6B42));
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-floating-book:hover {
+            background: linear-gradient(135deg, var(--sage-green-secondary, #4A6B42), var(--sage-green-dark, #2F4A33));
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .btn-floating-book::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-floating-book:hover::before {
+            left: 100%;
+        }
+
+        .price-indicator {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--sage-gold-start, #F2D18A);
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        .btn-floating-book i {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .btn-floating-book span {
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 8px;
+        }
+
+        /* Animation d'apparition */
+        .floating-book-btn {
+            animation: slideUpFade 0.5s ease-out;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .calendar-container {
             max-height: 300px;
             overflow-y: auto;
@@ -783,6 +872,17 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Bouton flottant mobile pour réservation -->
+    <div class="floating-book-btn d-block d-lg-none">
+        <button type="button" class="btn btn-floating-book" onclick="scrollToBooking()">
+            <i class="fas fa-calendar-alt me-2"></i>
+            <span>Réserver</span>
+            <div class="price-indicator">
+                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA/nuit
+            </div>
+        </button>
     </div>
 @endsection
 
@@ -1461,6 +1561,28 @@
                 btn.innerHTML = '<i class="fas fa-plus me-2"></i>Voir tous les équipements';
             } else {
                 btn.innerHTML = '<i class="fas fa-minus me-2"></i>Voir moins d\'équipements';
+            }
+        }
+
+        // Fonction pour faire défiler vers la section de réservation (bouton flottant mobile)
+        function scrollToBooking() {
+            const bookingCard = document.querySelector('.booking-card');
+            if (bookingCard) {
+                const yOffset = -130; // Offset pour la navbar fixe
+                const y = bookingCard.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                
+                window.scrollTo({
+                    top: y,
+                    behavior: 'smooth'
+                });
+                
+                // Focus sur le premier champ de date
+                setTimeout(() => {
+                    const checkInInput = document.getElementById('check_in');
+                    if (checkInInput) {
+                        checkInInput.focus();
+                    }
+                }, 500);
             }
         }
     </script>

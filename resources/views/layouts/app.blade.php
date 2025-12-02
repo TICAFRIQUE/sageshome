@@ -395,11 +395,11 @@
             .navbar {
                 padding: 8px 0;
             }
-            
+
             main {
                 padding-top: 60px !important;
             }
-            
+
             .navbar-brand img {
                 height: 35px;
             }
@@ -522,11 +522,13 @@
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('dashboard.index') }}">
-                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                    </a>
-                                </li>
+                                @role('developpeur')
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('dashboard.index') }}">
+                                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                        </a>
+                                    </li>
+                                @endrole
                                 <li>
                                     <a class="dropdown-item" href="{{ route('dashboard.bookings') }}">
                                         <i class="fas fa-calendar-alt me-2"></i>Mes réservations
@@ -570,7 +572,7 @@
                         </ul>
                     </div>
 
-                  
+
 
                     <!-- Menu toggle mobile -->
                     <button class="navbar-toggler nav-icon-btn d-lg-none border-0" type="button"
@@ -578,8 +580,8 @@
                         <i class="fas fa-search"></i>
                     </button>
 
-                      <!-- Icône de contact -->
-                    <a href="#contact" class="contact-icon" title="Nous contacter">
+                    <!-- Icône de contact -->
+                    <a href="/#contact" class="contact-icon" title="Nous contacter">
                         <i class="fas fa-phone"></i>
                     </a>
                 </div>
