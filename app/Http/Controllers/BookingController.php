@@ -71,7 +71,7 @@ class BookingController extends Controller
         }
 
         $priceInfo = $residence->calculateTotalPrice($request->check_in, $request->check_out);
-        $taxAmount = $priceInfo['total_price'] * 0.10;
+        $taxAmount = $priceInfo['total_price'] * 0;
         $finalAmount = $priceInfo['total_price'] + $taxAmount;
 
         // Récupérer les informations de l'utilisateur connecté
@@ -95,7 +95,7 @@ class BookingController extends Controller
             'last_name' => '', // Laisser vide car username contient le nom complet
             'email' => $user->email,
             'phone' => $user->phone ?? '',
-            'country' => 'Sénégal', // Valeur par défaut
+            'country' => 'Cote d\'Ivoire', // Valeur par défaut
             // Alias des dates et montants
             'check_in_date' => $request->check_in,
             'check_out_date' => $request->check_out,
