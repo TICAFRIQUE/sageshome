@@ -412,7 +412,7 @@
     position: relative;
     background: 
         linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
-        url('{{ asset('images/banner.jpg') }}');
+        url('{{ asset('images/banner2.jpg') }}');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;

@@ -9,11 +9,11 @@
         <div class="col-12">
             <div class="progress-indicator">
                 <!-- Progress Bar -->
-                <div class="progress-bar-container">
+                {{-- <div class="progress-bar-container">
                     <div class="progress-bar-bg">
                         <div class="progress-bar-fill" data-progress="66"></div>
                     </div>
-                </div>
+                </div> --}}
                 
                 <!-- Progress Steps -->
                 <div class="progress-steps d-flex justify-content-between">
@@ -297,9 +297,9 @@
                             <div class="row mb-2">
                                 <div class="col-8">
                                     <i class="fas fa-bed me-2 text-muted"></i>
-                                    {{ number_format($booking->price_per_night, 0) }} FCFA x {{ $booking->nights }} nuits
+                                    {{ number_format($booking->price_per_night, 0 , ',', ' ') }} FCFA x {{ $booking->nights }} nuits
                                 </div>
-                                <div class="col-4 text-end">{{ number_format($booking->total_price, 0) }} FCFA</div>
+                                <div class="col-4 text-end">{{ number_format($booking->total_price, 0 , ',', ' ') }} FCFA</div>
                             </div>
                             
                             <div class="row mb-2">
@@ -307,7 +307,7 @@
                                     <i class="fas fa-percent me-2 text-info"></i>
                                     Taxes et frais
                                 </div>
-                                <div class="col-4 text-end">{{ number_format($booking->tax_amount, 0) }} FCFA</div>
+                                <div class="col-4 text-end">{{ number_format($booking->tax_amount, 0 , ',', ' ') }} FCFA</div>
                             </div>
                             
                             <hr>
@@ -318,7 +318,7 @@
                                     <strong>Total à payer</strong>
                                 </div>
                                 <div class="col-4 text-end">
-                                    <strong class="text-gold fs-4">{{ number_format($booking->final_amount, 0) }} FCFA</strong>
+                                    <strong class="text-gold fs-4">{{ number_format($booking->final_amount, 0 , ',', ' ') }} FCFA</strong>
                                 </div>
                             </div>
                         </div>
@@ -349,7 +349,7 @@
 .progress-indicator {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-radius: 20px;
-    padding: 2.5rem 2rem;
+    padding: 1rem 1.5rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     border: 1px solid #e9ecef;
     position: relative;
@@ -414,8 +414,8 @@
 }
 
 .step-circle {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -429,7 +429,7 @@
 
 .step.completed .step-circle {
     background: linear-gradient(135deg, var(--green-dark), #4CAF50);
-    color: white;
+    color:#4CAF50 ;
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
 }
 

@@ -9,11 +9,11 @@
         <div class="col-12">
             <div class="progress-indicator">
                 <!-- Progress Bar -->
-                <div class="progress-bar-container">
+                {{-- <div class="progress-bar-container">
                     <div class="progress-bar-bg">
                         <div class="progress-bar-fill" data-progress="33"></div>
                     </div>
-                </div>
+                </div> --}}
                 
                 <!-- Progress Steps -->
                 <div class="progress-steps d-flex justify-content-between">
@@ -190,13 +190,13 @@
                         <!-- Price Breakdown -->
                         <div class="price-breakdown">
                             <div class="row mb-2">
-                                <div class="col-8">{{ number_format($priceInfo['price_per_night'], 0) }} FCFA x {{ $priceInfo['nights'] }} nuits</div>
-                                <div class="col-4 text-end">{{ number_format($priceInfo['total_price'], 0) }} FCFA</div>
+                                <div class="col-8">{{ number_format($priceInfo['price_per_night'], 0 , ',', ' ') }} FCFA x {{ $priceInfo['nights'] }} nuits</div>
+                                <div class="col-4 text-end">{{ number_format($priceInfo['total_price'], 0 , ',', ' ') }} FCFA</div>
                             </div>
                             
                             <div class="row mb-2">
                                 <div class="col-8">Taxes et frais (10%)</div>
-                                <div class="col-4 text-end">{{ number_format($taxAmount, 0) }} FCFA</div>
+                                <div class="col-4 text-end">{{ number_format($taxAmount, 0 , ',', ' ') }} FCFA</div>
                             </div>
                             
                             <hr>
@@ -204,7 +204,7 @@
                             <div class="row">
                                 <div class="col-8"><strong>Total</strong></div>
                                 <div class="col-4 text-end">
-                                    <strong class="text-gold fs-5">{{ number_format($finalAmount, 0) }} FCFA</strong>
+                                    <strong class="text-gold fs-5">{{ number_format($finalAmount, 0 , ',', ' ') }} FCFA</strong>
                                 </div>
                             </div>
                         </div>
@@ -230,7 +230,7 @@
 .progress-indicator {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-radius: 20px;
-    padding: 2.5rem 2rem;
+    padding: 1rem 1rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     border: 1px solid #e9ecef;
     position: relative;
@@ -297,8 +297,8 @@
 }
 
 .step-circle {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -320,7 +320,7 @@
 .step.active .step-circle {
     background: linear-gradient(135deg, var(--gold-start), var(--gold-end));
     color: white;
-    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+    box-shadow: 0 6px 20px rgba(204, 167, 56, 0.4);
     animation: pulse-active 2s infinite;
 }
 

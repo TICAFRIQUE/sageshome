@@ -37,7 +37,7 @@
                             <label for="phone" class="form-label">Téléphone</label>
                             <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
                                    id="phone" name="phone" value="{{ old('phone') }}" 
-                                   placeholder="+221 XX XXX XX XX" required>
+                                   placeholder=" XX XXX XX XX" required>
                             @error('phone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

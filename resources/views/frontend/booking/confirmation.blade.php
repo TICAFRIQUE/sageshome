@@ -9,11 +9,11 @@
         <div class="col-12">
             <div class="progress-indicator">
                 <!-- Progress Bar -->
-                <div class="progress-bar-container">
+                {{-- <div class="progress-bar-container">
                     <div class="progress-bar-bg">
                         <div class="progress-bar-fill completed" data-progress="100"></div>
                     </div>
-                </div>
+                </div> --}}
                 
                 <!-- Progress Steps -->
                 <div class="progress-steps d-flex justify-content-between">
@@ -211,7 +211,7 @@
                                     @foreach($booking->payments as $payment)
                                         <tr>
                                             <td>{{ $payment->method_display }}</td>
-                                            <td>{{ number_format($payment->amount, 0) }} FCFA</td>
+                                            <td>{{ number_format($payment->amount, 0 , ',', ' ') }} FCFA</td>
                                             <td>
                                                 <span class="badge bg-{{ $payment->status === 'completed' ? 'success' : 'warning' }}">
                                                     {{ $payment->status_display }}
@@ -257,20 +257,20 @@
                 
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <span>{{ number_format($booking->price_per_night, 0) }} FCFA x {{ $booking->nights }} nuits</span>
-                        <span>{{ number_format($booking->total_price, 0) }} FCFA</span>
+                        <span>{{ number_format($booking->price_per_night, 0 , ',', ' ') }} FCFA x {{ $booking->nights }} nuits</span>
+                        <span>{{ number_format($booking->total_price, 0 , ',', ' ') }} FCFA</span>
                     </div>
                     
                     <div class="d-flex justify-content-between mb-2">
                         <span>Taxes et frais</span>
-                        <span>{{ number_format($booking->tax_amount, 0) }} FCFA</span>
+                        <span>{{ number_format($booking->tax_amount, 0 , ',', ' ') }} FCFA</span>
                     </div>
                     
                     <hr>
                     
                     <div class="d-flex justify-content-between">
                         <strong>Total</strong>
-                        <strong class="text-gold fs-5">{{ number_format($booking->final_amount, 0) }} FCFA</strong>
+                        <strong class="text-gold fs-5">{{ number_format($booking->final_amount, 0 , ',', ' ') }} FCFA</strong>
                     </div>
                 </div>
             </div>
@@ -310,7 +310,7 @@
                     <div class="contact-info">
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-phone text-success me-2"></i>
-                            <a href="tel:+221123456789" class="text-decoration-none">+221 12 345 67 89</a>
+                            <a href="tel:+221123456789" class="text-decoration-none">+225 07 15 82 05 96</a>
                         </div>
                         
                         <div class="d-flex align-items-center mb-2">
@@ -353,7 +353,7 @@
 .progress-indicator {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-radius: 20px;
-    padding: 2.5rem 2rem;
+    padding: 1rem 1rem;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     border: 1px solid #e9ecef;
     position: relative;
@@ -418,8 +418,8 @@
 }
 
 .step-circle {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;

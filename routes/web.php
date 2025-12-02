@@ -42,6 +42,7 @@ Route::prefix('residences')->group(function () {
     Route::get('/', [ResidenceController::class, 'index'])->name('residences.index');
     Route::get('/{residence:slug}', [ResidenceController::class, 'show'])->name('residences.show');
     Route::post('/{residence}/check-availability', [ResidenceController::class, 'checkAvailability'])->name('residences.check-availability');
+    Route::get('/{residence}/unavailable-dates', [ResidenceController::class, 'getUnavailableDates'])->name('residences.unavailable-dates');
 });
 
 // API routes pour les filtres

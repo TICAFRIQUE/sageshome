@@ -101,4 +101,53 @@ class ResidenceController extends Controller
             'price_info' => $priceInfo,
         ]);
     }
+
+    public function getUnavailableDates(Request $request, Residence $residence)
+    {
+        // Définir la période à vérifier (par défaut 6 mois)
+        $startDate = $request->get('start_date', now()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->addMonths(6)->format('Y-m-d'));
+
+        $unavailableDates = [];
+
+        // 1. Dates avec réservations confirmées ou en attente
+        $bookings = $residence->bookings()
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->where('check_in', '<=', $endDate)
+                      ->where('check_out', '>=', $startDate);
+            })
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->get(['check_in', 'check_out']);
+
+        foreach ($bookings as $booking) {
+            $current = \Carbon\Carbon::parse(max($booking->check_in, $startDate));
+            $end = \Carbon\Carbon::parse(min($booking->check_out, $endDate));
+            
+            while ($current->lte($end)) {
+                $unavailableDates[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+        }
+
+        // 2. Dates marquées comme indisponibles dans le calendrier
+        $calendarUnavailable = $residence->availabilityCalendar()
+            ->whereBetween('date', [$startDate, $endDate])
+            ->where('is_available', false)
+            ->pluck('date')
+            ->map(function($date) {
+                return \Carbon\Carbon::parse($date)->format('Y-m-d');
+            })
+            ->toArray();
+
+        $unavailableDates = array_merge($unavailableDates, $calendarUnavailable);
+
+        // Supprimer les doublons et retourner
+        $unavailableDates = array_unique($unavailableDates);
+        
+        return response()->json([
+            'unavailable_dates' => array_values($unavailableDates),
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
+    }
 }

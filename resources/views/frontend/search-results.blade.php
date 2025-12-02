@@ -139,17 +139,17 @@
                             <div class="mt-auto">
                                 <div class="price-info bg-light p-3 rounded mb-3">
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="small">{{ number_format($residence->price_per_night, 0) }} FCFA x {{ $residence->nights }} nuits</span>
-                                        <span class="small">{{ number_format($residence->total_price, 0) }} FCFA</span>
+                                        <span class="small">{{ number_format($residence->price_per_night, 0 , ',', ' ') }} FCFA x {{ $residence->nights }} nuits</span>
+                                        <span class="small">{{ number_format($residence->total_price, 0, ',', ' ') }} FCFA</span>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-1">
+                                    {{-- <div class="d-flex justify-content-between mb-1">
                                         <span class="small">Taxes (10%)</span>
-                                        <span class="small">{{ number_format($residence->total_price * 0.10, 0) }} FCFA</span>
-                                    </div>
+                                        <span class="small">{{ number_format($residence->total_price * 0, 0 , ',', ' ' ) }} FCFA</span>
+                                    </div> --}}
                                     <hr class="my-1">
                                     <div class="d-flex justify-content-between fw-bold">
                                         <span>Total</span>
-                                        <span class="text-gold">{{ number_format($residence->total_price * 1.10, 0) }} FCFA</span>
+                                        <span class="text-gold">{{ number_format($residence->total_price * 1 , 0 , ',', ' ') }} FCFA</span>
                                     </div>
                                 </div>
                                 

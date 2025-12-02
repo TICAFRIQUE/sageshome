@@ -3,6 +3,8 @@
 @section('title', $residence->name . ' - Sages Home')
 
 @push('styles')
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         .image-gallery {
             position: relative;
@@ -106,16 +108,305 @@
             color: white;
         }
 
+        /* Styles pour les messages de dates indisponibles */
+        .date-availability-info {
+            font-size: 0.85rem;
+            border-left: 4px solid #17a2b8;
+            background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(255, 255, 255, 0.9));
+        }
+
+        .date-unavailable-warning {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(255, 255, 255, 0.9));
+            border-left: 4px solid #dc3545;
+            animation: fadeInWarning 0.3s ease;
+        }
+
+        @keyframes fadeInWarning {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Animation pour les champs avec dates invalides */
+        .date-input-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+            animation: shakeInput 0.5s ease;
+        }
+
+        @keyframes shakeInput {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        /* Styles pour l'indicateur de chargement des dates */
+        .loading-dates {
+            position: relative;
+        }
+
+        .loading-dates::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: translateY(-50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
+        /* Styles personnalisés pour Flatpickr */
+        .flatpickr-calendar {
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e9ecef;
+        }
+
+        .flatpickr-calendar .flatpickr-month {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .flatpickr-calendar .flatpickr-month .flatpickr-prev-month,
+        .flatpickr-calendar .flatpickr-month .flatpickr-next-month {
+            color: white;
+        }
+
+        .flatpickr-calendar .flatpickr-month .flatpickr-prev-month:hover,
+        .flatpickr-calendar .flatpickr-month .flatpickr-next-month:hover {
+            color: #f8f9fa;
+        }
+
+        /* Dates indisponibles en rouge et non cliquables */
+        .flatpickr-calendar .flatpickr-day.unavailable {
+            background-color: #dc3545 !important;
+            color: white !important;
+            cursor: not-allowed !important;
+            opacity: 0.7;
+            position: relative;
+            pointer-events: none !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.unavailable:hover {
+            background-color: #c82333 !important;
+            color: white !important;
+            cursor: not-allowed !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.unavailable::after {
+            content: '✕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            pointer-events: none;
+        }
+
+        /* Forcer l'état non cliquable même si d'autres styles tentent de l'écraser */
+        .flatpickr-calendar .flatpickr-day.unavailable[aria-disabled="true"] {
+            background-color: #dc3545 !important;
+            color: white !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            opacity: 0.7 !important;
+        }
+
+        /* Empêcher les états hover et focus sur les dates indisponibles */
+        .flatpickr-calendar .flatpickr-day.unavailable:hover,
+        .flatpickr-calendar .flatpickr-day.unavailable:focus,
+        .flatpickr-calendar .flatpickr-day.unavailable:active {
+            background-color: #dc3545 !important;
+            color: white !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Dates avec prix spéciaux */
+        .flatpickr-calendar .flatpickr-day.special-price {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
+            font-weight: bold;
+        }
+
+        .flatpickr-calendar .flatpickr-day.special-price:hover {
+            background-color: #e0a800 !important;
+        }
+
+        /* Style pour les dates sélectionnées */
+        .flatpickr-calendar .flatpickr-day.selected {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            color: white !important;
+        }
+
+        .flatpickr-calendar .flatpickr-day.today {
+            border-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        /* Responsive pour mobile */
+        @media (max-width: 768px) {
+            .flatpickr-calendar {
+                width: 100% !important;
+            }
+        }
+
+        /* Styles pour le champ voyageurs obligatoire */
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .form-label .text-danger {
+            font-weight: bold;
+        }
+
+        .text-muted {
+            font-size: 0.85rem;
+        }
+
+        /* Styles pour le bouton de réservation */
+        .btn-book-now {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #17a2b8 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-book-now:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .btn-book-now:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-book-now::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-book-now:hover::before {
+            left: 100%;
+        }
+
+        /* Animation du bouton quand il apparaît */
+        .btn-book-now.show {
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Icône dans le bouton */
+        .btn-book-now i {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        /* État désactivé */
+        .btn-book-now:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-book-now:disabled::before {
+            display: none;
+        }
+
+        /* Style pour les champs de saisie avec Flatpickr */
+        .flatpickr-input[readonly] {
+            background-color: white !important;
+            cursor: pointer !important;
+        }
+
+        .flatpickr-input {
+            font-family: inherit;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .flatpickr-input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
         @media (max-width: 768px) {
             .amenities-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .amenity-item {
                 padding: 0.6rem 0.8rem;
                 font-size: 0.9rem;
             }
-            
+
             .amenity-icon {
                 width: 18px;
                 margin-right: 10px;
@@ -256,7 +547,7 @@
                     if (!is_array($amenitiesList)) {
                         $amenitiesList = [];
                     }
-                    
+
                     // Mapping des icônes FontAwesome
                     $amenityIcons = [
                         'wifi' => 'fas fa-wifi',
@@ -290,28 +581,29 @@
                         'air' => 'fas fa-wind',
                         'chauffage' => 'fas fa-fire',
                         'douche' => 'fas fa-shower',
-                        'baignoire' => 'fas fa-bath'
+                        'baignoire' => 'fas fa-bath',
                     ];
-                    
-                    function getAmenityIcon($amenity, $amenityIcons) {
+
+                    function getAmenityIcon($amenity, $amenityIcons)
+                    {
                         $amenityLower = strtolower($amenity);
-                        
+
                         foreach ($amenityIcons as $keyword => $icon) {
                             if (strpos($amenityLower, $keyword) !== false) {
                                 return $icon;
                             }
                         }
-                        
+
                         return 'fas fa-check-circle';
                     }
                 @endphp
-                
+
                 @if (!empty($amenitiesList) && count($amenitiesList) > 0)
                     <div class="mb-5">
                         <h3 class="text-green mb-3">
                             <i class="fas fa-cogs me-2"></i>Équipements
                         </h3>
-                        
+
                         <div class="amenities-grid" id="amenitiesGrid">
                             @foreach ($amenitiesList as $index => $amenity)
                                 @php
@@ -319,17 +611,18 @@
                                     $amenityIcon = getAmenityIcon($amenity, $amenityIcons);
                                     $isHidden = $index >= 6; // Afficher seulement les 6 premiers
                                 @endphp
-                                
+
                                 <div class="amenity-item {{ $isHidden ? 'amenities-hidden' : '' }}">
                                     <i class="{{ $amenityIcon }} amenity-icon"></i>
                                     <span class="amenity-text">{{ $cleanAmenity }}</span>
                                 </div>
                             @endforeach
                         </div>
-                        
+
                         @if (count($amenitiesList) > 6)
                             <div class="text-center">
-                                <button class="btn btn-show-amenities" onclick="toggleAllAmenities()" id="toggleAmenitiesBtn">
+                                <button class="btn btn-show-amenities" onclick="toggleAllAmenities()"
+                                    id="toggleAmenitiesBtn">
                                     <i class="fas fa-plus me-2"></i>
                                     Voir tous les équipements ({{ count($amenitiesList) }})
                                 </button>
@@ -381,15 +674,19 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="guests" class="form-label fw-semibold">Voyageurs</label>
+                                    <label for="guests" class="form-label fw-semibold">
+                                        Voyageurs <span class="text-danger">*</span>
+                                    </label>
                                     <select class="form-control" id="guests" name="guests" required>
-                                        <option value="">Nombre de voyageurs</option>
+                                        <option selected disabled>Choisir</option>
                                         @for ($i = 1; $i <= $residence->capacity; $i++)
                                             <option value="{{ $i }}">
                                                 {{ $i }} {{ $i === 1 ? 'voyageur' : 'voyageurs' }}
                                             </option>
                                         @endfor
                                     </select>
+                                    <small class="text-muted">Capacité maximale: {{ $residence->capacity }}
+                                        voyageur{{ $residence->capacity > 1 ? 's' : '' }}</small>
                                 </div>
 
                                 <div id="priceCalculation" class="mb-3" style="display: none;">
@@ -398,7 +695,7 @@
                                             <div class="d-flex justify-content-between">
                                                 <span>Prix par nuit:</span>
                                                 <span
-                                                    id="pricePerNight">{{ number_format($residence->price_per_night, 0) }}
+                                                    id="pricePerNight">{{ number_format($residence->price_per_night, 0 , ',', ' ') }}
                                                     FCFA</span>
                                             </div>
                                             <div class="d-flex justify-content-between">
@@ -437,9 +734,13 @@
                                         Vérifier la disponibilité
                                     </button>
 
-                                    <button type="submit" id="bookNowBtn" class="btn btn-green w-100"
+                                    <button type="submit" id="bookNowBtn" class="btn btn-book-now w-100"
                                         style="display: none;" disabled>
+                                        <i class="fas fa-calendar-check"></i>
                                         Réserver maintenant
+                                        <span class="ms-2">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </span>
                                     </button>
                                 @endguest
                             </form>
@@ -471,7 +772,7 @@
                                                 <i class="bi bi-people me-1"></i>{{ $similar->capacity }} voyageurs
                                             </small>
                                             <span class="text-gold fw-bold small">
-                                                {{ number_format($similar->price_per_night, 0) }} FCFA/nuit
+                                                {{ number_format($similar->price_per_night, 0 , ',', ' ') }} FCFA/nuit
                                             </span>
                                         </div>
                                     </div>
@@ -497,35 +798,360 @@
             const priceCalculation = document.getElementById('priceCalculation');
             const availabilityMessage = document.getElementById('availabilityMessage');
 
+            // Variables pour la gestion des dates indisponibles
+            let unavailableDates = [];
+            let checkInPicker = null;
+            let checkOutPicker = null;
+            let isLoadingUnavailableDates = false;
+
+            // Configuration Flatpickr de base
+            const baseConfig = {
+                locale: 'fr',
+                dateFormat: 'd/m/Y',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                minDate: 'today',
+                allowInput: true,
+                clickOpens: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    // Appliquer les styles personnalisés après le rendu
+                    setTimeout(() => applyUnavailableDatesStyles(instance), 150);
+                },
+                onOpen: function(selectedDates, dateStr, instance) {
+                    // Réappliquer les styles à chaque ouverture
+                    setTimeout(() => applyUnavailableDatesStyles(instance), 50);
+                },
+                onMonthChange: function(selectedDates, dateStr, instance) {
+                    // Réappliquer les styles quand on change de mois
+                    setTimeout(() => applyUnavailableDatesStyles(instance), 100);
+                },
+                onYearChange: function(selectedDates, dateStr, instance) {
+                    // Réappliquer les styles quand on change d'année
+                    setTimeout(() => applyUnavailableDatesStyles(instance), 100);
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    // Appliquer les styles directement lors de la création de chaque jour
+                    const dateStr = fp.formatDate(dayElem.dateObj, 'Y-m-d');
+                    if (unavailableDates.includes(dateStr)) {
+                        dayElem.classList.add('unavailable');
+                        dayElem.title = 'Date indisponible - Réservée ou en maintenance';
+                        dayElem.style.pointerEvents = 'none';
+                    }
+                },
+                disable: []
+            };
+
             // Auto-populate dates from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('check_in')) checkInInput.value = urlParams.get('check_in');
-            if (urlParams.get('check_out')) checkOutInput.value = urlParams.get('check_out');
-            if (urlParams.get('guests')) guestsInput.value = urlParams.get('guests');
+            const initialCheckIn = urlParams.get('check_in');
+            const initialCheckOut = urlParams.get('check_out');
 
-            // Update minimum checkout date when checkin changes
-            checkInInput.addEventListener('change', function() {
-                const checkInDate = new Date(this.value);
-                const nextDay = new Date(checkInDate);
-                nextDay.setDate(checkInDate.getDate() + 1);
-                checkOutInput.min = nextDay.toISOString().split('T')[0];
+            // S'assurer qu'une valeur par défaut est définie pour les voyageurs
+            if (urlParams.get('guests')) {
+                guestsInput.value = urlParams.get('guests');
+            } else if (!guestsInput.value) {
+                guestsInput.value = '1'; // Valeur par défaut si aucune n'est définie
+            }
 
-                if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
-                    checkOutInput.value = nextDay.toISOString().split('T')[0];
-                }
-
-                hideAvailabilityResults();
+            // Charger les dates indisponibles et initialiser les calendriers
+            loadUnavailableDates().then(() => {
+                initializeDatePickers();
             });
 
-            checkOutInput.addEventListener('change', hideAvailabilityResults);
-            guestsInput.addEventListener('change', hideAvailabilityResults);
+            // Fonction pour initialiser les sélecteurs de date Flatpickr
+            function initializeDatePickers() {
+                // Configuration pour la date d'arrivée
+                const checkInConfig = {
+                    ...baseConfig,
+                    disable: unavailableDates.map(date => new Date(date)),
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length > 0) {
+                            // Mettre à jour la date minimale pour le départ
+                            const nextDay = new Date(selectedDates[0]);
+                            nextDay.setDate(nextDay.getDate() + 1);
+
+                            if (checkOutPicker) {
+                                checkOutPicker.set('minDate', nextDay);
+
+                                // Si la date de départ est antérieure, la réinitialiser
+                                if (checkOutPicker.selectedDates.length > 0 &&
+                                    checkOutPicker.selectedDates[0] <= selectedDates[0]) {
+                                    checkOutPicker.clear();
+                                }
+                            }
+
+                            // Mettre à jour la valeur du champ caché pour le formulaire
+                            checkInInput.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                        }
+
+                        // Vérifier automatiquement la disponibilité
+                        autoCheckAvailability();
+                    }
+                };
+
+                // Configuration pour la date de départ
+                const checkOutConfig = {
+                    ...baseConfig,
+                    disable: unavailableDates.map(date => new Date(date)),
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length > 0) {
+                            // Mettre à jour la valeur du champ caché pour le formulaire
+                            checkOutInput.value = instance.formatDate(selectedDates[0], 'Y-m-d');
+                        }
+
+                        // Vérifier automatiquement la disponibilité
+                        autoCheckAvailability();
+                    }
+                };
+
+                // Initialiser Flatpickr
+                checkInPicker = flatpickr(checkInInput, checkInConfig);
+                checkOutPicker = flatpickr(checkOutInput, checkOutConfig);
+
+                // Définir les valeurs initiales si présentes dans l'URL
+                if (initialCheckIn) {
+                    checkInPicker.setDate(initialCheckIn, true);
+                    checkInInput.value = initialCheckIn; // Assurer que la valeur du formulaire est correcte
+                }
+                if (initialCheckOut) {
+                    checkOutPicker.setDate(initialCheckOut, true);
+                    checkOutInput.value = initialCheckOut; // Assurer que la valeur du formulaire est correcte
+                }
+
+                // Déclencher la vérification automatique si toutes les valeurs sont déjà présentes
+                // (notamment depuis les paramètres URL ou valeurs par défaut)
+                setTimeout(() => {
+                    autoCheckAvailability();
+                }, 500); // Petit délai pour s'assurer que tout est initialisé
+            }
+
+            // Fonction pour vérifier automatiquement la disponibilité
+            function autoCheckAvailability() {
+                const checkInValue = checkInPicker ? checkInPicker.selectedDates[0] : null;
+                const checkOutValue = checkOutPicker ? checkOutPicker.selectedDates[0] : null;
+                const guestsValue = guestsInput.value;
+
+                // Vérifier quels champs sont manquants
+                const missingFields = [];
+                if (!checkInValue) missingFields.push('date d\'arrivée');
+                if (!checkOutValue) missingFields.push('date de départ');
+                if (!guestsValue || guestsValue === '' || guestsValue === '0' || guestsValue === 'Choisir') {
+                    missingFields.push('nombre de voyageurs');
+                }
+
+                // Si des champs sont manquants, afficher un message informatif
+                if (missingFields.length > 0) {
+                    if (missingFields.length === 3) {
+                        showMessage('📋 Veuillez remplir tous les champs : date d\'arrivée, date de départ et nombre de voyageurs.', 'info');
+                    } else {
+                        const missingText = missingFields.length === 1 
+                            ? missingFields[0]
+                            : missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
+                        showMessage(`📝 Il manque encore : ${missingText}.`, 'warning');
+                    }
+                    hideAvailabilityResults();
+                    return;
+                }
+
+                // Si toutes les informations sont présentes
+                if (checkInValue && checkOutValue && guestsValue) {
+                    // Convertir les dates en format string
+                    const checkInStr = checkInInput.value || (checkInPicker ? checkInPicker.formatDate(checkInValue,
+                        'Y-m-d') : '');
+                    const checkOutStr = checkOutInput.value || (checkOutPicker ? checkOutPicker.formatDate(
+                        checkOutValue, 'Y-m-d') : '');
+
+                    // Vérifier s'il y a des dates indisponibles dans la période sélectionnée
+                    if (hasUnavailableDatesInRange(checkInStr, checkOutStr)) {
+                        return; // Arrêter si des dates sont indisponibles
+                    }
+
+                    // Cacher le bouton de vérification et afficher un indicateur de chargement
+                    if (checkAvailabilityBtn) {
+                        checkAvailabilityBtn.style.display = 'none';
+                    }
+
+                    // Afficher un message de vérification en cours
+                    showMessage('Vérification automatique de la disponibilité...', 'info');
+
+                    // Effectuer la vérification automatiquement
+                    fetch(`{{ route('residences.check-availability', $residence) }}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                check_in: checkInStr,
+                                check_out: checkOutStr
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.available) {
+                                showAvailability(data.price_info);
+                                showMessage('Résidence disponible ! Vous pouvez procéder à la réservation.',
+                                    'success');
+
+                                // Afficher directement le bouton de réservation avec animation
+                                if (bookNowBtn) {
+                                    bookNowBtn.style.display = 'block';
+                                    bookNowBtn.disabled = false;
+                                    bookNowBtn.classList.add('show');
+
+                                    // Retirer la classe d'animation après l'animation
+                                    setTimeout(() => {
+                                        bookNowBtn.classList.remove('show');
+                                    }, 500);
+                                }
+                            } else {
+                                showMessage('Désolé, cette résidence n\'est pas disponible pour ces dates.',
+                                    'danger');
+
+                                // Réafficher le bouton de vérification
+                                if (checkAvailabilityBtn) {
+                                    checkAvailabilityBtn.style.display = 'block';
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showMessage(
+                                'Erreur lors de la vérification automatique. Utilisez le bouton de vérification manuelle.',
+                                'warning');
+
+                            // Réafficher le bouton de vérification en cas d'erreur
+                            if (checkAvailabilityBtn) {
+                                checkAvailabilityBtn.style.display = 'block';
+                            }
+                        });
+                } else {
+                    // Si toutes les informations ne sont pas présentes, masquer les résultats
+                    hideAvailabilityResults();
+
+                    // Réafficher le bouton de vérification
+                    if (checkAvailabilityBtn) {
+                        checkAvailabilityBtn.style.display = 'block';
+                    }
+                }
+            }
+
+            // Fonction pour appliquer les styles aux dates indisponibles de façon plus robuste
+            function applyUnavailableDatesStyles(instance) {
+                if (!instance.calendarContainer) return;
+
+                // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
+                requestAnimationFrame(() => {
+                    const calendar = instance.calendarContainer;
+                    const days = calendar.querySelectorAll('.flatpickr-day');
+
+                    days.forEach(day => {
+                        // Réinitialiser d'abord les styles
+                        day.classList.remove('unavailable');
+                        day.style.pointerEvents = '';
+                        day.title = '';
+
+                        if (day.dateObj) {
+                            const dateStr = instance.formatDate(day.dateObj, 'Y-m-d');
+
+                            // Marquer les dates indisponibles
+                            if (unavailableDates.includes(dateStr)) {
+                                day.classList.add('unavailable');
+                                day.title = 'Date indisponible - Réservée ou en maintenance';
+                                day.style.pointerEvents = 'none';
+                                day.setAttribute('aria-disabled', 'true');
+
+                                // Empêcher la sélection si on clique dessus
+                                day.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    return false;
+                                }, true);
+
+                                // Empêcher le hover
+                                day.addEventListener('mouseenter', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                }, true);
+                            }
+                        }
+                    });
+
+                    // Observer pour surveiller les changements dans le calendrier
+                    if (!calendar.hasObserver) {
+                        const observer = new MutationObserver(() => {
+                            // Réappliquer les styles si le calendrier est modifié
+                            setTimeout(() => applyUnavailableDatesStyles(instance), 10);
+                        });
+
+                        observer.observe(calendar, {
+                            childList: true,
+                            subtree: true,
+                            attributes: true,
+                            attributeFilter: ['class']
+                        });
+
+                        calendar.hasObserver = true;
+                    }
+                });
+            }
+
+            // Mise à jour des gestionnaires d'événements pour les autres éléments
+            guestsInput.addEventListener('change', function() {
+                // Validation du nombre de voyageurs
+                const guestsValue = parseInt(this.value);
+                const maxCapacity = {{ $residence->capacity }};
+
+                if (!guestsValue || guestsValue < 1) {
+                    this.classList.add('is-invalid');
+                    showMessage('Veuillez sélectionner au moins 1 voyageur.', 'warning');
+                    hideAvailabilityResults();
+                    return;
+                } else if (guestsValue > maxCapacity) {
+                    this.classList.add('is-invalid');
+                    showMessage(`Le nombre maximum de voyageurs pour cette résidence est ${maxCapacity}.`,
+                        'warning');
+                    this.value = maxCapacity;
+                    return;
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+
+                // Déclencher la vérification automatique quand le nombre d'invités change
+                autoCheckAvailability();
+            });
 
             // Check availability
             if (checkAvailabilityBtn) {
                 checkAvailabilityBtn.addEventListener('click', function() {
-                    if (!checkInInput.value || !checkOutInput.value) {
-                        showMessage('Veuillez sélectionner les dates d\'arrivée et de départ.', 'warning');
+                    const checkInValue = checkInPicker ? checkInPicker.selectedDates[0] : null;
+                    const checkOutValue = checkOutPicker ? checkOutPicker.selectedDates[0] : null;
+                    const guestsValue = guestsInput.value;
+
+                    // Vérifier que tous les champs obligatoires sont remplis
+                    const missingFields = [];
+                    if (!checkInValue) missingFields.push('date d\'arrivée');
+                    if (!checkOutValue) missingFields.push('date de départ');
+                    if (!guestsValue || guestsValue === '' || guestsValue === 'Choisir') {
+                        missingFields.push('nombre de voyageurs');
+                    }
+
+                    if (missingFields.length > 0) {
+                        const missingText = missingFields.length === 1 
+                            ? missingFields[0]
+                            : missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
+                        showMessage(`❌ Veuillez remplir : ${missingText}.`, 'warning');
                         return;
+                    }
+
+                    // Utiliser les valeurs du formulaire (format Y-m-d)
+                    const checkInStr = checkInInput.value;
+                    const checkOutStr = checkOutInput.value;
+
+                    // Vérifier s'il y a des dates indisponibles dans la période sélectionnée
+                    if (hasUnavailableDatesInRange(checkInStr, checkOutStr)) {
+                        return; // Le message d'erreur est déjà affiché par hasUnavailableDatesInRange
                     }
 
                     this.disabled = true;
@@ -540,8 +1166,8 @@
                                     .getAttribute('content')
                             },
                             body: JSON.stringify({
-                                check_in: checkInInput.value,
-                                check_out: checkOutInput.value
+                                check_in: checkInStr,
+                                check_out: checkOutStr
                             })
                         })
                         .then(response => response.json())
@@ -575,20 +1201,34 @@
                 bookingForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
-                    if (!checkInInput.value || !checkOutInput.value || !guestsInput.value) {
+                    const checkInValue = checkInPicker ? checkInPicker.selectedDates[0] : null;
+                    const checkOutValue = checkOutPicker ? checkOutPicker.selectedDates[0] : null;
+
+                    if (!checkInValue || !checkOutValue || !guestsInput.value) {
                         showMessage('Veuillez remplir tous les champs.', 'warning');
                         return;
                     }
 
+                    // Afficher l'état de chargement sur le bouton
+                    if (bookNowBtn) {
+                        bookNowBtn.disabled = true;
+                        bookNowBtn.innerHTML =
+                            '<i class="fas fa-spinner fa-spin"></i> Redirection en cours...';
+                    }
+
+                    // Utiliser les valeurs du formulaire (format Y-m-d)
+                    const checkInStr = checkInInput.value;
+                    const checkOutStr = checkOutInput.value;
+
                     // Redirect to booking creation page
                     const params = new URLSearchParams({
-                        check_in: checkInInput.value,
-                        check_out: checkOutInput.value,
+                        check_in: checkInStr,
+                        check_out: checkOutStr,
                         guests: guestsInput.value
                     });
 
                     window.location.href =
-                    `{{ route('booking.create', $residence) }}?${params.toString()}`;
+                        `{{ route('booking.create', $residence) }}?${params.toString()}`;
                 });
             }
 
@@ -611,6 +1251,11 @@
                 if (bookNowBtn) {
                     bookNowBtn.style.display = 'none';
                     bookNowBtn.disabled = true;
+                    bookNowBtn.classList.remove('show'); // Supprimer l'animation si présente
+                }
+                // Réafficher le bouton de vérification quand on cache les résultats
+                if (checkAvailabilityBtn) {
+                    checkAvailabilityBtn.style.display = 'block';
                 }
             }
 
@@ -622,6 +1267,170 @@
 
             function formatPrice(price) {
                 return new Intl.NumberFormat('fr-FR').format(price) + ' FCFA';
+            }
+
+            // Fonction pour charger les dates indisponibles
+            function loadUnavailableDates() {
+                if (isLoadingUnavailableDates) return Promise.resolve();
+
+                isLoadingUnavailableDates = true;
+
+                return fetch(`{{ route('residences.unavailable-dates', $residence) }}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        unavailableDates = data.unavailable_dates || [];
+                        console.log('Dates indisponibles chargées:', unavailableDates);
+
+                        // Afficher les informations sur les dates indisponibles
+                        displayUnavailableDatesInfo();
+
+                        return unavailableDates;
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du chargement des dates indisponibles:', error);
+                        showMessage(
+                            'Erreur lors du chargement des disponibilités. Certaines dates peuvent ne pas être à jour.',
+                            'warning');
+                        return [];
+                    })
+                    .finally(() => {
+                        isLoadingUnavailableDates = false;
+                    });
+            }
+
+            // Fonction pour afficher les informations sur les dates indisponibles
+            function displayUnavailableDatesInfo() {
+                if (unavailableDates.length > 0) {
+                    const dateInfo = document.createElement('div');
+                    dateInfo.className = 'alert alert-info date-availability-info mt-2';
+
+                    const unavailableCount = unavailableDates.length;
+                    const nextUnavailable = getNextUnavailableDate();
+
+                    let infoText = `<i class="fas fa-info-circle me-2"></i><strong>Information:</strong> `;
+
+                    if (nextUnavailable) {
+                        infoText +=
+                            `Prochaine date indisponible: <strong>${formatDateForDisplay(nextUnavailable)}</strong>. `;
+                    }
+
+                    infoText +=
+                        `Au total, ${unavailableCount} date${unavailableCount > 1 ? 's sont' : ' est'} actuellement indisponible${unavailableCount > 1 ? 's' : ''} (réservations ou maintenance). Les dates en <span style="color: #dc3545; font-weight: bold;">rouge ✕</span> sont indisponibles.`;
+
+                    dateInfo.innerHTML = `<small>${infoText}</small>`;
+
+                    // Ajouter l'info après le champ check_out s'il n'existe pas déjà
+                    const existingInfo = document.querySelector('.date-availability-info');
+                    if (!existingInfo) {
+                        checkOutInput.parentNode.appendChild(dateInfo);
+                    }
+                }
+            }
+
+            // Fonction pour vérifier si une date est indisponible
+            function isDateUnavailable(dateString) {
+                if (!dateString) return false;
+                return unavailableDates.includes(dateString);
+            }
+
+            // Fonction pour appliquer les restrictions visuelles sur les champs de date
+            function applyDateRestrictions() {
+                if (unavailableDates.length > 0) {
+                    // Créer un message informatif sur les dates indisponibles
+                    const dateInfo = document.createElement('div');
+                    dateInfo.className = 'alert alert-info date-availability-info mt-2';
+
+                    const unavailableCount = unavailableDates.length;
+                    const nextUnavailable = getNextUnavailableDate();
+
+                    let infoText = `<i class="fas fa-info-circle me-2"></i><strong>Information:</strong> `;
+
+                    if (nextUnavailable) {
+                        infoText +=
+                            `Prochaine date indisponible: <strong>${formatDateForDisplay(nextUnavailable)}</strong>. `;
+                    }
+
+                    infoText +=
+                        `Au total, ${unavailableCount} date${unavailableCount > 1 ? 's sont' : ' est'} actuellement indisponible${unavailableCount > 1 ? 's' : ''} (réservations ou maintenance).`;
+
+                    dateInfo.innerHTML = `<small>${infoText}</small>`;
+
+                    // Ajouter l'info après le champ check_out s'il n'existe pas déjà
+                    const existingInfo = document.querySelector('.date-availability-info');
+                    if (!existingInfo) {
+                        checkOutInput.parentNode.appendChild(dateInfo);
+                    }
+                }
+            }
+
+            // Fonction pour obtenir la prochaine date indisponible
+            function getNextUnavailableDate() {
+                const today = new Date().toISOString().split('T')[0];
+                return unavailableDates
+                    .filter(date => date >= today)
+                    .sort()[0];
+            }
+
+            // Fonction pour formater une date pour l'affichage
+            function formatDateForDisplay(dateString) {
+                const date = new Date(dateString + 'T00:00:00');
+                return date.toLocaleDateString('fr-FR', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            }
+
+            // Fonction pour vérifier si une période contient des dates indisponibles
+            function hasUnavailableDatesInRange(startDate, endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const current = new Date(start);
+
+                const unavailableDatesInRange = [];
+
+                while (current < end) {
+                    const dateString = current.toISOString().split('T')[0];
+                    if (isDateUnavailable(dateString)) {
+                        unavailableDatesInRange.push(dateString);
+                    }
+                    current.setDate(current.getDate() + 1);
+                }
+
+                // Afficher les dates problématiques si trouvées
+                if (unavailableDatesInRange.length > 0) {
+                    console.log('Dates indisponibles dans la période:', unavailableDatesInRange);
+                    const formattedDates = unavailableDatesInRange
+                        .slice(0, 3)
+                        .map(date => formatDateForDisplay(date))
+                        .join(', ');
+
+                    const moreText = unavailableDatesInRange.length > 3 ?
+                        ` et ${unavailableDatesInRange.length - 3} autre${unavailableDatesInRange.length - 3 > 1 ? 's' : ''}...` :
+                        '';
+
+                    showMessage(
+                        `Dates indisponibles dans votre sélection: ${formattedDates}${moreText}`,
+                        'danger'
+                    );
+                }
+
+                return unavailableDatesInRange.length > 0;
+            }
+
+            // Fonction améliorée pour gérer les dates invalides avec animation
+            function handleInvalidDate(input, message) {
+                input.classList.add('date-input-invalid');
+                showMessage(message, 'warning');
+
+                // Retirer la classe après l'animation
+                setTimeout(() => {
+                    input.classList.remove('date-input-invalid');
+                }, 500);
+
+                input.value = '';
+                input.focus();
             }
         });
 
@@ -639,7 +1448,7 @@
             const hiddenAmenities = document.querySelectorAll('.amenities-hidden');
             const btn = document.getElementById('toggleAmenitiesBtn');
             const isShowing = hiddenAmenities[0] && hiddenAmenities[0].classList.contains('show');
-            
+
             hiddenAmenities.forEach(amenity => {
                 if (isShowing) {
                     amenity.classList.remove('show');
@@ -647,7 +1456,7 @@
                     amenity.classList.add('show');
                 }
             });
-            
+
             if (isShowing) {
                 btn.innerHTML = '<i class="fas fa-plus me-2"></i>Voir tous les équipements';
             } else {
@@ -655,4 +1464,8 @@
             }
         }
     </script>
+
+    <!-- Flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 @endpush

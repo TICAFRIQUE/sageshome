@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         //
 
 
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
 
         Schema::defaultStringLength(191);
 
