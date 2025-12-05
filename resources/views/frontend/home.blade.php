@@ -350,7 +350,7 @@
                             <div class="feature-icon mb-4">
                                 <div class="icon-circle mx-auto d-flex align-items-center justify-content-center"
                                     style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary)); border-radius: 50%;">
-                                    <i class="fas fa-shield-check text-white fa-2x"></i>
+                                    <i class="fas fa-shield-alt text-white fa-2x"></i>
                                 </div>
                             </div>
                             <h4 class="fw-bold mb-3 text-green">Sécurisé & Vérifié</h4>

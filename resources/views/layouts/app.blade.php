@@ -290,8 +290,8 @@
         }
 
         .account-dropdown .dropdown-item.text-danger:hover {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: var(--sage-white);
+            background: rgb(200, 198, 198);
+            color: rgb(12, 1, 1);
         }
 
         .account-dropdown .dropdown-divider {
@@ -660,12 +660,12 @@
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('login') }}">
+                                    <a class="dropdown-item" href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}">
                                         <i class="fas fa-sign-in-alt me-2"></i>Connexion
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('register') }}">
+                                    <a class="dropdown-item" href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}">
                                         <i class="fas fa-user-plus me-2"></i>Inscription
                                     </a>
                                 </li>
@@ -759,12 +759,12 @@
                         </li>
                         @guest
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">
+                                <a class="nav-link" href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}">
                                     <i class="fas fa-sign-in-alt me-2"></i>Connexion
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('register') }}">
+                                <a class="nav-link" href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}">
                                     <i class="fas fa-user-plus me-2"></i>Inscription
                                 </a>
                             </li>

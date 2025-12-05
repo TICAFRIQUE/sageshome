@@ -24,6 +24,13 @@ class AuthController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
+            
+            // Gérer l'URL de redirection personnalisée
+            $redirectUrl = $request->input('redirect');
+            if ($redirectUrl && filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
+                return redirect($redirectUrl);
+            }
+            
             return redirect()->intended(route('home'));
         }
 
@@ -59,7 +66,13 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-       return redirect()->intended(route('home'));
+        // Gérer l'URL de redirection personnalisée
+        $redirectUrl = $request->input('redirect');
+        if ($redirectUrl && filter_var($redirectUrl, FILTER_VALIDATE_URL)) {
+            return redirect($redirectUrl);
+        }
+
+        return redirect()->intended(route('home'));
     }
 
     public function logout(Request $request)
