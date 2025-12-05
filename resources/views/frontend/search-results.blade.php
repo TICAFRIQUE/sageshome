@@ -1,74 +1,82 @@
 @extends('layouts.app')
 
-@section('title', 'Résultats de recherche - Sages Home'
+@section('title', 'Résultats de recherche - Sages Home')
 @push('styles')
-<style>
-.btn-reservation {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #17a2b8 100%);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 12px 20px;
-    border-radius: 10px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-    text-decoration: none;
-}
+    <style>
+        .btn-reservation {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #17a2b8 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            text-decoration: none;
+        }
 
-.btn-reservation:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-    color: white;
-    background: linear-gradient(135deg, #218838 0%, #1e7e34 50%, #138496 100%);
-}
+        .btn-reservation:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+            color: white;
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 50%, #138496 100%);
+        }
 
-.btn-reservation:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
+        .btn-reservation:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
 
-.btn-reservation .btn-content {
-    position: relative;
-    z-index: 2;
-}
+        .btn-reservation .btn-content {
+            position: relative;
+            z-index: 2;
+        }
 
-.btn-shine {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
-    transform: translateX(-100%);
-    transition: transform 0.8s ease-in-out;
-    z-index: 1;
-}
+        .btn-shine {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.8s ease-in-out;
+            z-index: 1;
+        }
 
-.btn-reservation:hover .btn-shine {
-    transform: translateX(100%);
-}
+        .btn-reservation:hover .btn-shine {
+            transform: translateX(100%);
+        }
 
-.btn-outline-primary {
-    border-radius: 10px;
-    transition: all 0.3s ease;
-}
+        .btn-outline-primary {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
 
-.btn-outline-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-}
+        .btn-outline-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+        }
 
-/* Animation de pulsation pour attirer l'attention */
-@keyframes pulse {
-    0% { box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); }
-    50% { box-shadow: 0 4px 20px rgba(40, 167, 69, 0.5); }
-    100% { box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); }
-}
+        /* Animation de pulsation pour attirer l'attention */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            }
 
-.btn-reservation:not(:hover) {
-    animation: pulse 2s infinite;
-}
-</style>
+            50% {
+                box-shadow: 0 4px 20px rgba(40, 167, 69, 0.5);
+            }
+
+            100% {
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            }
+        }
+
+        .btn-reservation:not(:hover) {
+            animation: pulse 2s infinite;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -76,7 +84,7 @@
         <!-- Search Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <h1 class="text-green text-center mb-3">Résultats de recherche</h1>
+                <h1 class="text-green text-center mb-3 pt-4">Résultats de recherche</h1>
                 <div class="text-center text-muted">
                     Du {{ \Carbon\Carbon::parse($checkIn)->format('d M Y') }}
                     au {{ \Carbon\Carbon::parse($checkOut)->format('d M Y') }}
@@ -274,7 +282,8 @@
                                                 <div class="btn-shine"></div>
                                             </a>
                                         @else
-                                            <a href="{{ route('login') }}" class="btn btn-reservation flex-fill position-relative overflow-hidden">
+                                            <a href="{{ route('login') }}"
+                                                class="btn btn-reservation flex-fill position-relative overflow-hidden">
                                                 <span class="btn-content">
                                                     <i class="fas fa-sign-in-alt me-2"></i>Se connecter pour réserver
                                                 </span>
@@ -363,25 +372,6 @@
                 const checkInDate = new Date(this.value);
                 const nextDay = new Date(checkInDate);
                 nextDay.setDate(checkInDate.getDate() + 1);
-
-                checkOutInput.min = nextDay.toISOString().split('T')[0];
-
-                if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
-                    checkOutInput.value = nextDay.toISOString().split('T')[0];
-                }
-            });
-        });
-    </script>
-@endpush
-'T')[0];
-        
-        if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
-            checkOutInput.value = nextDay.toISOString().split('T')[0];
-        }
-    });
-});
-</script>
-@endpush    nextDay.setDate(checkInDate.getDate() + 1);
 
                 checkOutInput.min = nextDay.toISOString().split('T')[0];
 

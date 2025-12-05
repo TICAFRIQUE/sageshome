@@ -443,7 +443,9 @@
                                                     </div>
                                                     <div>
                                                         <h6 class="text-white fw-bold mb-1">Adresse</h6>
-                                                        <small class="text-white-50">Cocody, Abidjan</small>
+                                                        <small class="text-white-50">
+                                                            {{ $parametre?->localisation ?? 'Abidjan , Cote d\'Ivoire' }}
+                                                        </small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -457,7 +459,20 @@
                                                     </div>
                                                     <div>
                                                         <h6 class="text-white fw-bold mb-1">Téléphone</h6>
-                                                        <small class="text-white-50">+225 27 20 XX XX XX</small>
+                                                        <small class="text-white-50"> <a
+                                                                href="tel:{{ $parametre?->contact1 ?? '+225 27 20 XX XX XX' }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact1 ?? '+225 27 20 XX XX XX' }}</a>
+                                                        </small><br>
+                                                        <small class="text-white-50"> <a
+                                                                href="tel:{{ $parametre?->contact2 ?? '+225 27 20 XX XX XX' }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact2 ?? '+225 27 20 XX XX XX' }}</a>
+                                                        </small><br>
+                                                         <small class="text-white-50"> <a
+                                                                href="tel:{{ $parametre?->contact3 ?? '+225 27 20 XX XX XX' }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact3 ?? '+225 27 20 XX XX XX' }}</a>
+                                                        </small>
+
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -472,9 +487,14 @@
                                                     <div>
                                                         <h6 class="text-white fw-bold mb-1">Email</h6>
                                                         <small class="text-white-50">
-                                                            <a href="mailto:contact@sageshome.com"
-                                                                class="text-white-50 text-decoration-none">contact@sageshome.com</a>
+                                                            <a href="mailto:{{ $parametre?->email1 ?? 'infos@sageshome.ci' }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->email1 ?? 'infos@sageshome.ci' }}</a>
+                                                        </small><br>
+                                                        <small class="text-white-50">
+                                                            <a href="mailto:{{ $parametre?->email2 ?? 'infos@sageshome.ci' }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->email2 ?? 'infos@sageshome.ci' }}</a>
                                                         </small>
+                                                       
                                                     </div>
                                                 </div>
                                             </div>
@@ -489,19 +509,20 @@
                                                     <div>
                                                         <h6 class="text-white fw-bold mb-1">Suivez-nous</h6>
                                                         <div class="d-flex gap-2">
-                                                            <a href="#" class="social-link" title="Facebook">
+                                                            <a href="{{ $parametre?->lien_facebook ?? '#' }}" class="social-link" title="Facebook">
                                                                 <div class="social-icon-small"
                                                                     style="background: #1877f2;">
                                                                     <i class="fab fa-facebook-f text-white"></i>
                                                                 </div>
                                                             </a>
-                                                            <a href="#" class="social-link" title="Instagram">
+                                                            <a href="{{ $parametre?->lien_instagram ?? '#' }}" class="social-link" title="Instagram">
                                                                 <div class="social-icon-small"
                                                                     style="background: #e1306c;">
                                                                     <i class="fab fa-instagram text-white"></i>
                                                                 </div>
                                                             </a>
-                                                            <a href="#" class="social-link" title="WhatsApp">
+                                                            
+                                                            <a href="https://wa.me/+225{{$parametre?->contact2}}?text=Bonjour, je suis interessé(e) par vos residences Sages Home." target="_blank" class="social-link" title="WhatsApp">
                                                                 <div class="social-icon-small"
                                                                     style="background: #25d366;">
                                                                     <i class="fab fa-whatsapp text-white"></i>

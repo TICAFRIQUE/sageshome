@@ -9,6 +9,11 @@
     <title>@yield('title', 'Sages Home - Résidences de luxe')</title>
     <meta name="description" content="@yield('meta_description', 'Découvrez nos résidences de luxe avec services premium. Réservez votre séjour d\'exception avec Sages Home.')">
 
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/favicon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset('images/favicon/site.webmanifest') }}">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -425,6 +430,102 @@
                 gap: 10px !important;
             }
         }
+
+        /* Boutons flottants */
+        .floating-buttons {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .floating-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.4rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: none;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .floating-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .floating-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Bouton retour en haut */
+        .back-to-top {
+            background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary));
+            color: white;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: linear-gradient(135deg, var(--sage-green-secondary), var(--sage-green-dark));
+            color: white;
+        }
+
+        /* Bouton WhatsApp */
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            animation: whatsappPulse 2s infinite;
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            color: white;
+            animation: none;
+        }
+
+        /* Animation du bouton WhatsApp */
+        @keyframes whatsappPulse {
+            0% {
+                box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(37, 211, 102, 0.6), 0 0 0 15px rgba(37, 211, 102, 0.1);
+            }
+            100% {
+                box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+            }
+        }
+
+        /* Responsive pour boutons flottants */
+        @media (max-width: 768px) {
+            .floating-buttons {
+                right: 15px;
+                bottom: 15px;
+                gap: 12px;
+            }
+            
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
     </style>
 
     @stack('styles')
@@ -726,10 +827,14 @@
                     <p class="opacity-75">Vivez l'expérience du confort raffiné dans nos résidences sélectionnées avec
                         soin pour votre plus grand plaisir.</p>
                     <div class="social-links">
-                        <a href="#" class="me-3"><i class="fab fa-facebook fs-5"></i></a>
-                        <a href="#" class="me-3"><i class="fab fa-instagram fs-5"></i></a>
-                        <a href="#" class="me-3"><i class="fab fa-twitter fs-5"></i></a>
-                        <a href="#" class="me-3"><i class="fab fa-linkedin fs-5"></i></a>
+                        <a href="{{ $parametre?->lien_facebook }}" class="me-3"><i
+                                class="fab fa-facebook fs-5"></i></a>
+                        <a href="{{ $parametre?->lien_instagram }}" class="me-3"><i
+                                class="fab fa-instagram fs-5"></i></a>
+                        <a href="{{ $parametre?->lien_twitter }}" class="me-3"><i
+                                class="fab fa-twitter fs-5"></i></a>
+                        <a href="{{ $parametre?->lien_linkedin }}" class="me-3"><i
+                                class="fab fa-linkedin fs-5"></i></a>
                     </div>
                 </div>
 
@@ -738,8 +843,8 @@
                     <ul class="list-unstyled">
                         <li class="mb-2"><a href="{{ route('home') }}">Accueil</a></li>
                         <li class="mb-2"><a href="{{ route('residences.index') }}">Résidences</a></li>
-                        <li class="mb-2"><a href="#contact">Contact</a></li>
-                        <li class="mb-2"><a href="#about">À propos</a></li>
+                        <li class="mb-2"><a href="/#contact">Contact</a></li>
+                        {{-- <li class="mb-2"><a href="#about">À propos</a></li> --}}
                     </ul>
                 </div>
 
@@ -757,15 +862,38 @@
                     <h5>Contact</h5>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-map-marker-alt me-2"></i>
-                        Cocody, Abidjan, Côte d'Ivoire
+                        {{ $parametre?->localisation ?? ' Cocody, Abidjan, Côte d\'Ivoire' }}
+
                     </p>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
-                        +225 27 20 XX XX XX
+                        <a href="tel:{{ $parametre?->contact1 ?? '+225 00 00 00 00' }}">
+                            {{ $parametre?->contact1 ?? '+225 00 00 00 00' }}</a>
+
+
+                    </p>
+
+                    <p class="opacity-75 mb-2">
+                        <i class="fas fa-phone me-2"></i>
+
+                        <a href="tel:{{ $parametre?->contact2 ?? '+225 00 00 00 00' }}">
+                            {{ $parametre?->contact2 ?? '+225 00 00 00 00' }}</a>
+
+                    </p>
+                    <p class="opacity-75 mb-2">
+                        <i class="fas fa-phone me-2"></i>
+
+                        <a href="tel:{{ $parametre?->contact3 ?? '+225 00 00 00 00' }}">
+                            {{ $parametre?->contact3 ?? '+225 00 00 00 00' }}</a>
+
                     </p>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-envelope me-2"></i>
-                        contact@sageshome.com
+                        <a href="mailto:{{ $parametre?->email1 ?? 'sageshome.com' }}">{{ $parametre?->email1 ?? 'sageshome.com' }}</a> <br>
+                    </p>
+                    <p class="opacity-75 mb-2">
+                        <i class="fas fa-envelope me-2"></i>
+                      <a href="mailto:{{ $parametre?->email2 ?? 'sageshome.com' }}">{{ $parametre?->email2 ?? 'sageshome.com' }}</a>
                     </p>
                     <p class="opacity-75">
                         <i class="fas fa-clock me-2"></i>
@@ -778,7 +906,9 @@
 
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="opacity-75 mb-0">&copy; {{ date('Y') }} Sages Home. Tous droits réservés.</p>
+                    <p class="opacity-75 mb-0">&copy; {{ date('Y') }} Sages Home. Tous droits réservés. |
+                        developed by <a href="https://www.ticafrique.ci/" target="_blank"
+                            class="text-reset text-decoration-underline">Ticafrique</a></p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a href="#" class="me-3 opacity-75">Politique de confidentialité</a>
@@ -863,6 +993,46 @@
                             block: 'start'
                         });
                     }
+                });
+            });
+        });
+    </script>
+
+    <!-- Boutons flottants -->
+    <div class="floating-buttons">
+        <!-- Bouton retour en haut -->
+        <button type="button" class="floating-btn back-to-top" id="backToTop" title="Retour en haut">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+        
+        <!-- Bouton WhatsApp -->
+        <a href="https://wa.me/+225{{$parametre?->contact2}}?text=Bonjour, je suis intéressé(e) par vos résidences Sages Home." 
+           target="_blank" 
+           class="floating-btn whatsapp-btn" 
+           title="Contactez-nous sur WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </div>
+
+    <script>
+        // Gestion du bouton retour en haut
+        document.addEventListener('DOMContentLoaded', function() {
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            // Afficher/masquer le bouton selon le scroll
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            
+            // Clic sur le bouton retour en haut
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
                 });
             });
         });

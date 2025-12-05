@@ -250,7 +250,7 @@
                             <a href="{{ route('residences.index') }}" class="btn btn-outline-primary">
                                 <i class="fas fa-undo me-1"></i>Réinitialiser les filtres
                             </a>
-                            <a href="{{ route('home') }}#contact" class="btn btn-primary">
+                            <a href="/#contact" class="btn btn-primary">
                                 <i class="fas fa-envelope me-1"></i>Nous contacter
                             </a>
                         </div>
@@ -284,10 +284,10 @@
                 Contactez-nous pour une recherche personnalisée selon vos critères spécifiques.
             </p>
             <div class="d-flex gap-3 justify-content-center flex-wrap">
-                <a href="tel:+22527201234" class="btn btn-primary btn-lg">
+                <a href="tel:+225{{$parametre?->contact2}}" class="btn btn-primary btn-lg">
                     <i class="fas fa-phone me-2"></i>Appelez-nous
                 </a>
-                <a href="mailto:contact@sageshome.com" class="btn btn-outline-light btn-lg">
+                <a href="mailto:{{$parametre?->email1}}" class="btn btn-outline-light btn-lg">
                     <i class="fas fa-envelope me-2"></i>Contactez-nous
                 </a>
             </div>
