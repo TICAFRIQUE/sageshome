@@ -883,41 +883,63 @@
 
                 <div class="col-md-3 mb-4">
                     <h5>Contact</h5>
+                    
+                    @if($parametre?->localisation)
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-map-marker-alt me-2"></i>
-                        {{ $parametre?->localisation ?? ' Cocody, Abidjan, Côte d\'Ivoire' }}
-
+                        {{ $parametre->localisation }}
                     </p>
+                    @endif
+
+                    @if($parametre?->siege_social)
+                    <p class="opacity-75 mb-2">
+                        <i class="fas fa-building me-2"></i>
+                        {{ $parametre->siege_social }}
+                    </p>
+                    @endif
+
+                    @if($parametre?->contact1)
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
-                        <a href="tel:{{ $parametre?->contact1  }}">
-                            {{ $parametre?->contact1  }}</a>
-
-
+                        <a href="tel:{{ $parametre->contact1 }}">{{ $parametre->contact1 }}</a>
                     </p>
+                    @endif
 
+                    @if($parametre?->contact2)
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
-
-                        <a href="tel:{{ $parametre?->contact2  }}">
-                            {{ $parametre?->contact2  }}</a>
-
+                        <a href="tel:{{ $parametre->contact2 }}">{{ $parametre->contact2 }}</a>
                     </p>
+                    @endif
+
+                    @if($parametre?->contact3)
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
-
-                        <a href="tel:{{ $parametre?->contact3  }}">
-                            {{ $parametre?->contact3  }}</a>
-
+                        <a href="tel:{{ $parametre->contact3 }}">{{ $parametre->contact3 }}</a>
                     </p>
+                    @endif
+
+                    @if($parametre?->email1)
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-envelope me-2"></i>
-                        <a href="mailto:{{ $parametre?->email1  }}">{{ $parametre?->email1  }}</a> <br>
+                        <a href="mailto:{{ $parametre->email1 }}">{{ $parametre->email1 }}</a>
                     </p>
+                    @endif
+
+                    @if($parametre?->email2)
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-envelope me-2"></i>
-                      <a href="mailto:{{ $parametre?->email2  }}">{{ $parametre?->email2  }}</a>
+                        <a href="mailto:{{ $parametre->email2 }}">{{ $parametre->email2 }}</a>
                     </p>
+                    @endif
+
+                    @if($parametre?->google_maps)
+                    <p class="opacity-75 mb-2">
+                        <i class="fas fa-map me-2"></i>
+                        <a href="{{ $parametre->google_maps }}" target="_blank">Voir sur Google Maps</a>
+                    </p>
+                    @endif
+
                     <p class="opacity-75">
                         <i class="fas fa-clock me-2"></i>
                         Service 24h/24, 7j/7
