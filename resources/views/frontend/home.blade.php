@@ -460,16 +460,16 @@
                                                     <div>
                                                         <h6 class="text-white fw-bold mb-1">Téléphone</h6>
                                                         <small class="text-white-50"> <a
-                                                                href="tel:{{ $parametre?->contact1 ?? '+225 27 20 XX XX XX' }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact1 ?? '+225 27 20 XX XX XX' }}</a>
+                                                                href="tel:{{ $parametre?->contact1 }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact1 }}</a>
                                                         </small><br>
                                                         <small class="text-white-50"> <a
-                                                                href="tel:{{ $parametre?->contact2 ?? '+225 27 20 XX XX XX' }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact2 ?? '+225 27 20 XX XX XX' }}</a>
+                                                                href="tel:{{ $parametre?->contact2 }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact2 }}</a>
                                                         </small><br>
                                                          <small class="text-white-50"> <a
-                                                                href="tel:{{ $parametre?->contact3 ?? '+225 27 20 XX XX XX' }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact3 ?? '+225 27 20 XX XX XX' }}</a>
+                                                                href="tel:{{ $parametre?->contact3 }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact3 }}</a>
                                                         </small>
 
 
@@ -491,8 +491,8 @@
                                                                 class="text-white-50 text-decoration-none">{{ $parametre?->email1 ?? 'infos@sageshome.ci' }}</a>
                                                         </small><br>
                                                         <small class="text-white-50">
-                                                            <a href="mailto:{{ $parametre?->email2 ?? 'infos@sageshome.ci' }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->email2 ?? 'infos@sageshome.ci' }}</a>
+                                                            <a href="mailto:{{ $parametre?->email2 }}"
+                                                                class="text-white-50 text-decoration-none">{{ $parametre?->email2 }}</a>
                                                         </small>
                                                        
                                                     </div>
@@ -522,7 +522,7 @@
                                                                 </div>
                                                             </a>
                                                             
-                                                            <a href="https://wa.me/+225{{$parametre?->contact2}}?text=Bonjour, je suis interessé(e) par vos residences Sages Home." target="_blank" class="social-link" title="WhatsApp">
+                                                            <a href="https://wa.me/{{$parametre?->contact2}}?text=Bonjour, je suis interessé(e) par vos residences Sages Home." target="_blank" class="social-link" title="WhatsApp">
                                                                 <div class="social-icon-small"
                                                                     style="background: #25d366;">
                                                                     <i class="fab fa-whatsapp text-white"></i>

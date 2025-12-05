@@ -395,6 +395,29 @@
             color: var(--sage-white);
         }
 
+        /* Payment methods */
+        .payment-method {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .payment-method:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .payment-method img {
+            max-height: 40px;
+            object-fit: contain;
+        }
+
         /* Mobile responsive */
         @media (max-width: 768px) {
             .navbar {
@@ -867,8 +890,8 @@
                     </p>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
-                        <a href="tel:{{ $parametre?->contact1 ?? '+225 00 00 00 00' }}">
-                            {{ $parametre?->contact1 ?? '+225 00 00 00 00' }}</a>
+                        <a href="tel:{{ $parametre?->contact1  }}">
+                            {{ $parametre?->contact1  }}</a>
 
 
                     </p>
@@ -876,24 +899,24 @@
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
 
-                        <a href="tel:{{ $parametre?->contact2 ?? '+225 00 00 00 00' }}">
-                            {{ $parametre?->contact2 ?? '+225 00 00 00 00' }}</a>
+                        <a href="tel:{{ $parametre?->contact2  }}">
+                            {{ $parametre?->contact2  }}</a>
 
                     </p>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-phone me-2"></i>
 
-                        <a href="tel:{{ $parametre?->contact3 ?? '+225 00 00 00 00' }}">
-                            {{ $parametre?->contact3 ?? '+225 00 00 00 00' }}</a>
+                        <a href="tel:{{ $parametre?->contact3  }}">
+                            {{ $parametre?->contact3  }}</a>
 
                     </p>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-envelope me-2"></i>
-                        <a href="mailto:{{ $parametre?->email1 ?? 'sageshome.com' }}">{{ $parametre?->email1 ?? 'sageshome.com' }}</a> <br>
+                        <a href="mailto:{{ $parametre?->email1  }}">{{ $parametre?->email1  }}</a> <br>
                     </p>
                     <p class="opacity-75 mb-2">
                         <i class="fas fa-envelope me-2"></i>
-                      <a href="mailto:{{ $parametre?->email2 ?? 'sageshome.com' }}">{{ $parametre?->email2 ?? 'sageshome.com' }}</a>
+                      <a href="mailto:{{ $parametre?->email2  }}">{{ $parametre?->email2  }}</a>
                     </p>
                     <p class="opacity-75">
                         <i class="fas fa-clock me-2"></i>
@@ -903,6 +926,22 @@
             </div>
 
             <hr class="my-4 opacity-25">
+
+            <!-- Moyens de paiement -->
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <h6 class="opacity-75 mb-3">Moyens de paiement acceptés</h6>
+                    <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+                        <div class="payment-method">
+                            <img src="https://lexxprint.com/wp-content/uploads/2022/03/wave.png" alt="Wave" height="40">
+                        </div>
+                        <div class="payment-method">
+                            <i class="fas fa-money-bill-wave fs-2 opacity-75"></i>
+                            <small class="d-block opacity-75">Espèces</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="row align-items-center">
                 <div class="col-md-6">
@@ -1006,7 +1045,7 @@
         </button>
         
         <!-- Bouton WhatsApp -->
-        <a href="https://wa.me/+225{{$parametre?->contact2}}?text=Bonjour, je suis intéressé(e) par vos résidences Sages Home." 
+        <a href="https://wa.me/{{$parametre?->contact2}}?text=Bonjour, je suis intéressé(e) par vos résidences Sages Home." 
            target="_blank" 
            class="floating-btn whatsapp-btn" 
            title="Contactez-nous sur WhatsApp">
