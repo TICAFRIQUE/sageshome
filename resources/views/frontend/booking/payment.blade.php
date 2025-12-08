@@ -645,6 +645,36 @@
         font-size: 0.85rem;
     }
 }
+
+/* Animation pour l'icône de synchronisation */
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fa-sync.fa-spin {
+    animation: spin-slow 2s linear infinite;
+}
+
+/* Style pour l'alerte de polling */
+#pollingAlert {
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 @endpush
 
@@ -656,6 +686,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const paymentBtnText = document.getElementById('paymentBtnText');
     const paymentInfo = document.getElementById('paymentInfo');
     const paymentForm = document.getElementById('paymentForm');
+
+    // Vérifier automatiquement le statut au chargement de la page
+    @if(isset($booking) && $booking->payments->count() > 0 && $booking->payments->last()->payment_method === 'wave')
+        // Si le dernier paiement est Wave et en attente, démarrer le polling
+        const lastPaymentStatus = '{{ $booking->payments->last()->status }}';
+        if (lastPaymentStatus === 'pending') {
+            startPaymentPolling();
+        }
+    @endif
 
     // Handle payment method selection
     paymentMethods.forEach(method => {
@@ -726,6 +765,95 @@ document.addEventListener('DOMContentLoaded', function() {
         
         paymentBtnText.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + 
                                  (loadingTexts[selectedMethod.value] || 'Traitement...');
+
+        // Si c'est Wave, démarrer le polling après redirection
+        if (selectedMethod.value === 'wave') {
+            // Démarrer le polling après 5 secondes (temps de redirection)
+            setTimeout(function() {
+                startPaymentPolling();
+            }, 5000);
+        }
+    });
+
+    // Système de polling pour vérifier le statut du paiement
+    let pollingInterval = null;
+    let pollingAttempts = 0;
+    const maxPollingAttempts = 60; // 60 tentatives x 3 secondes = 3 minutes max
+
+    function startPaymentPolling() {
+        // Afficher un message d'attente
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-info alert-dismissible fade show mt-3';
+        alertDiv.id = 'pollingAlert';
+        alertDiv.innerHTML = `
+            <i class="fas fa-sync fa-spin me-2"></i>
+            <strong>Vérification du paiement en cours...</strong>
+            <p class="mb-0 small mt-2">Si vous avez effectué le paiement sur votre mobile, cette page se mettra à jour automatiquement.</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const cardBody = document.querySelector('.card-body');
+        if (cardBody && !document.getElementById('pollingAlert')) {
+            cardBody.insertBefore(alertDiv, cardBody.firstChild);
+        }
+
+        pollingInterval = setInterval(checkPaymentStatus, 3000);
+    }
+
+    function checkPaymentStatus() {
+        pollingAttempts++;
+
+        // Arrêter après le nombre max de tentatives
+        if (pollingAttempts >= maxPollingAttempts) {
+            stopPaymentPolling();
+            showPollingTimeout();
+            return;
+        }
+
+        // Récupérer l'ID du dernier paiement depuis le booking
+        @if(isset($booking) && $booking->payments->count() > 0)
+        const paymentId = {{ $booking->payments->last()->id }};
+        
+        fetch(`/api/payment/${paymentId}/status`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Statut du paiement:', data);
+                
+                // Si le paiement est complété, rediriger vers la confirmation
+                if (data.status === 'completed' && data.booking_status === 'confirmed') {
+                    stopPaymentPolling();
+                    window.location.href = '{{ route("booking.confirmation", $booking) }}';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la vérification:', error);
+            });
+        @endif
+    }
+
+    function stopPaymentPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    }
+
+    function showPollingTimeout() {
+        const alertDiv = document.getElementById('pollingAlert');
+        if (alertDiv) {
+            alertDiv.className = 'alert alert-warning alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                <i class="fas fa-clock me-2"></i>
+                <strong>Temps d'attente dépassé</strong>
+                <p class="mb-0 mt-2">La vérification automatique a expiré. Si vous avez effectué le paiement, actualisez la page ou contactez le support.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        }
+    }
+
+    // Nettoyer le polling quand on quitte la page
+    window.addEventListener('beforeunload', function() {
+        stopPaymentPolling();
     });
 });
 </script>
