@@ -310,12 +310,12 @@
                     <div class="contact-info">
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-phone text-success me-2"></i>
-                            <a href="tel:+221123456789" class="text-decoration-none">+225 07 15 82 05 96</a>
+                            <a href="tel:{{$parametre?->contact2}}" class="text-decoration-none">{{$parametre?->contact2}}</a>
                         </div>
                         
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-envelope text-info me-2"></i>
-                            <a href="mailto:support@sageshome.com" class="text-decoration-none">support@sageshome.com</a>
+                            <a href="mailto:{{$parametre?->email1}}" class="text-decoration-none">{{$parametre?->email1}}</a>
                         </div>
                         
                         <div class="d-flex align-items-center">

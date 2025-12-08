@@ -5,7 +5,7 @@
 @section('content')
 <div class="container py-5">
     <!-- Progress Indicator -->
-    <div class="row mb-5" style="padding-top: 50px;">
+    <div class="row my-4">
         <div class="col-12">
             <div class="progress-indicator">
                 <!-- Progress Bar -->
