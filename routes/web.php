@@ -92,11 +92,11 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
     });
 });
 
-// Routes de paiement (callback)
+// Routes de paiement (callback) - SANS AUTH pour permettre le retour Wave
 Route::get('/payment/{payment}/confirm', [BookingController::class, 'confirmPayment'])->name('payment.confirm');
 Route::post('/payment/{payment}/confirm', [BookingController::class, 'confirmPayment']);
 
-// Webhook Wave pour les notifications de paiement
+// Webhook Wave pour les notifications de paiement - SANS AUTH
 Route::post('/webhook/wave/payment', [BookingController::class, 'waveWebhook'])->name('wave.webhook');
 
 // Routes d'authentification Laravel par défaut

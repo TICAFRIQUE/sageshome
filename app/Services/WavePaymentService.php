@@ -69,6 +69,11 @@ class WavePaymentService
     public function getPaymentStatus($sessionId)
     {
         try {
+            Log::info('Tentative de vérification statut Wave', [
+                'session_id' => $sessionId,
+                'api_url' => $this->apiUrl . '/checkout/sessions/' . $sessionId
+            ]);
+
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -76,21 +81,40 @@ class WavePaymentService
             ->timeout(10)
             ->get($this->apiUrl . '/checkout/sessions/' . $sessionId);
 
+            Log::info('Réponse Wave API', [
+                'status_code' => $response->status(),
+                'success' => $response->successful()
+            ]);
+
             if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Statut paiement Wave récupéré', [
+                    'checkout_status' => $data['checkout_status'] ?? 'N/A',
+                    'payment_status' => $data['payment_status'] ?? 'N/A'
+                ]);
+
                 return [
                     'success' => true,
-                    'data' => $response->json(),
+                    'data' => $data,
                 ];
             } else {
-                Log::error('Erreur vérification statut Wave: ' . $response->body());
+                Log::error('Erreur vérification statut Wave', [
+                    'status_code' => $response->status(),
+                    'body' => $response->body()
+                ]);
+
                 return [
                     'success' => false,
-                    'error' => 'Impossible de vérifier le statut du paiement',
+                    'error' => 'Impossible de vérifier le statut du paiement (HTTP ' . $response->status() . ')',
                     'details' => $response->json(),
                 ];
             }
         } catch (\Exception $e) {
-            Log::error('Erreur vérification statut Wave: ' . $e->getMessage());
+            Log::error('Exception lors vérification statut Wave', [
+                'message' => $e->getMessage(),
+                'session_id' => $sessionId
+            ]);
+
             return [
                 'success' => false,
                 'error' => 'Erreur de connexion: ' . $e->getMessage(),

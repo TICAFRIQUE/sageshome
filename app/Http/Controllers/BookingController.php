@@ -206,8 +206,24 @@ class BookingController extends Controller
 
     public function confirmPayment(Request $request, Payment $payment)
     {
+        // Reconnecter automatiquement l'utilisateur si nécessaire (pour le retour Wave depuis desktop)
+        if (!Auth::check() && $payment->booking->user_id) {
+            Auth::loginUsingId($payment->booking->user_id);
+            \Log::info('Utilisateur reconnecté automatiquement après paiement Wave', [
+                'user_id' => $payment->booking->user_id,
+                'payment_id' => $payment->id
+            ]);
+        }
+
         // Vérifier si le paiement est via Wave et a un transaction_id
         if ($payment->payment_method === 'wave' && $payment->transaction_id) {
+            // Log pour diagnostic
+            \Log::info('Vérification paiement Wave', [
+                'payment_id' => $payment->id,
+                'transaction_id' => $payment->transaction_id,
+                'user_reconnected' => Auth::check()
+            ]);
+
             // Vérifier le statut du paiement auprès de Wave
             $statusResult = $this->wavePaymentService->getPaymentStatus($payment->transaction_id);
             
@@ -239,6 +255,12 @@ class BookingController extends Controller
                         ->with('success', 'Votre paiement Wave a été traité avec succès.');
                 } else {
                     // Le paiement n'est pas encore complété ou a échoué
+                    \Log::warning('Paiement Wave non confirmé', [
+                        'checkout_status' => $sessionData['checkout_status'] ?? 'N/A',
+                        'payment_status' => $sessionData['payment_status'] ?? 'N/A',
+                        'payment_id' => $payment->id
+                    ]);
+
                     $payment->update([
                         'status' => 'failed',
                         'payment_data' => json_encode($sessionData),
@@ -249,8 +271,14 @@ class BookingController extends Controller
                 }
             } else {
                 // Erreur lors de la vérification du statut
+                \Log::error('Erreur vérification statut Wave', [
+                    'payment_id' => $payment->id,
+                    'transaction_id' => $payment->transaction_id,
+                    'error' => $statusResult['error'] ?? 'Erreur inconnue'
+                ]);
+
                 return redirect()->route('booking.payment', $payment->booking)
-                    ->with('error', 'Impossible de vérifier le statut du paiement Wave.');
+                    ->with('error', 'Impossible de vérifier le statut du paiement Wave. Veuillez contacter le support.');
             }
         }
 
