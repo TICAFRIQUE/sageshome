@@ -47,12 +47,12 @@ Route::prefix('residences')->group(function () {
 
 // API routes pour les filtres
 Route::prefix('api')->group(function () {
-    Route::get('/communes/{ville}', function($ville) {
+    Route::get('/communes/{ville}', function ($ville) {
         return response()->json(
             \App\Models\Residence::getAvailableCommunes($ville)
         );
     })->name('api.communes');
-    
+
     // Route pour vérifier le statut d'un paiement
     Route::get('/payment/{payment}/status', [BookingController::class, 'getPaymentStatus'])->name('api.payment.status');
 });
@@ -69,23 +69,23 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
         Route::patch('/profile', 'updateProfile')->name('dashboard.profile.update');
         Route::patch('/profile/password', 'updatePassword')->name('dashboard.profile.password');
     });
-    
+
     Route::prefix('booking')->group(function () {
         Route::get('/create/{residence}', [BookingController::class, 'create'])->name('booking.create');
         Route::post('/store', [BookingController::class, 'store'])->name('booking.store');
         Route::get('/payment/{booking}', [BookingController::class, 'payment'])->name('booking.payment');
         Route::post('/process-payment/{booking}', [BookingController::class, 'processPayment'])->name('booking.process-payment');
         Route::get('/confirmation/{booking}', [BookingController::class, 'confirmation'])->name('booking.confirmation');
-        
+
         // Redirections vers le dashboard
         Route::get('/my-bookings', function () {
             return redirect()->route('dashboard.bookings');
         })->name('booking.my-bookings');
-        
+
         Route::get('/{booking}', function ($booking) {
             return redirect()->route('dashboard.booking.show', $booking);
         })->name('booking.show');
-        
+
         Route::post('/{booking}/cancel', function ($booking) {
             return redirect()->route('dashboard.booking.cancel', $booking);
         })->name('booking.cancel');
@@ -123,7 +123,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         route::get('maintenance-up', 'maintenanceUp')->name('parametre.maintenance-up');
         route::get('maintenance-down', 'maintenanceDown')->name('parametre.maintenance-down');
         route::get('optimize-clear', 'optimizeClear')->name('parametre.optimize-clear');
-         Route::get('download-backup/{file}', 'downloadBackup')->name('setting.download-backup');  // download backup db
+        Route::get('download-backup/{file}', 'downloadBackup')->name('setting.download-backup');  // download backup db
     });
 
 
@@ -167,12 +167,12 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
     Route::prefix('sages-home')->group(function () {
         // Dashboard Sages Home
         Route::get('/', [BackendDashboardController::class, 'sagesHomeDashboard'])->name('admin.sages-home.dashboard');
-        
+
         // Route de compatibilité (redirection)
         Route::get('/dashboard', function () {
             return redirect()->route('admin.sages-home.dashboard');
         })->name('admin.dashboard');
-        
+
         // Gestion des résidences
         Route::prefix('residences')->controller(AdminResidenceController::class)->group(function () {
             Route::get('/', 'index')->name('admin.residences.index');

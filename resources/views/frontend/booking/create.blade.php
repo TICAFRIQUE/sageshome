@@ -123,12 +123,16 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('residences.show', $residence->slug) }}" class="btn btn-outline-secondary">
+                            {{-- <a href="{{ route('residences.show', $residence->slug) }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Retour
+                            </a> --}}
+
+                            <a href="#" id="backBtn" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>Retour
                             </a>
                             
                             <button type="submit" class="btn btn-primary btn-lg">
-                                Continuer vers le paiement <i class="bi bi-arrow-right ms-2"></i>
+                                Passer au paiement <i class="bi bi-arrow-right ms-2"></i>
                             </button>
                         </div>
                     </form>
@@ -417,6 +421,15 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Back button functionality
+    const backBtn = document.getElementById('backBtn');
+    backBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.history.back();
+    });
+
+    // Form validation and submission handling
     const form = document.getElementById('bookingForm');
     const termsCheckbox = document.getElementById('terms');
     const cancellationCheckbox = document.getElementById('cancellation');

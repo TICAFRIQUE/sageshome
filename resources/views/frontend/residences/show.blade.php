@@ -898,6 +898,17 @@
             const priceCalculation = document.getElementById('priceCalculation');
             const availabilityMessage = document.getElementById('availabilityMessage');
 
+            // Réinitialiser l'état du bouton lors du chargement de la page (gère le retour en arrière)
+            if (bookNowBtn) {
+                bookNowBtn.disabled = false;
+                bookNowBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Réserver maintenant';
+            }
+            
+            if (checkAvailabilityBtn) {
+                checkAvailabilityBtn.disabled = false;
+                checkAvailabilityBtn.innerHTML = 'Vérifier la disponibilité';
+            }
+
             // Variables pour la gestion des dates indisponibles
             let unavailableDates = [];
             let checkInPicker = null;
@@ -1585,6 +1596,26 @@
                 }, 500);
             }
         }
+
+        // Gestionnaire pour le retour en arrière du navigateur (cache)
+        window.addEventListener('pageshow', function(event) {
+            // Si la page est chargée depuis le cache (bfcache)
+            if (event.persisted) {
+                const bookNowBtn = document.getElementById('bookNowBtn');
+                const checkAvailabilityBtn = document.getElementById('checkAvailabilityBtn');
+                
+                // Réinitialiser l'état des boutons
+                if (bookNowBtn) {
+                    bookNowBtn.disabled = false;
+                    bookNowBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Réserver maintenant';
+                }
+                
+                if (checkAvailabilityBtn) {
+                    checkAvailabilityBtn.disabled = false;
+                    checkAvailabilityBtn.innerHTML = 'Vérifier la disponibilité';
+                }
+            }
+        });
     </script>
 
     <!-- Flatpickr JavaScript -->
