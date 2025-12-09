@@ -13,7 +13,29 @@ class DashboardController extends Controller
     //index for dashboard
     public function index(Request $request)
     {
-        return view('backend.pages.index');
+        // Statistiques générales pour le dashboard
+        $totalResidences = Residence::count();
+        $totalBookings = Booking::count();
+        $totalRevenue = Payment::where('status', 'completed')->sum('amount');
+        
+        // Réservations récentes
+        $recentBookings = Booking::with('residence')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+            
+        // Statistiques des réservations par statut
+        $bookingStats = Booking::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->get();
+
+        return view('backend.pages.index', compact(
+            'totalResidences',
+            'totalBookings', 
+            'totalRevenue',
+            'recentBookings',
+            'bookingStats'
+        ));
     }
 
     // Dashboard Sages Home

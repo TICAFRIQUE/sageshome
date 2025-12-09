@@ -2,6 +2,14 @@
 
 @section('title', 'Gestion des Réservations')
 
+@section('css')
+    <!--datatable css-->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" type="text/css" />
+    <!--datatable responsive css-->
+    <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css" rel="stylesheet" type="text/css" />
+@endsection
+
 @section('content')
 <!-- start page title -->
 <div class="row">
@@ -46,7 +54,7 @@
             <div class="card-body">
                 @if($bookings->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                        <table id="buttons-datatables" class="display table table-bordered" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Référence</th>
@@ -180,20 +188,6 @@
                             </tbody>
                         </table>
                     </div>
-                    
-                    @if($bookings->hasPages())
-                        <div class="row justify-content-between align-items-center mt-4">
-                            <div class="col-auto">
-                                <div class="text-muted">
-                                    Affichage {{ $bookings->firstItem() }} à {{ $bookings->lastItem() }} 
-                                    sur {{ $bookings->total() }} réservations
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                {{ $bookings->links() }}
-                            </div>
-                        </div>
-                    @endif
                 @else
                     <div class="text-center py-5">
                         <div class="avatar-md mx-auto mb-4">
@@ -294,4 +288,77 @@
     </div>
 </div>
 @endif
+
+@section('script')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+    <script src="{{ URL::asset('build/js/pages/datatables.init.js') }}"></script>
+    <script src="{{ URL::asset('build/js/app.js') }}"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Attendre que DataTable soit complètement initialisé
+            setTimeout(function() {
+                // Récupérer le paramètre status de l'URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const statusParam = urlParams.get('status');
+                
+                // Récupérer l'instance DataTable existante
+                var table = $('#buttons-datatables').DataTable();
+                
+                // Si un statut est dans l'URL, filtrer automatiquement
+                if (statusParam) {
+                    $('#statusFilter').val(statusParam);
+                    // Recherche dans la colonne Statut (index 6)
+                    // Utiliser une recherche exacte sur le texte du badge
+                    var searchTerm = '';
+                    switch(statusParam) {
+                        case 'pending':
+                            searchTerm = 'En attente';
+                            break;
+                        case 'confirmed':
+                            searchTerm = 'Confirmée';
+                            break;
+                        case 'cancelled':
+                            searchTerm = 'Annulée';
+                            break;
+                    }
+                    if (searchTerm) {
+                        table.column(6).search(searchTerm).draw();
+                    }
+                }
+                
+                // Gérer le changement de filtre
+                $('#statusFilter').on('change', function() {
+                    var status = $(this).val();
+                    var searchTerm = '';
+                    switch(status) {
+                        case 'pending':
+                            searchTerm = 'En attente';
+                            break;
+                        case 'confirmed':
+                            searchTerm = 'Confirmée';
+                            break;
+                        case 'cancelled':
+                            searchTerm = 'Annulée';
+                            break;
+                        default:
+                            searchTerm = '';
+                    }
+                    table.column(6).search(searchTerm).draw();
+                });
+            }, 500);
+        });
+    </script>
+@endsection
 @endsection

@@ -132,7 +132,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         route::get('', 'index')->name('admin-register.index');
         route::post('store', 'store')->name('admin-register.store');
         route::post('update/{id}', 'update')->name('admin-register.update');
-        route::get('delete/{id}', 'delete')->name('admin-register.delete');
+        route::delete('delete/{id}', 'delete')->name('admin-register.delete');
         route::get('profil/{id}', 'profil')->name('admin-register.profil');
         route::post('change-password', 'changePassword')->name('admin-register.new-password');
     });
@@ -142,7 +142,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         route::get('', 'index')->name('role.index');
         route::post('store', 'store')->name('role.store');
         route::post('update/{id}', 'update')->name('role.update');
-        route::get('delete/{id}', 'delete')->name('role.delete');
+        route::delete('delete/{id}', 'delete')->name('role.delete');
     });
 
     //permission
@@ -152,7 +152,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         route::post('store', 'store')->name('permission.store');
         route::get('edit{id}', 'edit')->name('permission.edit');
         route::put('update/{id}', 'update')->name('permission.update');
-        route::get('delete/{id}', 'delete')->name('permission.delete');
+        route::delete('delete/{id}', 'delete')->name('permission.delete');
     });
 
     //module
@@ -160,7 +160,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         route::get('', 'index')->name('module.index');
         route::post('store', 'store')->name('module.store');
         route::post('update/{id}', 'update')->name('module.update');
-        route::get('delete/{id}', 'delete')->name('module.delete');
+        route::delete('delete/{id}', 'delete')->name('module.delete');
     });
 
     // Nouvelles routes pour la gestion des résidences et réservations

@@ -12,7 +12,7 @@ class ResidenceTypeController extends Controller
     {
         $residenceTypes = ResidenceType::withCount('residences')
             ->ordered()
-            ->paginate(20);
+            ->get();
 
         return view('backend.pages.sages-home.residence-types.index', compact('residenceTypes'));
     }

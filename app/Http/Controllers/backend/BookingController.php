@@ -34,7 +34,7 @@ class BookingController extends Controller
             });
         }
 
-        $bookings = $query->orderBy('created_at', 'desc')->paginate(15);
+        $bookings = $query->orderBy('created_at', 'desc')->get();
 
         return view('backend.pages.sages-home.bookings.index', compact('bookings'));
     }

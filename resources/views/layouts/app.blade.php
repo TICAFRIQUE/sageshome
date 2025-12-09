@@ -527,9 +527,11 @@
             0% {
                 box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
             }
+
             50% {
                 box-shadow: 0 4px 25px rgba(37, 211, 102, 0.6), 0 0 0 15px rgba(37, 211, 102, 0.1);
             }
+
             100% {
                 box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
             }
@@ -542,7 +544,7 @@
                 bottom: 15px;
                 gap: 12px;
             }
-            
+
             .floating-btn {
                 width: 50px;
                 height: 50px;
@@ -683,12 +685,14 @@
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}">
+                                    <a class="dropdown-item"
+                                        href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}">
                                         <i class="fas fa-sign-in-alt me-2"></i>Connexion
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}">
+                                    <a class="dropdown-item"
+                                        href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}">
                                         <i class="fas fa-user-plus me-2"></i>Inscription
                                     </a>
                                 </li>
@@ -883,61 +887,61 @@
 
                 <div class="col-md-3 mb-4">
                     <h5>Contact</h5>
-                    
-                    @if($parametre?->localisation)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-map-marker-alt me-2"></i>
-                        {{ $parametre->localisation }}
-                    </p>
+
+                    @if ($parametre?->localisation)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            {{ $parametre->localisation }}
+                        </p>
                     @endif
 
-                    @if($parametre?->siege_social)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-building me-2"></i>
-                        {{ $parametre->siege_social }}
-                    </p>
+                    @if ($parametre?->siege_social)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-building me-2"></i>
+                            {{ $parametre->siege_social }}
+                        </p>
                     @endif
 
-                    @if($parametre?->contact1)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-phone me-2"></i>
-                        <a href="tel:{{ $parametre->contact1 }}">{{ $parametre->contact1 }}</a>
-                    </p>
+                    @if ($parametre?->contact1)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:{{ $parametre->contact1 }}">{{ $parametre->contact1 }}</a>
+                        </p>
                     @endif
 
-                    @if($parametre?->contact2)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-phone me-2"></i>
-                        <a href="tel:{{ $parametre->contact2 }}">{{ $parametre->contact2 }}</a>
-                    </p>
+                    @if ($parametre?->contact2)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:{{ $parametre->contact2 }}">{{ $parametre->contact2 }}</a>
+                        </p>
                     @endif
 
-                    @if($parametre?->contact3)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-phone me-2"></i>
-                        <a href="tel:{{ $parametre->contact3 }}">{{ $parametre->contact3 }}</a>
-                    </p>
+                    @if ($parametre?->contact3)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-phone me-2"></i>
+                            <a href="tel:{{ $parametre->contact3 }}">{{ $parametre->contact3 }}</a>
+                        </p>
                     @endif
 
-                    @if($parametre?->email1)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-envelope me-2"></i>
-                        <a href="mailto:{{ $parametre->email1 }}">{{ $parametre->email1 }}</a>
-                    </p>
+                    @if ($parametre?->email1)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a href="mailto:{{ $parametre->email1 }}">{{ $parametre->email1 }}</a>
+                        </p>
                     @endif
 
-                    @if($parametre?->email2)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-envelope me-2"></i>
-                        <a href="mailto:{{ $parametre->email2 }}">{{ $parametre->email2 }}</a>
-                    </p>
+                    @if ($parametre?->email2)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-envelope me-2"></i>
+                            <a href="mailto:{{ $parametre->email2 }}">{{ $parametre->email2 }}</a>
+                        </p>
                     @endif
 
-                    @if($parametre?->google_maps)
-                    <p class="opacity-75 mb-2">
-                        <i class="fas fa-map me-2"></i>
-                        <a href="{{ $parametre->google_maps }}" target="_blank">Voir sur Google Maps</a>
-                    </p>
+                    @if ($parametre?->google_maps)
+                        <p class="opacity-75 mb-2">
+                            <i class="fas fa-map me-2"></i>
+                            <a href="{{ $parametre->google_maps }}" target="_blank">Voir sur Google Maps</a>
+                        </p>
                     @endif
 
                     <p class="opacity-75">
@@ -955,7 +959,8 @@
                     <h6 class="opacity-75 mb-3">Moyens de paiement acceptés</h6>
                     <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
                         <div class="payment-method">
-                            <img src="https://lexxprint.com/wp-content/uploads/2022/03/wave.png" alt="Wave" height="40">
+                            <img src="https://lexxprint.com/wp-content/uploads/2022/03/wave.png" alt="Wave"
+                                height="40">
                         </div>
                         <div class="payment-method">
                             <i class="fas fa-money-bill-wave fs-2 opacity-75"></i>
@@ -978,6 +983,15 @@
             </div>
         </div>
     </footer>
+
+    <!--inclure token csrf dans les scripts js-->
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1065,12 +1079,10 @@
         <button type="button" class="floating-btn back-to-top" id="backToTop" title="Retour en haut">
             <i class="fas fa-chevron-up"></i>
         </button>
-        
+
         <!-- Bouton WhatsApp -->
-        <a href="https://wa.me/{{$parametre?->contact2}}?text=Bonjour, je suis intéressé(e) par vos résidences Sages Home." 
-           target="_blank" 
-           class="floating-btn whatsapp-btn" 
-           title="Contactez-nous sur WhatsApp">
+        <a href="https://wa.me/{{ $parametre?->contact2 }}?text=Bonjour, je suis intéressé(e) par vos résidences Sages Home."
+            target="_blank" class="floating-btn whatsapp-btn" title="Contactez-nous sur WhatsApp">
             <i class="fab fa-whatsapp"></i>
         </a>
     </div>
@@ -1079,7 +1091,7 @@
         // Gestion du bouton retour en haut
         document.addEventListener('DOMContentLoaded', function() {
             const backToTopBtn = document.getElementById('backToTop');
-            
+
             // Afficher/masquer le bouton selon le scroll
             window.addEventListener('scroll', function() {
                 if (window.pageYOffset > 300) {
@@ -1088,7 +1100,7 @@
                     backToTopBtn.classList.remove('show');
                 }
             });
-            
+
             // Clic sur le bouton retour en haut
             backToTopBtn.addEventListener('click', function() {
                 window.scrollTo({

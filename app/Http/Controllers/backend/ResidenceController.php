@@ -16,7 +16,7 @@ class ResidenceController extends Controller
         $residences = Residence::with(['residenceType', 'images', 'bookings'])
             ->withCount('bookings')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
         return view('backend.pages.sages-home.residences.index', compact('residences'));
     }

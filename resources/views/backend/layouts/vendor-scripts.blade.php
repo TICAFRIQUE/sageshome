@@ -15,7 +15,7 @@
 {{-- <script src="{{ URL::asset('build/js/pages/sweetalerts.init.js') }}"></script> --}}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ URL::asset('build/js/pages/select2.init.js') }}"></script>
-    <script src="{{URL::asset('myJs/js/delete_row.js')}}"></script>
+<script src="{{ URL::asset('myJs/js/delete_row.js') }}"></script>
 
 @yield('script')
 @yield('script-bottom')
@@ -43,6 +43,13 @@
                 form.classList.add('was-validated')
             }, false)
         })
+
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
     })()
 </script>
 

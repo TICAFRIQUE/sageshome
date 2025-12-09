@@ -65,6 +65,7 @@ namespace App\Models{
  * @property numeric $final_amount
  * @property numeric $total_amount
  * @property string $status
+ * @property string|null $seen_at
  * @property string $payment_status
  * @property string|null $special_requests
  * @property string|null $notes
@@ -114,6 +115,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking wherePricePerNight($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereResidenceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereSeenAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereSpecialRequests($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Booking whereSubtotalAmount($value)
