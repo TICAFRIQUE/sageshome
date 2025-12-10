@@ -7,13 +7,13 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-galaxy-transparent">
-            <h4 class="mb-sm-0">Réservation {{ $booking->id }}</h4>
+            <h4 class="mb-sm-0">Réservation {{ $booking->booking_number }}</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Accueil</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.sages-home.dashboard') }}">Sages Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('admin.bookings.index') }}">Réservations</a></li>
-                    <li class="breadcrumb-item active">{{ $booking->id }}</li>
+                    <li class="breadcrumb-item active">{{ $booking->booking_number }}</li>
                 </ol>
             </div>
         </div>
@@ -52,7 +52,7 @@
                             <tbody>
                                 <tr>
                                     <td class="fw-medium">Référence :</td>
-                                    <td>{{ $booking->id }}</td>
+                                    <td>{{ $booking->booking_number }}</td>
                                 </tr>
                                 <tr>
                                     <td class="fw-medium">Résidence :</td>
@@ -297,11 +297,11 @@
                 
                 <div class="border-top pt-2 mt-2">
                     <div class="d-flex justify-content-between mb-1">
-                        <small>Check-in :</small>
+                        <small>Entrée :</small>
                         <small class="fw-medium">{{ \Carbon\Carbon::parse($booking->check_in_date)->format('d/m/Y') }}</small>
                     </div>
                     <div class="d-flex justify-content-between mb-1">
-                        <small>Check-out :</small>
+                        <small>Sortie :</small>
                         <small class="fw-medium">{{ \Carbon\Carbon::parse($booking->check_out_date)->format('d/m/Y') }}</small>
                     </div>
                     <div class="d-flex justify-content-between mb-1">

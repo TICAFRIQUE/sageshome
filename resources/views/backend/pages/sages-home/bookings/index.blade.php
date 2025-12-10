@@ -72,7 +72,7 @@
                                 @foreach($bookings as $booking)
                                 <tr>
                                     <td>
-                                        <strong class="text-primary">{{ $booking->id }}</strong>
+                                        <strong class="text-primary">{{ $booking->booking_number }}</strong>
                                         <br><small class="text-muted">{{ $booking->created_at->format('d/m/Y H:i') }}</small>
                                     </td>
                                     <td>

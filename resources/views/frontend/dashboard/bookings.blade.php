@@ -181,6 +181,10 @@
                                     {{ $booking->residence->residenceType->name }}
                                 </p>
 
+                                <p>
+                                    Référence : <strong class="text-primary">{{ $booking->booking_number }}</strong>
+                                </p>
+
                                 <!-- Informations essentielles -->
                                 <div class="booking-details mb-3">
                                     <div class="detail-row">

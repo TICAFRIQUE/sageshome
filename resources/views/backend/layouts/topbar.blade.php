@@ -46,14 +46,7 @@
                         <i class='bx bx-moon fs-22'></i>
                     </button>
                 </div>
-                <!--notification de reservation-->
-                <div class="ms-1 header-item d-none d-sm-flex">
-                    <button type="button"
-                        class="btn btn-icon btn-topbar material-shadow-none btn-ghost-secondary rounded-circle light-dark-mode">
-                        <i class='bx bx-bell fs-22'></i>
-                    </button>
-                </div>
-
+               
 
                 <!--Lien vers le site web-->
                 <div class="ms-1 header-item d-none d-sm-flex">
@@ -62,6 +55,10 @@
                         <i class='bx bx-globe fs-22'></i>
                     </a>
                 </div>
+
+                 <!--notification de reservation-->
+                @include('backend.components.notification-reservations')
+
 
 
 

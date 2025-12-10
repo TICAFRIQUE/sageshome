@@ -56,6 +56,10 @@
                             <p class="text-muted mb-2">
                                 <small>{{ $booking->residence->residenceType->name }}</small>
                             </p>
+                            <p>
+                               
+                               Référence : <strong>{{ $booking->booking_number }}</strong>
+                            </p>
                             
                             <div class="mb-3">
                                 <div class="d-flex align-items-center mb-1">

@@ -1,0 +1,3 @@
+@echo off
+echo Demarrage du worker de queue Laravel...
+php artisan queue:work --tries=3 --timeout=90

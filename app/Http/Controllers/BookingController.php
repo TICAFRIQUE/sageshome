@@ -104,6 +104,18 @@ class BookingController extends Controller
             'total_amount' => $finalAmount,
         ]);
 
+        // Envoyer les emails de notification
+        try {
+            // Email au client
+            \Mail::to($booking->email)->send(new \App\Mail\BookingConfirmationMail($booking));
+            
+            // Email à l'admin (récupérer l'email admin depuis les paramètres ou config)
+            $adminEmail = 'infos@sageshome.ci';
+            \Mail::to($adminEmail)->send(new \App\Mail\NewBookingNotificationMail($booking));
+        } catch (\Exception $e) {
+            \Log::error('Erreur envoi email réservation: ' . $e->getMessage());
+        }
+
         return redirect()->route('booking.payment', $booking)->with('success', 'Votre réservation a été créée avec succès.');
     }
 

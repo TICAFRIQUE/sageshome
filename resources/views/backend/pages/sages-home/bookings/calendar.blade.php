@@ -269,7 +269,7 @@ function showBookingDetails(bookingId) {
                             <table class="table table-borderless table-sm">
                                 <tr>
                                     <td><strong>Référence:</strong></td>
-                                    <td>${data.booking.id}</td>
+                                    <td>${data.booking.reference}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Résidence:</strong></td>
@@ -293,11 +293,11 @@ function showBookingDetails(bookingId) {
                             <h6>Détails du séjour</h6>
                             <table class="table table-borderless table-sm">
                                 <tr>
-                                    <td><strong>Check-in:</strong></td>
+                                    <td><strong>Entrée du client:</strong></td>
                                     <td>${new Date(data.booking.check_in_date).toLocaleDateString('fr-FR')}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Check-out:</strong></td>
+                                    <td><strong>Sortie du client:</strong></td>
                                     <td>${new Date(data.booking.check_out_date).toLocaleDateString('fr-FR')}</td>
                                 </tr>
                                 <tr>

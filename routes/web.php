@@ -202,6 +202,8 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
             Route::get('/', 'index')->name('admin.bookings.index');
             Route::get('/calendar', 'calendar')->name('admin.bookings.calendar');
             Route::get('/calendar-data', 'calendarData')->name('admin.bookings.calendar-data');
+            Route::get('/new-bookings', 'getNewBookings')->name('admin.bookings.new-bookings');
+            Route::post('/mark-as-seen', 'markAsSeen')->name('admin.bookings.mark-as-seen');
             Route::get('/{booking}', 'show')->name('admin.bookings.show');
             Route::get('/{booking}/quick-view', 'quickView')->name('admin.bookings.quick-view');
             Route::patch('/{booking}/confirm', 'confirm')->name('admin.bookings.confirm');

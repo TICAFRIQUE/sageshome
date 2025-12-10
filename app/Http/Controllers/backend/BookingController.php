@@ -19,18 +19,18 @@ class BookingController extends Controller
         }
 
         if ($request->payment_status) {
-            $query->whereHas('payment', function($q) use ($request) {
+            $query->whereHas('payment', function ($q) use ($request) {
                 $q->where('status', $request->payment_status);
             });
         }
 
         if ($request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -42,6 +42,11 @@ class BookingController extends Controller
     public function show(Booking $booking)
     {
         $booking->load(['residence', 'payment']);
+
+        //mettre à jour seen_at
+        if (is_null($booking->seen_at)) {
+            $booking->update(['seen_at' => now()]);
+        }
         return view('backend.pages.sages-home.bookings.show', compact('booking'));
     }
 
@@ -55,20 +60,20 @@ class BookingController extends Controller
         $booking->update(['status' => $request->status]);
 
         // Log ou notifications ici si nécessaire
-        
+
         return redirect()->back()->with('success', 'Statut de la réservation mis à jour avec succès');
     }
 
     public function confirmPayment(Request $request, Booking $booking)
     {
         $payment = $booking->payment;
-        
+
         if (!$payment) {
             return redirect()->back()->with('error', 'Aucun paiement trouvé pour cette réservation');
         }
 
         $payment->update(['status' => 'completed']);
-        
+
         // Confirmer automatiquement la réservation si le paiement est confirmé
         if ($booking->status === 'pending') {
             $booking->update(['status' => 'confirmed']);
@@ -125,11 +130,12 @@ class BookingController extends Controller
     public function quickView(Booking $booking)
     {
         $booking->load(['residence']);
-        
+
         return response()->json([
             'success' => true,
             'booking' => [
                 'id' => $booking->id,
+                'reference' => $booking->booking_number,
                 'residence_name' => $booking->residence->name,
                 'guest_name' => $booking->first_name . ' ' . $booking->last_name,
                 'phone' => $booking->phone,
@@ -168,5 +174,51 @@ class BookingController extends Controller
         }
 
         return redirect()->back()->with('success', 'Réservation annulée avec succès');
+    }
+
+    // function to get new bookings (not seen yet)
+    public function getNewBookings()
+    {
+        $newBookings = Booking::with(['residence'])->where('created_at', '>=', now()->subMinutes(2))
+            ->whereNull('seen_at')
+            ->orderBy('created_at', 'desc')->get();
+
+        // $newBookings = Booking::with(['residence'])
+        //     ->where('status', 'pending')
+        //     ->where('created_at', '>=', now()->subDay())
+        //     ->whereNull('seen_at')
+        //     ->orderBy('created_at', 'desc')
+        //     ->get();
+
+        return response()->json([
+            'count' => $newBookings->count(),
+            'bookings' => $newBookings->map(function ($booking) {
+                return [
+                    'reference' => $booking->booking_number,
+                    'guest_name' => $booking->first_name . ' ' . $booking->last_name,
+                    'residence_name' => $booking->residence->name,
+                    'created_at' => $booking->created_at->diffForHumans(),
+                    'total_amount' => number_format($booking->total_amount, 0, ',', ' ') . ' FCFA',
+                    'show_url' => route('admin.bookings.show', $booking->id),
+                    'quick_view_url' => route('admin.bookings.quick-view', $booking->id),
+                ];
+            })
+        ]);
+    }
+
+
+
+
+
+
+    public function markAsSeen(Request $request)
+    {
+        // Marquer toutes les réservations non vues comme vues
+        Booking::whereNull('seen_at')
+            ->where('status', 'pending')
+            ->where('created_at', '>=', now()->subDay())
+            ->update(['seen_at' => now()]);
+
+        return response()->json(['success' => true]);
     }
 }
