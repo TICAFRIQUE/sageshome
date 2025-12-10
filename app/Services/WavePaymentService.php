@@ -98,6 +98,21 @@ class WavePaymentService
                     'data' => $data,
                 ];
             } else {
+                // Si erreur 404, la session a été consommée/expirée (normal après paiement)
+                if ($response->status() === 404) {
+                    Log::warning('Session Wave non trouvée (probablement déjà traitée)', [
+                        'status_code' => 404,
+                        'session_id' => $sessionId
+                    ]);
+
+                    return [
+                        'success' => false,
+                        'error' => 'Session Wave non trouvée ou déjà traitée',
+                        'details' => $response->json(),
+                        'session_expired' => true,
+                    ];
+                }
+
                 Log::error('Erreur vérification statut Wave', [
                     'status_code' => $response->status(),
                     'body' => $response->body()

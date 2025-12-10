@@ -227,13 +227,25 @@ class BookingController extends Controller
             ]);
         }
 
+        // Si le paiement est déjà complété, rediriger directement vers la confirmation
+        if ($payment->status === 'completed') {
+            \Log::info('Paiement déjà complété, redirection directe', [
+                'payment_id' => $payment->id,
+                'status' => $payment->status
+            ]);
+
+            return redirect()->route('booking.confirmation', $payment->booking)
+                ->with('success', 'Votre paiement a déjà été confirmé.');
+        }
+
         // Vérifier si le paiement est via Wave et a un transaction_id
         if ($payment->payment_method === 'wave' && $payment->transaction_id) {
             // Log pour diagnostic
             \Log::info('Vérification paiement Wave', [
                 'payment_id' => $payment->id,
                 'transaction_id' => $payment->transaction_id,
-                'user_reconnected' => Auth::check()
+                'user_reconnected' => Auth::check(),
+                'current_status' => $payment->status
             ]);
 
             // Vérifier le statut du paiement auprès de Wave
@@ -282,6 +294,30 @@ class BookingController extends Controller
                         ->with('error', 'Le paiement Wave a échoué ou n\'est pas encore confirmé.');
                 }
             } else {
+                // Si la session a expiré (erreur 404), vérifier si le paiement a été traité par webhook
+                if (isset($statusResult['session_expired']) && $statusResult['session_expired']) {
+                    \Log::info('Session Wave expirée, vérification via données locales', [
+                        'payment_id' => $payment->id,
+                        'payment_status' => $payment->status
+                    ]);
+
+                    // Recharger le paiement depuis la DB au cas où le webhook l'aurait mis à jour
+                    $payment->refresh();
+
+                    if ($payment->status === 'completed') {
+                        \Log::info('Paiement déjà confirmé par webhook', [
+                            'payment_id' => $payment->id
+                        ]);
+
+                        return redirect()->route('booking.confirmation', $payment->booking)
+                            ->with('success', 'Votre paiement a été confirmé avec succès.');
+                    }
+
+                    // Si toujours pas confirmé après 5 secondes, le webhook devrait arriver bientôt
+                    return redirect()->route('booking.payment', $payment->booking)
+                        ->with('info', 'Votre paiement est en cours de vérification. La page se mettra à jour automatiquement.');
+                }
+
                 // Erreur lors de la vérification du statut
                 \Log::error('Erreur vérification statut Wave', [
                     'payment_id' => $payment->id,
@@ -399,11 +435,16 @@ class BookingController extends Controller
      */
     public function getPaymentStatus(Payment $payment)
     {
+        // Rafraîchir depuis la base de données pour avoir les dernières données
+        $payment->refresh();
+        $payment->load('booking');
+
         return response()->json([
             'status' => $payment->status,
             'payment_method' => $payment->payment_method,
             'amount' => $payment->amount,
             'booking_status' => $payment->booking->status,
+            'completed_at' => $payment->completed_at ? $payment->completed_at->toIso8601String() : null,
         ]);
     }
 
