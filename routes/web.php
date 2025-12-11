@@ -16,12 +16,17 @@ use App\Http\Controllers\backend\PermissionController;
 use App\Http\Controllers\backend\ResidenceController as AdminResidenceController;
 use App\Http\Controllers\backend\BookingController as AdminBookingController;
 use App\Http\Controllers\backend\ResidenceTypeController;
+use App\Http\Controllers\TestEmailController;
 
 
 
 Route::fallback(function () {
     return view('backend.utility.auth-404-basic');
 });
+
+// Routes de test email (à supprimer en production)
+Route::get('/test-email', [TestEmailController::class, 'testEmail'])->name('test.email');
+Route::get('/test-admin-email', [TestEmailController::class, 'testAdminEmail'])->name('test.admin.email');
 
 // Routes publiques (front-end)
 Route::get('/', [HomeController::class, 'index'])->name('home');

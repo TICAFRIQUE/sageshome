@@ -2,23 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
-use App\Models\Residence;
-use App\Models\Payment;
+use Exception;
+use Carbon\Carbon;
 use App\Models\User;
-use App\Services\WavePaymentService;
+use App\Models\Booking;
+use App\Models\Payment;
+use App\Models\Residence;
 use Illuminate\Http\Request;
+use App\Services\EmailService;
+use App\Services\WavePaymentService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use Carbon\Carbon;
+
 
 class BookingController extends Controller
 {
     protected $wavePaymentService;
+    protected $emailService;
 
-    public function __construct(WavePaymentService $wavePaymentService)
+    public function __construct(WavePaymentService $wavePaymentService, EmailService $emailService)
     {
         $this->wavePaymentService = $wavePaymentService;
+        $this->emailService = $emailService;
     }
 
     public function create(Residence $residence, Request $request)
@@ -104,14 +109,13 @@ class BookingController extends Controller
             'total_amount' => $finalAmount,
         ]);
 
-        // Envoyer les emails de notification
+        // Envoyer les emails de notification avec le service Email
         try {
             // Email au client
-            \Mail::to($booking->email)->send(new \App\Mail\BookingConfirmationMail($booking));
+            $this->emailService->sendBookingConfirmation($booking);
             
-            // Email à l'admin (récupérer l'email admin depuis les paramètres ou config)
-            $adminEmail = 'infos@sageshome.ci';
-            \Mail::to($adminEmail)->send(new \App\Mail\NewBookingNotificationMail($booking));
+            // Email à l'admin
+            $this->emailService->sendNewBookingNotification($booking);
         } catch (\Exception $e) {
             \Log::error('Erreur envoi email réservation: ' . $e->getMessage());
         }
