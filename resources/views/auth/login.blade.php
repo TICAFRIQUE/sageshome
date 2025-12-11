@@ -320,6 +320,12 @@
                                 </label>
                             </div> --}}
 
+                            <div class="d-flex justify-content-end mb-3">
+                                <a href="{{ route('password.request') }}" class="text-muted" style="font-size: 0.9rem;">
+                                    <i class="fas fa-lock me-1"></i>Mot de passe oublié ?
+                                </a>
+                            </div>
+
                             <button type="submit" class="btn btn-auth w-100">
                                 <i class="fas fa-sign-in-alt me-2"></i>Se connecter
                             </button>
