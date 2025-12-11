@@ -342,6 +342,35 @@
             left: 100%;
         }
 
+        /*style pour le bouton de connexion*/
+        .btn-login {
+            background: linear-gradient(135deg, #017052 0%, #0377d6 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+            color: white;
+        }
+
+        .btn-login:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-login::
+
         /* Animation du bouton quand il apparaît */
         .btn-book-now.show {
             animation: slideInUp 0.5s ease-out;
@@ -501,6 +530,7 @@
                 opacity: 0;
                 transform: translateY(100px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -587,9 +617,15 @@
                 <div class="row mb-4">
                     <div class="col-md-8">
                         <h1 class="text-green mb-2">{{ $residence->name }}</h1>
-                        <p class="text-muted mb-3">
-                            <i class="bi bi-geo-alt me-2"></i>{{ $residence->address }}
-                        </p>
+                        <h2 class="h5  my-3">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            {{ $residence?->ville }} {{ $residence?->commune }}
+
+                            <p class="text-muted my-3">
+                                {{ $residence?->address }}
+                            </p>
+                        </h2>
+
 
                         <div class="d-flex flex-wrap gap-3 mb-4">
                             <span class="badge bg-light text-dark fs-6">{{ $residence->type_display }}</span>
@@ -746,6 +782,13 @@
                     <div class="card">
                         <div class="card-body">
                             <h4 class="card-title text-center text-green mb-4">Réserver maintenant</h4>
+                            @guest
+                                <p class="text-center text-muted mb-4">
+                                    <i class="fas fa-lock me-2"></i>
+                                    <a href="{{ route('login') }}">Connectez-vous</a> pour effectuer une réservation
+
+                                </p>
+                            @endguest
 
                             <form id="bookingForm">
                                 @csrf
@@ -784,7 +827,7 @@
                                             <div class="d-flex justify-content-between">
                                                 <span>Prix par nuit:</span>
                                                 <span
-                                                    id="pricePerNight">{{ number_format($residence->price_per_night, 0 , ',', ' ') }}
+                                                    id="pricePerNight">{{ number_format($residence->price_per_night, 0, ',', ' ') }}
                                                     FCFA</span>
                                             </div>
                                             <div class="d-flex justify-content-between">
@@ -811,10 +854,8 @@
                                 <div id="availabilityMessage" class="alert" style="display: none;"></div>
 
                                 @guest
-                                    <p class="text-muted text-center mb-3">
-                                        <a href="{{ route('login') }}">Connectez-vous</a> pour effectuer une réservation
-                                    </p>
-                                    <a href="{{ route('login') }}" class="btn btn-green w-100">
+
+                                    <a href="{{ route('login') }}" class="btn btn-login w-100">
                                         Se connecter pour réserver
                                     </a>
                                 @else
@@ -861,7 +902,7 @@
                                                 <i class="bi bi-people me-1"></i>{{ $similar->capacity }} voyageurs
                                             </small>
                                             <span class="text-gold fw-bold small">
-                                                {{ number_format($similar->price_per_night, 0 , ',', ' ') }} FCFA/nuit
+                                                {{ number_format($similar->price_per_night, 0, ',', ' ') }} FCFA/nuit
                                             </span>
                                         </div>
                                     </div>
@@ -903,7 +944,7 @@
                 bookNowBtn.disabled = false;
                 bookNowBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Réserver maintenant';
             }
-            
+
             if (checkAvailabilityBtn) {
                 checkAvailabilityBtn.disabled = false;
                 checkAvailabilityBtn.innerHTML = 'Vérifier la disponibilité';
@@ -1053,11 +1094,13 @@
                 // Si des champs sont manquants, afficher un message informatif
                 if (missingFields.length > 0) {
                     if (missingFields.length === 3) {
-                        showMessage('📋 Veuillez remplir tous les champs : date d\'arrivée, date de départ et nombre de voyageurs.', 'info');
+                        showMessage(
+                            '📋 Veuillez remplir tous les champs : date d\'arrivée, date de départ et nombre de voyageurs.',
+                            'info');
                     } else {
-                        const missingText = missingFields.length === 1 
-                            ? missingFields[0]
-                            : missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
+                        const missingText = missingFields.length === 1 ?
+                            missingFields[0] :
+                            missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
                         showMessage(`📝 Il manque encore : ${missingText}.`, 'warning');
                     }
                     hideAvailabilityResults();
@@ -1249,9 +1292,9 @@
                     }
 
                     if (missingFields.length > 0) {
-                        const missingText = missingFields.length === 1 
-                            ? missingFields[0]
-                            : missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
+                        const missingText = missingFields.length === 1 ?
+                            missingFields[0] :
+                            missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
                         showMessage(`❌ Veuillez remplir : ${missingText}.`, 'warning');
                         return;
                     }
@@ -1581,12 +1624,12 @@
             if (bookingCard) {
                 const yOffset = -130; // Offset pour la navbar fixe
                 const y = bookingCard.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                
+
                 window.scrollTo({
                     top: y,
                     behavior: 'smooth'
                 });
-                
+
                 // Focus sur le premier champ de date
                 setTimeout(() => {
                     const checkInInput = document.getElementById('check_in');
@@ -1603,13 +1646,13 @@
             if (event.persisted) {
                 const bookNowBtn = document.getElementById('bookNowBtn');
                 const checkAvailabilityBtn = document.getElementById('checkAvailabilityBtn');
-                
+
                 // Réinitialiser l'état des boutons
                 if (bookNowBtn) {
                     bookNowBtn.disabled = false;
                     bookNowBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Réserver maintenant';
                 }
-                
+
                 if (checkAvailabilityBtn) {
                     checkAvailabilityBtn.disabled = false;
                     checkAvailabilityBtn.innerHTML = 'Vérifier la disponibilité';
