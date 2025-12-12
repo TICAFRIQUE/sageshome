@@ -159,9 +159,72 @@ cd /home4/scisalyq/sageshome.ci
 ./rollback.sh backup-20251212-143000.tar.gz
 ```
 
-## 📊 Configuration Supervisor (Queues)
+## 📊 Configuration des Workers de Queue
 
-### 1. Installer le fichier de configuration
+> ⚠️ **Important** : Sur un hébergement mutualisé sans accès root (comme cPanel), utilisez la **Méthode 1** (Cron). Supervisor nécessite des privilèges root.
+
+### Méthode 1 : Commande Artisan (Hébergement mutualisé - RECOMMANDÉ)
+
+Cette méthode fonctionne sans accès root/sudo et est complètement intégrée à Laravel.
+
+#### 1. Gérer le worker avec Artisan
+
+```bash
+cd /home4/scisalyq/sageshome.ci
+
+# Démarrer le worker
+php artisan queue:manage start
+
+# Vérifier le statut
+php artisan queue:manage status
+
+# Redémarrer
+php artisan queue:manage restart
+
+# Arrêter
+php artisan queue:manage stop
+```
+
+#### 2. Configurer le Cron pour surveillance automatique
+
+Le worker s'arrête automatiquement après 1h (max-time=3600). Configurez un cron pour le relancer :
+
+**Via terminal :**
+```bash
+crontab -e
+```
+
+Ajoutez ces lignes :
+
+```cron
+# Redémarrer le worker de queue toutes les heures
+0 * * * * cd /home4/scisalyq/sageshome.ci && php artisan queue:manage restart >> /home4/scisalyq/logs/cron-queue.log 2>&1
+
+# Laravel Scheduler (toutes les minutes)
+* * * * * cd /home4/scisalyq/sageshome.ci && php artisan schedule:run >> /dev/null 2>&1
+```
+
+**Via cPanel :**
+1. Aller dans **Cron Jobs**
+2. Ajouter une nouvelle tâche :
+   - **Intervalle** : Toutes les heures (0 * * * *)
+   - **Commande** : `cd /home4/scisalyq/sageshome.ci && php artisan queue:manage restart`
+
+#### 3. Voir les logs du worker
+
+```bash
+# Voir les logs en temps réel
+tail -f storage/logs/queue-worker.log
+
+# Voir les dernières lignes
+tail -20 storage/logs/queue-worker.log
+```
+
+### Méthode 2 : Supervisor (VPS/Serveur dédié uniquement)
+
+⚠️ Nécessite un accès root/sudo. N'utilisez cette méthode que si vous avez un VPS ou serveur dédié.
+
+#### 1. Installer le fichier de configuration
 
 ```bash
 # Copier la config
@@ -176,13 +239,13 @@ sudo supervisorctl update
 sudo supervisorctl start sageshome-worker:*
 ```
 
-### 2. Vérifier le statut
+#### 2. Vérifier le statut
 
 ```bash
 sudo supervisorctl status sageshome-worker:*
 ```
 
-### 3. Gérer les workers
+#### 3. Gérer les workers
 
 ```bash
 # Redémarrer
@@ -291,6 +354,37 @@ php artisan config:cache
 ```
 
 ### Les queues ne fonctionnent pas
+
+#### Sur hébergement mutualisé (sans sudo)
+
+1. **Vérifier que le worker tourne** :
+```bash
+cd /home4/scisalyq/sageshome.ci
+php artisan queue:manage status
+```
+
+2. **Redémarrer le worker** :
+```bash
+php artisan queue:manage restart
+```
+
+3. **Vérifier les logs** :
+```bash
+tail -f storage/logs/queue-worker.log
+```
+
+4. **Voir les jobs échoués** :
+```bash
+php artisan queue:failed
+php artisan queue:retry all
+```
+
+5. **Vérifier le cron** :
+```bash
+crontab -l  # Voir les crons configurés
+```
+
+#### Sur VPS/Serveur dédié (avec supervisor)
 
 1. **Vérifier supervisor** :
 ```bash

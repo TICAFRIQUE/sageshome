@@ -122,7 +122,20 @@ $PHP_PATH artisan view:clear
 
 log "Optimisation..."
 $PHP_PATH artisan config:cache
-$PHP_PATH artisan route:cache
+
+# Vérifier les routes avant de mettre en cache
+log "Vérification des routes..."
+if $PHP_PATH artisan route:list &>/dev/null; then
+    log "Mise en cache des routes..."
+    $PHP_PATH artisan route:cache || {
+        warning "Échec du cache des routes (routes en conflit). L'application continuera sans cache de routes."
+        $PHP_PATH artisan route:clear
+    }
+else
+    warning "Erreur dans les routes, cache ignoré"
+    $PHP_PATH artisan route:clear
+fi
+
 $PHP_PATH artisan view:cache
 $PHP_PATH artisan optimize
 
@@ -149,12 +162,16 @@ chmod -R 775 storage/logs storage/framework storage/app
 ###############################################################################
 
 log "Redémarrage des workers de queue..."
-$PHP_PATH artisan queue:restart
 
-# Si vous utilisez supervisor
+# Si vous utilisez supervisor (VPS/Serveur dédié)
 if command -v supervisorctl &> /dev/null; then
     log "Redémarrage de Supervisor..."
     supervisorctl restart sageshome-worker:* || warning "Supervisor non configuré ou non disponible"
+    $PHP_PATH artisan queue:restart
+else
+    # Hébergement mutualisé - utiliser la commande artisan
+    log "Redémarrage du worker via Artisan..."
+    $PHP_PATH artisan queue:manage restart || warning "Erreur lors du redémarrage du worker"
 fi
 
 ###############################################################################
