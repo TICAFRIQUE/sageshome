@@ -194,13 +194,13 @@
                         <!-- Price Breakdown -->
                         <div class="price-breakdown">
                             <div class="row mb-2">
-                                <div class="col-8">{{ number_format($priceInfo['price_per_night'], 0 , ',', ' ') }} FCFA x {{ $priceInfo['nights'] }} nuits</div>
-                                <div class="col-4 text-end">{{ number_format($priceInfo['total_price'], 0 , ',', ' ') }} FCFA</div>
+                                <div class="col-8">{{ number_format($priceInfo['price_per_night'], 0 , ',', ' ') }} FCFA x {{ $priceInfo['nights'] }} nuits<br><small class="text-muted">({{ number_format(fcfa_to_eur($priceInfo['price_per_night']), 2, ',', ' ') }} € x {{ $priceInfo['nights'] }} nuits)</small></div>
+                                <div class="col-4 text-end">{{ number_format($priceInfo['total_price'], 0 , ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($priceInfo['total_price']), 2, ',', ' ') }} €)</small></div>
                             </div>
                             
                             <div class="row mb-2">
                                 <div class="col-8">Taxes et frais (10%)</div>
-                                <div class="col-4 text-end">{{ number_format($taxAmount, 0 , ',', ' ') }} FCFA</div>
+                                <div class="col-4 text-end">{{ number_format($taxAmount, 0 , ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($taxAmount), 2, ',', ' ') }} €)</small></div>
                             </div>
                             
                             <hr>
@@ -208,7 +208,8 @@
                             <div class="row">
                                 <div class="col-8"><strong>Total</strong></div>
                                 <div class="col-4 text-end">
-                                    <strong class="text-gold fs-5">{{ number_format($finalAmount, 0 , ',', ' ') }} FCFA</strong>
+                                    <strong class="text-gold fs-5">{{ number_format($finalAmount, 0 , ',', ' ') }} FCFA</strong><br>
+                                    <span class="text-muted">({{ number_format(fcfa_to_eur($finalAmount), 2, ',', ' ') }} €)</span>
                                 </div>
                             </div>
                         </div>

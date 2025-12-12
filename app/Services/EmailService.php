@@ -5,11 +5,63 @@ namespace App\Services;
 use Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\SendEmailJob;
 
 class EmailService
 {
     /**
-     * Envoyer un email avec PHPMailer
+     * Déterminer si on doit utiliser la queue ou l'envoi direct
+     */
+    protected $useQueue;
+
+    public function __construct()
+    {
+        // Utiliser la queue par défaut (mettre false pour envoi direct)
+        $this->useQueue = config('mail.use_queue', true);
+    }
+
+    /**
+     * Envoyer un email avec PHPMailer (avec queue si activé)
+     *
+     * @param string|array $to Destinataire(s)
+     * @param string $subject Sujet de l'email
+     * @param string $view Nom de la vue Blade
+     * @param array $data Données à passer à la vue
+     * @param string|null $fromEmail Email de l'expéditeur (optionnel)
+     * @param string|null $fromName Nom de l'expéditeur (optionnel)
+     * @param bool $immediate Forcer l'envoi immédiat (ignorer la queue)
+     * @return bool
+     */
+    public function send($to, string $subject, string $view, array $data = [], ?string $fromEmail = null, ?string $fromName = null, bool $immediate = false): bool
+    {
+        // Si queue activée ET pas d'envoi immédiat forcé
+        if ($this->useQueue && !$immediate) {
+            try {
+                SendEmailJob::dispatch($to, $subject, $view, $data, $fromEmail, $fromName);
+                
+                Log::info('Email mis en queue', [
+                    'to' => $to,
+                    'subject' => $subject,
+                    'view' => $view
+                ]);
+                
+                return true;
+            } catch (Exception $e) {
+                Log::error('Erreur mise en queue email', [
+                    'error' => $e->getMessage()
+                ]);
+                
+                // Fallback sur envoi direct en cas d'erreur
+                return $this->sendNow($to, $subject, $view, $data, $fromEmail, $fromName);
+            }
+        }
+
+        // Envoi direct
+        return $this->sendNow($to, $subject, $view, $data, $fromEmail, $fromName);
+    }
+
+    /**
+     * Envoyer un email immédiatement (sans queue)
      *
      * @param string|array $to Destinataire(s)
      * @param string $subject Sujet de l'email
@@ -19,7 +71,7 @@ class EmailService
      * @param string|null $fromName Nom de l'expéditeur (optionnel)
      * @return bool
      */
-    public function send($to, string $subject, string $view, array $data = [], ?string $fromEmail = null, ?string $fromName = null): bool
+    public function sendNow($to, string $subject, string $view, array $data = [], ?string $fromEmail = null, ?string $fromName = null): bool
     {
         try {
             $mail = new PHPMailer(true);
@@ -56,7 +108,7 @@ class EmailService
             // Envoyer
             $mail->send();
 
-            Log::info('Email envoyé avec succès', [
+            Log::info('Email envoyé avec succès (Direct)', [
                 'to' => $to,
                 'subject' => $subject,
                 'view' => $view

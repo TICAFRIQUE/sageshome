@@ -297,9 +297,10 @@
                             <div class="row mb-2">
                                 <div class="col-8">
                                     <i class="fas fa-bed me-2 text-muted"></i>
-                                    {{ number_format($booking->price_per_night, 0 , ',', ' ') }} FCFA x {{ $booking->nights }} nuits
+                                    {{ number_format($booking->price_per_night, 0 , ',', ' ') }} FCFA x {{ $booking->nights }} nuits<br>
+                                    <small class="text-muted ms-4">({{ number_format(fcfa_to_eur($booking->price_per_night), 2, ',', ' ') }} € x {{ $booking->nights }} nuits)</small>
                                 </div>
-                                <div class="col-4 text-end">{{ number_format($booking->total_price, 0 , ',', ' ') }} FCFA</div>
+                                <div class="col-4 text-end">{{ number_format($booking->total_price, 0 , ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($booking->total_price), 2, ',', ' ') }} €)</small></div>
                             </div>
                             
                             <div class="row mb-2">
@@ -318,7 +319,8 @@
                                     <strong>Total à payer</strong>
                                 </div>
                                 <div class="col-4 text-end">
-                                    <strong class="text-gold fs-4">{{ number_format($booking->final_amount, 0 , ',', ' ') }} FCFA</strong>
+                                    <strong class="text-gold fs-4">{{ number_format($booking->final_amount, 0 , ',', ' ') }} FCFA</strong><br>
+                                    <span class="text-muted">({{ number_format(fcfa_to_eur($booking->final_amount), 2, ',', ' ') }} €)</span>
                                 </div>
                             </div>
                         </div>

@@ -643,6 +643,9 @@
                             <span class="text-gold fw-bold" style="font-size: 2rem;">
                                 {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA
                             </span>
+                            <div class="text-muted" style="font-size: 1.1rem; margin-top: 0.25rem;">
+                                ({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €)
+                            </div>
                             <div class="text-muted">par nuit</div>
                         </div>
                     </div>
@@ -826,9 +829,7 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between">
                                                 <span>Prix par nuit:</span>
-                                                <span
-                                                    id="pricePerNight">{{ number_format($residence->price_per_night, 0, ',', ' ') }}
-                                                    FCFA</span>
+                                                <span id="pricePerNight">{{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €)</small></span>
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <span>Nombre de nuits:</span>
@@ -904,6 +905,9 @@
                                             <span class="text-gold fw-bold small">
                                                 {{ number_format($similar->price_per_night, 0, ',', ' ') }} FCFA/nuit
                                             </span>
+                                            <small class="text-muted d-block">
+                                                ({{ number_format(fcfa_to_eur($similar->price_per_night), 2, ',', ' ') }} €/nuit)
+                                            </small>
                                         </div>
                                     </div>
                                 @endforeach
@@ -921,7 +925,8 @@
             <i class="fas fa-calendar-alt me-2"></i>
             <span>Réserver</span>
             <div class="price-indicator">
-                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA/nuit
+                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA/nuit<br>
+                <small>({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €)</small>
             </div>
         </button>
     </div>

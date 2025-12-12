@@ -257,20 +257,23 @@
                 
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <span>{{ number_format($booking->price_per_night, 0 , ',', ' ') }} FCFA x {{ $booking->nights }} nuits</span>
-                        <span>{{ number_format($booking->total_price, 0 , ',', ' ') }} FCFA</span>
+                        <span>{{ number_format($booking->price_per_night, 0 , ',', ' ') }} FCFA x {{ $booking->nights }} nuits<br><small class="text-muted">({{ number_format(fcfa_to_eur($booking->price_per_night), 2, ',', ' ') }} € x {{ $booking->nights }} nuits)</small></span>
+                        <span>{{ number_format($booking->total_price, 0 , ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($booking->total_price), 2, ',', ' ') }} €)</small></span>
                     </div>
                     
                     <div class="d-flex justify-content-between mb-2">
                         <span>Taxes et frais</span>
-                        <span>{{ number_format($booking->tax_amount, 0 , ',', ' ') }} FCFA</span>
+                        <span>{{ number_format($booking->tax_amount, 0 , ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($booking->tax_amount), 2, ',', ' ') }} €)</small></span>
                     </div>
                     
                     <hr>
                     
                     <div class="d-flex justify-content-between">
                         <strong>Total</strong>
-                        <strong class="text-gold fs-5">{{ number_format($booking->final_amount, 0 , ',', ' ') }} FCFA</strong>
+                        <div class="text-end">
+                            <strong class="text-gold fs-5">{{ number_format($booking->final_amount, 0 , ',', ' ') }} FCFA</strong><br>
+                            <small class="text-muted">({{ number_format(fcfa_to_eur($booking->final_amount), 2, ',', ' ') }} €)</small>
+                        </div>
                     </div>
                 </div>
             </div>

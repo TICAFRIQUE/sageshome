@@ -1,0 +1,54 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main  # Déployer automatiquement sur push main
+  workflow_dispatch:  # Permet déclenchement manuel
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh $SSH_USER@$SSH_HOST << 'ENDSSH'
+            cd /home4/scisalyq/sageshome.ci
+            bash deploy.sh
+          ENDSSH
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Déploiement réussi"
+          else
+            echo "❌ Déploiement échoué"
+          fi
+
+      - name: Create deployment tag
+        if: success()
+        run: |
+          TAG="deploy-$(date +'%Y%m%d-%H%M%S')"
+          git tag $TAG
+          git push origin $TAG

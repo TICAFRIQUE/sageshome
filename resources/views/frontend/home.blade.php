@@ -119,7 +119,7 @@
                                             <span
                                                 class="text-gold fw-bold fs-4">{{ number_format($residence->price_per_night, 0, ',', ' ') }}
                                                 FCFA</span>
-                                            <small class="text-muted d-block">par nuit</small>
+                                            <small class="text-muted d-block">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €) par nuit</small>
                                         </div>
 
                                         <a href="{{ route('residences.show', $residence->slug) }}"
@@ -297,7 +297,7 @@
                                                         <span
                                                             class="text-gold fw-bold fs-5">{{ number_format($residence->price_per_night, 0, ',', ' ') }}
                                                             FCFA</span>
-                                                        <small class="text-muted d-block">par nuit</small>
+                                                        <small class="text-muted d-block">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €) par nuit</small>
                                                     </div>
 
                                                     <a href="{{ route('residences.show', $residence->slug) }}"

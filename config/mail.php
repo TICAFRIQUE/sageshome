@@ -18,6 +18,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Use Queue for Emails
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, emails will be sent via queue jobs instead of synchronously.
+    | This improves response times but requires queue workers to be running.
+    |
+    */
+
+    'use_queue' => env('MAIL_USE_QUEUE', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Mailer Configurations
     |--------------------------------------------------------------------------
     |

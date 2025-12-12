@@ -180,7 +180,7 @@
                                 <h5 class="card-title mb-0">{{ $residence->name }}</h5>
                                 <div class="text-end">
                                     <span class="h6 mb-0" style="color: var(--sage-green-dark);">{{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA</span>
-                                    <br><small class="text-muted">par nuit</small>
+                                    <br><small class="text-muted">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €) par nuit</small>
                                 </div>
                             </div>
                             
