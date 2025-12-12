@@ -6,10 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Sages Home - Résidences de luxe')</title>
-    <meta name="description" content="@yield('meta_description', 'Découvrez nos résidences de luxe avec services premium. Réservez votre séjour d\'exception avec Sages Home.')">
+    {{-- SEO Meta Tags --}}
+    <title>@yield('title', 'Sages Home - Résidences de luxe en Côte d\'Ivoire')</title>
+    <meta name="description" content="@yield('meta_description', 'Découvrez nos résidences de luxe avec services premium en Côte d\'Ivoire. Réservez votre séjour d\'exception avec Sages Home - Excellence, confort et service personnalisé 24/7.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'résidence luxe, location villa Abidjan, appartement meublé Côte d\'Ivoire, hébergement premium, location courte durée, services hôteliers, résidence haut standing, Sages Home')">
+    <meta name="author" content="Sages Home">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="@yield('canonical', request()->url())">
 
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="@yield('og_url', request()->url())">
+    <meta property="og:title" content="@yield('og_title', 'Sages Home - Résidences de luxe en Côte d\'Ivoire')">
+    <meta property="og:description" content="@yield('og_description', 'Découvrez nos résidences de luxe avec services premium en Côte d\'Ivoire.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">
+    <meta property="og:site_name" content="Sages Home">
+    <meta property="og:locale" content="fr_FR">
 
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="@yield('twitter_url', request()->url())">
+    <meta name="twitter:title" content="@yield('twitter_title', 'Sages Home - Résidences de luxe')">
+    <meta name="twitter:description" content="@yield('twitter_description', 'Découvrez nos résidences de luxe avec services premium.')">
+    <meta name="twitter:image" content="@yield('twitter_image', asset('images/logo.png'))">
+
+    {{-- Mobile & Theme --}}
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Sages Home">
+    <meta name="theme-color" content="#2F4A33">
+    <meta name="msapplication-TileColor" content="#2F4A33">
+
+    {{-- Favicons --}}
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/favicon/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon/favicon-16x16.png') }}">
