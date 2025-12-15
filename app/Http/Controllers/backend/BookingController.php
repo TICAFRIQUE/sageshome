@@ -5,7 +5,9 @@ namespace App\Http\Controllers\backend;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\Residence;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
@@ -220,5 +222,88 @@ class BookingController extends Controller
             ->update(['seen_at' => now()]);
 
         return response()->json(['success' => true]);
+    }
+
+    public function report(Request $request)
+    {
+        $residences = Residence::orderBy('name')->get();
+        
+        // Récupérer les paramètres de filtre
+        $filters = [
+            'start_date' => $request->start_date ?? now()->startOfMonth()->format('Y-m-d'),
+            'end_date' => $request->end_date ?? now()->endOfMonth()->format('Y-m-d'),
+            'residence_id' => $request->residence_id,
+            'status' => $request->status,
+        ];
+
+        // Construire la requête
+        $query = Booking::with(['residence', 'payments'])
+            ->whereBetween('check_in_date', [$filters['start_date'], $filters['end_date']]);
+
+        if ($filters['residence_id']) {
+            $query->where('residence_id', $filters['residence_id']);
+        }
+
+        if ($filters['status']) {
+            $query->where('status', $filters['status']);
+        }
+
+        $bookings = $query->orderBy('check_in_date')->get();
+
+        // Statistiques globales
+        $stats = [
+            'total_bookings' => $bookings->count(),
+            'confirmed_bookings' => $bookings->where('status', 'confirmed')->count(),
+            'pending_bookings' => $bookings->where('status', 'pending')->count(),
+            'cancelled_bookings' => $bookings->where('status', 'cancelled')->count(),
+            'total_revenue' => $bookings->where('status', 'confirmed')
+                ->flatMap(fn($b) => $b->payments->where('status', 'completed'))
+                ->sum('amount'),
+            'pending_revenue' => $bookings->where('status', 'pending')->sum('total_amount'),
+            'total_nights' => $bookings->where('status', 'confirmed')->sum(function($booking) {
+                return Carbon::parse($booking->check_in_date)->diffInDays($booking->check_out_date);
+            }),
+        ];
+
+        // Statistiques par résidence
+        $residenceStats = $bookings->groupBy('residence_id')->map(function ($bookings, $residenceId) {
+            $residence = $bookings->first()->residence;
+            $confirmedBookings = $bookings->where('status', 'confirmed');
+            
+            return [
+                'residence' => $residence,
+                'total_bookings' => $bookings->count(),
+                'confirmed_bookings' => $confirmedBookings->count(),
+                'total_revenue' => $confirmedBookings->flatMap(fn($b) => $b->payments->where('status', 'completed'))->sum('amount'),
+                'total_nights' => $confirmedBookings->sum(function($booking) {
+                    return Carbon::parse($booking->check_in_date)->diffInDays($booking->check_out_date);
+                }),
+            ];
+        });
+
+        return view('backend.pages.sages-home.bookings.report', compact(
+            'residences',
+            'filters',
+            'bookings',
+            'stats',
+            'residenceStats'
+        ));
+    }
+
+    public function destroy(Booking $booking)
+    {
+        try {
+            // Supprimer d'abord les paiements associés
+            $booking->payments()->delete();
+            
+            // Supprimer la réservation
+            $booking->delete();
+
+            return redirect()->route('admin.bookings.index')
+                ->with('success', 'La réservation a été supprimée avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Une erreur est survenue lors de la suppression de la réservation.');
+        }
     }
 }

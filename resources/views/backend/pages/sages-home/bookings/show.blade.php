@@ -246,19 +246,44 @@
                             @method('PATCH')
                             <button type="submit" class="btn btn-success w-100" 
                                     onclick="return confirm('Confirmer cette réservation ?')">
-                                <i class="ri-check-line me-1"></i> Confirmer
+                                <i class="ri-check-line me-1"></i> Confirmer la réservation
                             </button>
                         </form>
-                        
+                    @endif
+                    
+                    @php
+                        $hasUnconfirmedPayment = $booking->payments->where('status', '!=', 'completed')->count() > 0;
+                    @endphp
+                    
+                    @if($hasUnconfirmedPayment)
+                        <form action="{{ route('admin.bookings.confirm-payment', $booking) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-info w-100" 
+                                    onclick="return confirm('Confirmer le paiement de cette réservation ?')">
+                                <i class="ri-money-dollar-circle-line me-1"></i> Confirmer le paiement
+                            </button>
+                        </form>
+                    @endif
+                    
+                    @if($booking->status !== 'cancelled')
                         <form action="{{ route('admin.bookings.cancel', $booking) }}" method="POST" class="d-inline">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="btn btn-danger w-100" 
-                                    onclick="return confirm('Annuler cette réservation ?')">
-                                <i class="ri-close-line me-1"></i> Annuler
+                                    onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">
+                                <i class="ri-close-line me-1"></i> Annuler la réservation
                             </button>
                         </form>
                     @endif
+                    
+                    <form action="{{ route('admin.bookings.destroy', $booking) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger w-100" 
+                                onclick="return confirm('⚠️ ATTENTION : Cette action est irréversible !\n\nÊtes-vous absolument sûr de vouloir supprimer définitivement cette réservation et tous ses paiements associés ?')">
+                            <i class="ri-delete-bin-line me-1"></i> Supprimer définitivement
+                        </button>
+                    </form>
 
                     <a href="{{ route('admin.bookings.index') }}" class="btn btn-light">
                         <i class="ri-arrow-left-line me-1"></i> Retour à la liste

@@ -99,6 +99,283 @@
                 </div>
             </div>
             
+            <!-- Statistiques de revenus par période -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="mb-3"><i class="fas fa-chart-line"></i> Revenus par période</h5>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-start border-info border-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted mb-1">Aujourd'hui</p>
+                                    <h4 class="mb-0">{{ number_format($revenueToday, 0, ',', ' ') }}</h4>
+                                    <small class="text-muted">FCFA</small>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar-day fa-2x text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card border-start border-primary border-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted mb-1">Cette semaine</p>
+                                    <h4 class="mb-0">{{ number_format($revenueWeek, 0, ',', ' ') }}</h4>
+                                    <small class="text-muted">FCFA</small>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar-week fa-2x text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card border-start border-warning border-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted mb-1">Ce mois</p>
+                                    <h4 class="mb-0">{{ number_format($revenueMonth, 0, ',', ' ') }}</h4>
+                                    <small class="text-muted">FCFA</small>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar-alt fa-2x text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card border-start border-success border-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <p class="text-muted mb-1">Cette année</p>
+                                    <h4 class="mb-0">{{ number_format($revenueYear, 0, ',', ' ') }}</h4>
+                                    <small class="text-muted">FCFA</small>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar fa-2x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Revenus par résidence -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#revenue-month" role="tab">
+                                        <i class="fas fa-calendar-alt"></i> Ce mois
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#revenue-week" role="tab">
+                                        <i class="fas fa-calendar-week"></i> Cette semaine
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#revenue-today" role="tab">
+                                        <i class="fas fa-calendar-day"></i> Aujourd'hui
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#revenue-year" role="tab">
+                                        <i class="fas fa-calendar"></i> Cette année
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <!-- Ce mois -->
+                                <div class="tab-pane fade show active" id="revenue-month" role="tabpanel">
+                                    <h5 class="mb-3">Top Résidences - Ce Mois</h5>
+                                    @if($revenueByResidenceMonth->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Résidence</th>
+                                                        <th class="text-end">Revenus</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($revenueByResidenceMonth as $index => $residence)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <i class="fas fa-building text-muted"></i>
+                                                            {{ $residence->name }}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($residence->total, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="table-active">
+                                                        <td colspan="2"><strong>Total</strong></td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($revenueMonth, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <p class="text-muted text-center py-4">Aucun revenu ce mois.</p>
+                                    @endif
+                                </div>
+                                
+                                <!-- Cette semaine -->
+                                <div class="tab-pane fade" id="revenue-week" role="tabpanel">
+                                    <h5 class="mb-3">Top Résidences - Cette Semaine</h5>
+                                    @if($revenueByResidenceWeek->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Résidence</th>
+                                                        <th class="text-end">Revenus</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($revenueByResidenceWeek as $index => $residence)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <i class="fas fa-building text-muted"></i>
+                                                            {{ $residence->name }}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($residence->total, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="table-active">
+                                                        <td colspan="2"><strong>Total</strong></td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($revenueWeek, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <p class="text-muted text-center py-4">Aucun revenu cette semaine.</p>
+                                    @endif
+                                </div>
+                                
+                                <!-- Aujourd'hui -->
+                                <div class="tab-pane fade" id="revenue-today" role="tabpanel">
+                                    <h5 class="mb-3">Résidences - Aujourd'hui</h5>
+                                    @if($revenueByResidenceToday->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Résidence</th>
+                                                        <th class="text-end">Revenus</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($revenueByResidenceToday as $index => $residence)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <i class="fas fa-building text-muted"></i>
+                                                            {{ $residence->name }}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($residence->total, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="table-active">
+                                                        <td colspan="2"><strong>Total</strong></td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($revenueToday, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <p class="text-muted text-center py-4">Aucun revenu aujourd'hui.</p>
+                                    @endif
+                                </div>
+                                
+                                <!-- Cette année -->
+                                <div class="tab-pane fade" id="revenue-year" role="tabpanel">
+                                    <h5 class="mb-3">Top Résidences - Cette Année</h5>
+                                    @if($revenueByResidenceYear->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Résidence</th>
+                                                        <th class="text-end">Revenus</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($revenueByResidenceYear as $index => $residence)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <i class="fas fa-building text-muted"></i>
+                                                            {{ $residence->name }}
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($residence->total, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="table-active">
+                                                        <td colspan="2"><strong>Total</strong></td>
+                                                        <td class="text-end">
+                                                            <strong>{{ number_format($revenueYear, 0, ',', ' ') }} FCFA</strong>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <p class="text-muted text-center py-4">Aucun revenu cette année.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="row mt-4">
                 <div class="col-md-8">
                     <div class="card">

@@ -211,6 +211,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         // Gestion des réservations
         Route::prefix('bookings')->controller(AdminBookingController::class)->group(function () {
             Route::get('/', 'index')->name('admin.bookings.index');
+            Route::get('/report', 'report')->name('admin.bookings.report');
             Route::get('/calendar', 'calendar')->name('admin.bookings.calendar');
             Route::get('/calendar-data', 'calendarData')->name('admin.bookings.calendar-data');
             Route::get('/new-bookings', 'getNewBookings')->name('admin.bookings.new-bookings');
@@ -221,6 +222,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
             Route::patch('/{booking}/cancel', 'cancel')->name('admin.bookings.cancel');
             Route::post('/{booking}/status', 'updateStatus')->name('admin.bookings.update-status');
             Route::post('/{booking}/payment', 'confirmPayment')->name('admin.bookings.confirm-payment');
+            Route::delete('/{booking}', 'destroy')->name('admin.bookings.destroy');
         });
 
         // Gestion des clients

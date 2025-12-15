@@ -98,14 +98,25 @@
                 </li>
                 
                 <li class="nav-item">
-                    <a href="{{ route('admin.bookings.index') }}"
-                        class="nav-link menu-link {{ Route::is('admin.bookings.*') ? 'active' : '' }}">
+                    <a class="nav-link menu-link {{ Route::is('admin.bookings.*') ? 'active' : '' }}" href="#sidebarBookings" data-bs-toggle="collapse" role="button"
+                        aria-expanded="{{ Route::is('admin.bookings.*') ? 'true' : 'false' }}" aria-controls="sidebarBookings">
                         <i class="ri-calendar-check-line"></i> <span>Réservations</span>
                     </a>
+                    <div class="collapse menu-dropdown {{ Route::is('admin.bookings.*') ? 'show' : '' }}" id="sidebarBookings">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ Route::is('admin.bookings.index') || Route::is('admin.bookings.show') || Route::is('admin.bookings.calendar') ? 'active' : '' }}">
+                                    <i class="ri-list-check"></i> Liste des Réservations
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.bookings.report') }}" class="nav-link {{ Route::is('admin.bookings.report') ? 'active' : '' }}">
+                                    <i class="ri-file-chart-line"></i> Compte d'Exploitation
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </li>
-
-
-
 
                 @if (Auth::user()->role == 'superadmin' || Auth::user()->role == 'developpeur' || Auth::user()->can('voir-parametre'))
                     <li class="nav-item">

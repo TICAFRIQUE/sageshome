@@ -157,6 +157,9 @@ function initializeCalendar() {
             week: 'Semaine',
             day: 'Jour'
         },
+        moreLinkText: function(n) {
+            return '+' + n + ' autre' + (n > 1 ? 's' : '');
+        },
         height: 'auto',
         eventClick: function(info) {
             showBookingDetails(info.event.id);
