@@ -187,28 +187,59 @@ php artisan queue:manage stop
 
 #### 2. Configurer le Cron pour surveillance automatique
 
-Le worker s'arrête automatiquement après 1h (max-time=3600). Configurez un cron pour le relancer :
+Le worker s'arrête automatiquement après 1h (max-time=3600). Configurez un cron pour le relancer.
 
-**Via terminal :**
+**Méthode A : Via script dédié (RECOMMANDÉ)**
+
+```bash
+# Rendre le script exécutable
+cd /home4/scisalyq/sageshome.ci
+chmod +x cron-queue-restart.sh
+
+# Tester le script
+./cron-queue-restart.sh
+
+# Configurer le cron
+crontab -e
+```
+
+Ajoutez :
+
+```cron
+# Redémarrer le worker de queue toutes les heures
+0 * * * * /home4/scisalyq/sageshome.ci/cron-queue-restart.sh
+
+# Laravel Scheduler (toutes les minutes)
+* * * * * cd /home4/scisalyq/sageshome.ci && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
+```
+
+**Méthode B : Commande directe**
+
 ```bash
 crontab -e
 ```
 
-Ajoutez ces lignes :
+Ajoutez :
 
 ```cron
 # Redémarrer le worker de queue toutes les heures
-0 * * * * cd /home4/scisalyq/sageshome.ci && php artisan queue:manage restart >> /home4/scisalyq/logs/cron-queue.log 2>&1
+0 * * * * cd /home4/scisalyq/sageshome.ci && /usr/local/bin/php artisan queue:manage restart >> /home4/scisalyq/logs/cron-queue.log 2>&1
 
 # Laravel Scheduler (toutes les minutes)
-* * * * * cd /home4/scisalyq/sageshome.ci && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home4/scisalyq/sageshome.ci && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
 ```
 
 **Via cPanel :**
 1. Aller dans **Cron Jobs**
 2. Ajouter une nouvelle tâche :
-   - **Intervalle** : Toutes les heures (0 * * * *)
-   - **Commande** : `cd /home4/scisalyq/sageshome.ci && php artisan queue:manage restart`
+   - **Intervalle** : Toutes les heures (`0 * * * *`)
+   - **Commande** : `/home4/scisalyq/sageshome.ci/cron-queue-restart.sh`
+
+**Vérifier les logs du cron :**
+
+```bash
+tail -f /home4/scisalyq/logs/cron-queue.log
+```
 
 #### 3. Voir les logs du worker
 

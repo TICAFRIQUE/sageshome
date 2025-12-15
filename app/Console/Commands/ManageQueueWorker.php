@@ -94,17 +94,26 @@ class ManageQueueWorker extends Command
             // Linux/Unix
             $command = sprintf(
                 'nohup %s %s queue:work database --sleep=3 --tries=3 --max-time=3600 --timeout=60 >> %s 2>&1 & echo $!',
-                escapeshellarg($phpBinary),
-                escapeshellarg($artisan),
-                escapeshellarg($logFile)
+                $phpBinary,
+                $artisan,
+                $logFile
             );
             
-            $pid = exec($command);
-            file_put_contents($this->pidFile, $pid);
-            $this->info("Worker démarré avec succès (PID: $pid)");
+            $output = [];
+            exec($command, $output);
+            $pid = trim(end($output));
+            
+            if (!empty($pid) && is_numeric($pid)) {
+                file_put_contents($this->pidFile, $pid);
+                $this->info("Worker démarré avec succès (PID: $pid)");
+            } else {
+                $this->error("Erreur lors du démarrage du worker");
+                $this->error("Commande : $command");
+                return 1;
+            }
         }
 
-        Log::info('Queue worker démarré via commande artisan');
+        Log::info('Queue worker démarré via commande artisan', ['pid' => $pid ?? 'unknown']);
         $this->info("✅ Worker démarré avec succès");
         $this->info("📄 Logs : $logFile");
         
