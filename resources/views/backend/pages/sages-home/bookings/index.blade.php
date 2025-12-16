@@ -38,6 +38,9 @@
                     </div>
                     <div class="col-auto">
                         <div class="d-flex gap-2">
+                            <a href="{{ route('admin.bookings.create') }}" class="btn btn-success btn-sm">
+                                <i class="ri-add-line"></i> Nouvelle Réservation
+                            </a>
                             <select class="form-select form-select-sm" id="statusFilter">
                                 <option value="">Tous les statuts</option>
                                 <option value="pending">En attente</option>

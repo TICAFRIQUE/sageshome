@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\backend;
 
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Residence;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
@@ -281,12 +282,26 @@ class BookingController extends Controller
             ];
         });
 
+        // Statistiques par moyen de paiement
+        $paymentMethodStats = $bookings->where('status', 'confirmed')
+            ->flatMap(function($booking) {
+                return $booking->payments->where('status', 'completed');
+            })
+            ->groupBy('payment_method')
+            ->map(function($payments, $method) {
+                return [
+                    'count' => $payments->count(),
+                    'total' => $payments->sum('amount'),
+                ];
+            });
+
         return view('backend.pages.sages-home.bookings.report', compact(
             'residences',
             'filters',
             'bookings',
             'stats',
-            'residenceStats'
+            'residenceStats',
+            'paymentMethodStats'
         ));
     }
 
@@ -304,6 +319,188 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Une erreur est survenue lors de la suppression de la réservation.');
+        }
+    }
+
+    public function create()
+    {
+        return view('backend.pages.sages-home.bookings.create');
+    }
+
+    public function getAvailableResidences(Request $request)
+    {
+        $request->validate([
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        $checkIn = Carbon::parse($request->check_in);
+        $checkOut = Carbon::parse($request->check_out);
+
+        // Récupérer toutes les résidences disponibles
+        $residences = Residence::where('is_available', true)->get();
+
+        // Filtrer celles qui ne sont pas réservées pour ces dates
+        $availableResidences = $residences->filter(function ($residence) use ($checkIn, $checkOut) {
+            $conflictingBookings = Booking::where('residence_id', $residence->id)
+                ->where('status', '!=', 'cancelled')
+                ->where(function ($query) use ($checkIn, $checkOut) {
+                    $query->whereBetween('check_in_date', [$checkIn, $checkOut])
+                        ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
+                        ->orWhere(function ($q) use ($checkIn, $checkOut) {
+                            $q->where('check_in_date', '<=', $checkIn)
+                              ->where('check_out_date', '>=', $checkOut);
+                        });
+                })->exists();
+
+            return !$conflictingBookings;
+        });
+
+        $nights = $checkIn->diffInDays($checkOut);
+
+        return response()->json([
+            'residences' => $availableResidences->map(function ($residence) use ($nights) {
+                $total = $residence->price_per_night * $nights;
+                
+                return [
+                    'id' => $residence->id,
+                    'name' => $residence->name,
+                    'price_per_night' => $residence->price_per_night,
+                    'total' => $total,
+                ];
+            })->values(),
+            'nights' => $nights,
+        ]);
+    }
+
+    public function checkAvailability(Request $request)
+    {
+        $request->validate([
+            'residence_id' => 'required|exists:residences,id',
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        $residence = Residence::findOrFail($request->residence_id);
+        $checkIn = Carbon::parse($request->check_in);
+        $checkOut = Carbon::parse($request->check_out);
+
+        // Vérifier les réservations existantes qui se chevauchent
+        $conflictingBookings = Booking::where('residence_id', $request->residence_id)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($query) use ($checkIn, $checkOut) {
+                $query->whereBetween('check_in_date', [$checkIn, $checkOut])
+                    ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
+                    ->orWhere(function ($q) use ($checkIn, $checkOut) {
+                        $q->where('check_in_date', '<=', $checkIn)
+                          ->where('check_out_date', '>=', $checkOut);
+                    });
+            })->count();
+
+        $nights = $checkIn->diffInDays($checkOut);
+        $total = $residence->price_per_night * $nights;
+
+        return response()->json([
+            'available' => $conflictingBookings === 0,
+            'nights' => $nights,
+            'price_per_night' => $residence->price_per_night,
+            'total' => $total,
+            'message' => $conflictingBookings > 0 
+                ? 'Cette résidence n\'est pas disponible pour ces dates.' 
+                : 'Résidence disponible !'
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'residence_id' => 'required|exists:residences,id',
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'country' => 'nullable|string|max:100',
+            'guests' => 'required|integer|min:1',
+            'payment_method' => 'required|in:cash,wave,paypal,bank_transfer,credit_card',
+            'payment_status' => 'required|in:completed,pending',
+            'special_requests' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            $residence = Residence::findOrFail($validated['residence_id']);
+            $checkIn = Carbon::parse($validated['check_in']);
+            $checkOut = Carbon::parse($validated['check_out']);
+            
+            // Vérifier à nouveau la disponibilité
+            $conflictingBookings = Booking::where('residence_id', $validated['residence_id'])
+                ->where('status', '!=', 'cancelled')
+                ->where(function ($query) use ($checkIn, $checkOut) {
+                    $query->whereBetween('check_in_date', [$checkIn, $checkOut])
+                        ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
+                        ->orWhere(function ($q) use ($checkIn, $checkOut) {
+                            $q->where('check_in_date', '<=', $checkIn)
+                              ->where('check_out_date', '>=', $checkOut);
+                        });
+                })->exists();
+
+            if ($conflictingBookings) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Cette résidence n\'est plus disponible pour ces dates.');
+            }
+
+            // Calculer les montants
+            $nights = $checkIn->diffInDays($checkOut);
+            $total = $residence->price_per_night * $nights;
+
+            // Créer la réservation
+            $booking = Booking::create([
+                'residence_id' => $validated['residence_id'],
+                'user_id' => Auth::id(), // L'admin qui crée la réservation
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'country' => $validated['country'] ?? null,
+                'check_in' => '14:00:00',
+                'check_out' => '12:00:00',
+                'check_in_date' => $checkIn,
+                'check_out_date' => $checkOut,
+                'guests' => $validated['guests'],
+                'guests_count' => $validated['guests'],
+                'nights' => $nights,
+                'price_per_night' => $residence->price_per_night,
+                'subtotal_amount' => $total,
+                'tax_amount' => 0,
+                'total_amount' => $total,
+                'total_price' => $total,
+                'final_amount' => $total,
+                'status' => 'confirmed', // Réservation confirmée directement
+                'special_requests' => $validated['special_requests'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'confirmed_at' => now(),
+            ]);
+
+            // Créer le paiement
+            Payment::create([
+                'booking_id' => $booking->id,
+                'amount' => $total,
+                'payment_method' => $validated['payment_method'],
+                'status' => $validated['payment_status'],
+                'currency' => 'XOF',
+                'transaction_id' => 'ADMIN-' . strtoupper(uniqid()),
+            ]);
+
+            return redirect()->route('admin.bookings.show', $booking)
+                ->with('success', 'Réservation créée avec succès !');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Une erreur est survenue : ' . $e->getMessage());
         }
     }
 }

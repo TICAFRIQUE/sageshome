@@ -211,6 +211,10 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
         // Gestion des réservations
         Route::prefix('bookings')->controller(AdminBookingController::class)->group(function () {
             Route::get('/', 'index')->name('admin.bookings.index');
+            Route::get('/create', 'create')->name('admin.bookings.create');
+            Route::post('/', 'store')->name('admin.bookings.store');
+            Route::post('/check-availability', 'checkAvailability')->name('admin.bookings.check-availability');
+            Route::post('/available-residences', 'getAvailableResidences')->name('admin.bookings.available-residences');
             Route::get('/report', 'report')->name('admin.bookings.report');
             Route::get('/calendar', 'calendar')->name('admin.bookings.calendar');
             Route::get('/calendar-data', 'calendarData')->name('admin.bookings.calendar-data');
