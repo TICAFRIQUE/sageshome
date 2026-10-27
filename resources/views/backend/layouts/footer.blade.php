@@ -2,11 +2,11 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
-                <script>document.write(new Date().getFullYear())</script> © Restaurant chez jeanne.
+                © {{ date('Y') }} Sages Home · Immo · Résidences · Voyages
             </div>
             <div class="col-sm-6">
                 <div class="text-sm-end d-none d-sm-block">
-                    Design & Develop by Ticafrique.com
+                    Réalisé par <a href="https://www.ticafrique.ci/" target="_blank" rel="noopener">Ticafrique</a>
                 </div>
             </div>
         </div>

@@ -289,9 +289,9 @@
                         <i class="ri-arrow-left-line me-1"></i> Retour à la liste
                     </a>
 
-                    <button type="button" class="btn btn-outline-primary" onclick="window.print()">
-                        <i class="ri-printer-line me-1"></i> Imprimer
-                    </button>
+                    <a href="{{ route('admin.bookings.pdf', $booking) }}" class="btn btn-outline-primary" data-no-progress>
+                        <i class="ri-file-pdf-2-line me-1"></i> Bon de réservation (PDF)
+                    </a>
 
                     <a href="mailto:{{ $booking->email }}" class="btn btn-outline-info">
                         <i class="ri-mail-line me-1"></i> Contacter le client

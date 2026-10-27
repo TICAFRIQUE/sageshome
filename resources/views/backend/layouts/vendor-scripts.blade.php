@@ -15,10 +15,19 @@
 {{-- <script src="{{ URL::asset('build/js/pages/sweetalerts.init.js') }}"></script> --}}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="{{ URL::asset('build/js/pages/select2.init.js') }}"></script>
-<script src="{{ URL::asset('myJs/js/delete_row.js') }}"></script>
+<script src="{{ URL::asset('myJs/js/delete_row.js') }}?v={{ filemtime(public_path('myJs/js/delete_row.js')) }}"></script>
+<script src="{{ asset('js/admin.js') }}?v={{ filemtime(public_path('js/admin.js')) }}"></script>
+@stack('scripts')
 
 @yield('script')
 @yield('script-bottom')
+
+{{-- Script du template (menu, hamburger, thème) : chargé une seule fois, même si la page ne l'inclut pas --}}
+<script>
+    if (!document.querySelector('script[src*="build/js/app.js"]')) {
+        document.write('<script src="{{ URL::asset('build/js/app.js') }}"><\/script>');
+    }
+</script>
 
 
 

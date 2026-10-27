@@ -1,934 +1,552 @@
 @extends('layouts.app')
 
-@section('title', $residence->name . ' - Sages Home')
+@section('title', $residence->name . ' - Résidence meublée | Sages Home')
+@section('meta_description', Str::limit(strip_tags($residence->description), 155))
+@if ($residence->images->count() > 0)
+    @section('og_image', $residence->images->first()->full_url)
+    @section('twitter_image', $residence->images->first()->full_url)
+@endif
+@section('body_class', 'has-mobile-bar')
+
+@php
+    $images = $residence->images;
+    $location = collect([$residence->commune, $residence->ville])->filter()->map(fn ($s) => ucwords(strtolower($s)))->implode(', ');
+
+    $amenitiesList = $residence->amenities ?? [];
+    if (is_string($amenitiesList)) {
+        $amenitiesList = json_decode($amenitiesList, true) ?? [];
+    }
+    if (!is_array($amenitiesList)) {
+        $amenitiesList = [];
+    }
+    $amenityLabels = \App\Models\Residence::getAmenityLabels();
+
+    // Icônes Font Awesome par mot-clé
+    $amenityIcons = [
+        'wifi' => 'fa-wifi', 'internet' => 'fa-wifi', 'canal' => 'fa-tv', 'television' => 'fa-tv', 'tv' => 'fa-tv',
+        'climat' => 'fa-snowflake', 'air' => 'fa-wind', 'chauffe' => 'fa-temperature-high', 'chauffage' => 'fa-fire',
+        'cuisini' => 'fa-fire-burner', 'four' => 'fa-fire', 'micro' => 'fa-bowl-food', 'bouilloire' => 'fa-mug-hot',
+        'refrigerateur' => 'fa-snowflake', 'mixeur' => 'fa-blender', 'ustensile' => 'fa-kitchen-set',
+        'couvert' => 'fa-utensils', 'cuisine' => 'fa-utensils', 'menage' => 'fa-broom', 'securite' => 'fa-shield-halved',
+        'piscine' => 'fa-person-swimming', 'parking' => 'fa-square-parking', 'garage' => 'fa-warehouse',
+        'arrivee' => 'fa-key', 'annulation' => 'fa-calendar-xmark', 'animaux' => 'fa-paw', 'jardin' => 'fa-tree',
+        'balcon' => 'fa-building', 'terrasse' => 'fa-umbrella-beach', 'ascenseur' => 'fa-elevator', 'gym' => 'fa-dumbbell',
+        'sport' => 'fa-dumbbell', 'lave' => 'fa-soap', 'laverie' => 'fa-shirt', 'fumeur' => 'fa-ban-smoking',
+        'enfant' => 'fa-child', 'bebe' => 'fa-baby', 'douche' => 'fa-shower', 'baignoire' => 'fa-bath',
+    ];
+    $amenityIcon = function ($amenity) use ($amenityIcons) {
+        $key = Str::lower(Str::ascii($amenity));
+        foreach ($amenityIcons as $keyword => $icon) {
+            if (str_contains($key, $keyword)) {
+                return $icon;
+            }
+        }
+        return 'fa-circle-check';
+    };
+@endphp
 
 @push('styles')
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
     <style>
-        .image-gallery {
+        /* ---------- Galerie ---------- */
+        .gallery-stage {
             position: relative;
+            aspect-ratio: 16 / 10;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--sage-bg-light);
+            cursor: zoom-in;
         }
-
-        .main-image {
-            height: 400px;
-            object-fit: cover;
-            border-radius: 12px;
-        }
-
-        .thumbnail-gallery {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            overflow-x: auto;
-        }
-
-        .thumbnail {
-            width: 80px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 6px;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s ease;
-        }
-
-        .thumbnail:hover,
-        .thumbnail.active {
-            opacity: 1;
-        }
-
-        .amenity-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .amenity-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .amenity-item:hover {
-            background: #e9ecef;
-            border-color: #007bff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .amenity-icon {
-            width: 20px;
-            margin-right: 12px;
-            color: #007bff;
-            flex-shrink: 0;
-            font-size: 1.1rem;
-        }
-
-        .amenity-text {
-            font-weight: 500;
-            color: #333;
-        }
-
-        .amenities-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 0.5rem;
-        }
-
-        .amenities-hidden {
-            display: none;
-        }
-
-        .amenities-hidden.show {
-            display: flex;
-        }
-
-        .btn-show-amenities {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            border: none;
-            color: white;
-            padding: 0.6rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-        }
-
-        .btn-show-amenities:hover {
-            background: linear-gradient(135deg, #0056b3, #007bff);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-            color: white;
-        }
-
-        /* Styles pour les messages de dates indisponibles */
-        .date-availability-info {
-            font-size: 0.85rem;
-            border-left: 4px solid #17a2b8;
-            background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(255, 255, 255, 0.9));
-        }
-
-        .date-unavailable-warning {
-            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(255, 255, 255, 0.9));
-            border-left: 4px solid #dc3545;
-            animation: fadeInWarning 0.3s ease;
-        }
-
-        @keyframes fadeInWarning {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Animation pour les champs avec dates invalides */
-        .date-input-invalid {
-            border-color: #dc3545 !important;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
-            animation: shakeInput 0.5s ease;
-        }
-
-        @keyframes shakeInput {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            75% {
-                transform: translateX(5px);
-            }
-        }
-
-        /* Styles pour l'indicateur de chargement des dates */
-        .loading-dates {
-            position: relative;
-        }
-
-        .loading-dates::after {
-            content: '';
+        .gallery-stage img { width: 100%; height: 100%; object-fit: cover; transition: opacity .35s var(--ease); }
+        .gallery-stage img.is-switching { opacity: .25; }
+        .gallery-nav {
             position: absolute;
             top: 50%;
-            right: 10px;
             transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #007bff;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: translateY(-50%) rotate(0deg);
-            }
-
-            100% {
-                transform: translateY(-50%) rotate(360deg);
-            }
-        }
-
-        /* Styles personnalisés pour Flatpickr */
-        .flatpickr-calendar {
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            border: 1px solid #e9ecef;
-        }
-
-        .flatpickr-calendar .flatpickr-month {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            border-radius: 12px 12px 0 0;
-        }
-
-        .flatpickr-calendar .flatpickr-month .flatpickr-prev-month,
-        .flatpickr-calendar .flatpickr-month .flatpickr-next-month {
-            color: white;
-        }
-
-        .flatpickr-calendar .flatpickr-month .flatpickr-prev-month:hover,
-        .flatpickr-calendar .flatpickr-month .flatpickr-next-month:hover {
-            color: #f8f9fa;
-        }
-
-        /* Dates indisponibles en rouge et non cliquables */
-        .flatpickr-calendar .flatpickr-day.unavailable {
-            background-color: #dc3545 !important;
-            color: white !important;
-            cursor: not-allowed !important;
-            opacity: 0.7;
-            position: relative;
-            pointer-events: none !important;
-        }
-
-        .flatpickr-calendar .flatpickr-day.unavailable:hover {
-            background-color: #c82333 !important;
-            color: white !important;
-            cursor: not-allowed !important;
-        }
-
-        .flatpickr-calendar .flatpickr-day.unavailable::after {
-            content: '✕';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-            pointer-events: none;
-        }
-
-        /* Forcer l'état non cliquable même si d'autres styles tentent de l'écraser */
-        .flatpickr-calendar .flatpickr-day.unavailable[aria-disabled="true"] {
-            background-color: #dc3545 !important;
-            color: white !important;
-            cursor: not-allowed !important;
-            pointer-events: none !important;
-            opacity: 0.7 !important;
-        }
-
-        /* Empêcher les états hover et focus sur les dates indisponibles */
-        .flatpickr-calendar .flatpickr-day.unavailable:hover,
-        .flatpickr-calendar .flatpickr-day.unavailable:focus,
-        .flatpickr-calendar .flatpickr-day.unavailable:active {
-            background-color: #dc3545 !important;
-            color: white !important;
-            cursor: not-allowed !important;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        /* Dates avec prix spéciaux */
-        .flatpickr-calendar .flatpickr-day.special-price {
-            background-color: #ffc107 !important;
-            color: #212529 !important;
-            font-weight: bold;
-        }
-
-        .flatpickr-calendar .flatpickr-day.special-price:hover {
-            background-color: #e0a800 !important;
-        }
-
-        /* Style pour les dates sélectionnées */
-        .flatpickr-calendar .flatpickr-day.selected {
-            background: linear-gradient(135deg, #28a745, #20c997) !important;
-            color: white !important;
-        }
-
-        .flatpickr-calendar .flatpickr-day.today {
-            border-color: #007bff;
-            color: #007bff;
-            font-weight: bold;
-        }
-
-        /* Responsive pour mobile */
-        @media (max-width: 768px) {
-            .flatpickr-calendar {
-                width: 100% !important;
-            }
-        }
-
-        /* Styles pour le champ voyageurs obligatoire */
-        .form-control.is-invalid {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-        }
-
-        .form-label .text-danger {
-            font-weight: bold;
-        }
-
-        .text-muted {
-            font-size: 0.85rem;
-        }
-
-        /* Styles pour le bouton de réservation */
-        .btn-book-now {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #17a2b8 100%);
-            border: none;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-book-now:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
-            color: white;
-        }
-
-        .btn-book-now:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-book-now::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-book-now:hover::before {
-            left: 100%;
-        }
-
-        /*style pour le bouton de connexion*/
-        .btn-login {
-            background: linear-gradient(135deg, #017052 0%, #0377d6 100%);
-            border: none;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        }
-
-        .btn-login:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
-            color: white;
-        }
-
-        .btn-login:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-login::
-
-        /* Animation du bouton quand il apparaît */
-        .btn-book-now.show {
-            animation: slideInUp 0.5s ease-out;
-        }
-
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Icône dans le bouton */
-        .btn-book-now i {
-            margin-right: 8px;
-            font-size: 1.2rem;
-        }
-
-        /* État désactivé */
-        .btn-book-now:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-book-now:disabled::before {
-            display: none;
-        }
-
-        /* Style pour les champs de saisie avec Flatpickr */
-        .flatpickr-input[readonly] {
-            background-color: white !important;
-            cursor: pointer !important;
-        }
-
-        .flatpickr-input {
-            font-family: inherit;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        .flatpickr-input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
-
-        @media (max-width: 768px) {
-            .amenities-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .amenity-item {
-                padding: 0.6rem 0.8rem;
-                font-size: 0.9rem;
-            }
-
-            .amenity-icon {
-                width: 18px;
-                margin-right: 10px;
-            }
-        }
-
-        .booking-card {
-            position: sticky;
-            top: 100px;
-        }
-
-        /* Bouton flottant mobile */
-        .floating-book-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            padding: 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-floating-book {
-            width: 100%;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, var(--sage-green-dark, #2F4A33), var(--sage-green-secondary, #4A6B42));
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-floating-book:hover {
-            background: linear-gradient(135deg, var(--sage-green-secondary, #4A6B42), var(--sage-green-dark, #2F4A33));
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
-            color: white;
-        }
-
-        .btn-floating-book::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-floating-book:hover::before {
-            left: 100%;
-        }
-
-        .price-indicator {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--sage-gold-start, #F2D18A);
-            text-align: right;
-            line-height: 1.2;
-        }
-
-        .btn-floating-book i {
-            font-size: 1.2rem;
-            margin-right: 8px;
-        }
-
-        .btn-floating-book span {
-            flex-grow: 1;
-            text-align: left;
-            margin-left: 8px;
-        }
-
-        /* Animation d'apparition */
-        .floating-book-btn {
-            animation: slideUpFade 0.5s ease-out;
-        }
-
-        @keyframes slideUpFade {
-            from {
-                opacity: 0;
-                transform: translateY(100px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .calendar-container {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .availability-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            font-size: 0.8rem;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
+            border: 0;
+            background: rgba(255, 255, 255, .92);
+            color: var(--sage-green-dark);
+            box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity .25s var(--ease), transform .25s var(--ease);
+        }
+        .gallery-nav.prev { left: 14px; }
+        .gallery-nav.next { right: 14px; }
+        .gallery-stage:hover .gallery-nav, .gallery-nav:focus-visible { opacity: 1; }
+        @media (hover: none) { .gallery-nav { opacity: 1; } }
+        .gallery-counter, .gallery-expand {
+            position: absolute;
+            bottom: 14px;
+            z-index: 2;
+            padding: .35rem .8rem;
+            border-radius: 999px;
+            background: rgba(20, 28, 16, .7);
+            color: #fff;
+            font-size: .8rem;
+            font-weight: 500;
+            border: 0;
+        }
+        .gallery-counter { left: 14px; }
+        .gallery-expand { right: 14px; }
+        .thumbnail-gallery {
+            display: flex;
+            gap: .6rem;
+            margin-top: .75rem;
+            overflow-x: auto;
+            padding-bottom: .25rem;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin;
+        }
+        .thumbnail {
+            flex: 0 0 auto;
+            width: 96px;
+            height: 68px;
+            object-fit: cover;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            opacity: .6;
+            border: 2px solid transparent;
+            scroll-snap-align: start;
+            transition: opacity .2s var(--ease), border-color .2s var(--ease);
         }
+        .thumbnail:hover, .thumbnail.active { opacity: 1; }
+        .thumbnail.active { border-color: var(--sage-gold-end); }
 
-        .calendar-day.available {
-            background-color: #e8f5e8;
-            color: var(--green-dark);
-        }
+        /* Visionneuse plein écran */
+        #galleryModal .modal-content { background: rgba(12, 16, 10, .97); border: 0; }
+        #galleryModal .modal-body { display: flex; align-items: center; justify-content: center; position: relative; padding: 3.5rem 1rem 1rem; }
+        #galleryModal .lightbox-img { max-width: 100%; max-height: calc(100vh - 6rem); object-fit: contain; border-radius: 8px; }
+        #galleryModal .gallery-nav { opacity: 1; }
+        #galleryModal .btn-close { position: absolute; top: 1rem; right: 1rem; z-index: 3; }
+        #galleryModal .lightbox-counter { position: absolute; top: 1.2rem; left: 1.25rem; color: #fff; font-size: .9rem; }
 
-        .calendar-day.unavailable {
-            background-color: #ffe6e6;
-            color: #dc3545;
-            cursor: not-allowed;
+        /* ---------- En-tête résidence ---------- */
+        .residence-head h1 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 700; margin-bottom: .5rem; }
+        .residence-facts { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .fact {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .45rem .9rem;
+            border-radius: 999px;
+            background: var(--sage-bg-light);
+            border: 1px solid var(--sage-border);
+            font-size: .88rem;
+            font-weight: 500;
         }
+        .fact i { color: var(--sage-gold-deep); }
+        .detail-block { padding: 2rem 0; border-top: 1px solid var(--sage-border); }
+        .detail-block h2 { font-size: 1.3rem; margin-bottom: 1rem; }
+        .description-text { color: var(--sage-text); font-size: 1rem; line-height: 1.75; }
 
-        .calendar-day.selected {
-            background-color: var(--gold-end);
-            color: white;
+        /* ---------- Équipements ---------- */
+        .amenities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .75rem; }
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            padding: .8rem 1rem;
+            border-radius: 14px;
+            border: 1px solid var(--sage-border);
+            background: #fff;
+            font-size: .93rem;
+            font-weight: 500;
+            transition: border-color .2s var(--ease), background .2s var(--ease);
         }
+        .amenity-item:hover { border-color: var(--sage-gold-end); background: var(--sage-gold-soft); }
+        .amenity-icon {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--sage-green-soft);
+            color: var(--sage-green);
+        }
+        @media (max-width: 575.98px) {
+            .amenities-grid { grid-template-columns: 1fr 1fr; gap: .5rem; }
+            .amenity-item { padding: .6rem .65rem; gap: .55rem; font-size: .84rem; }
+            .amenity-icon { width: 30px; height: 30px; font-size: .8rem; }
+        }
+        .amenities-hidden { display: none; }
+        .amenities-hidden.show { display: flex; animation: dropIn .25s var(--ease); }
+
+        /* ---------- Encart de réservation ---------- */
+        .booking-card { position: sticky; top: calc(var(--header-h) + 20px); }
+        .booking-panel {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--sage-border);
+            box-shadow: var(--shadow-lg);
+            background: #fff;
+            overflow: hidden;
+        }
+        .booking-panel-head { padding: 1.4rem 1.5rem 1.1rem; border-bottom: 1px solid var(--sage-border); }
+        .booking-price { font-family: var(--font-heading); font-size: 1.7rem; font-weight: 700; color: var(--sage-green-dark); line-height: 1.1; }
+        .booking-price small { font-size: .9rem; font-weight: 500; color: var(--sage-text-secondary); font-family: var(--font-body); }
+        .booking-panel-body { padding: 1.4rem 1.5rem 1.5rem; }
+        .booking-dates {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: 1px solid var(--sage-border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .booking-dates > div { padding: .6rem .85rem; }
+        .booking-dates > div + div { border-left: 1px solid var(--sage-border); }
+        .booking-dates .form-label, .booking-guests .form-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 0; }
+        .booking-dates .form-control, .booking-guests .form-select {
+            border: 0;
+            padding: 0;
+            min-height: 30px;
+            box-shadow: none;
+            font-weight: 500;
+            background-color: transparent;
+        }
+        .booking-guests { border: 1px solid var(--sage-border); border-radius: 14px; padding: .6rem .85rem; margin-top: .75rem; }
+        .booking-dates:focus-within, .booking-guests:focus-within { border-color: var(--sage-gold-end); box-shadow: 0 0 0 .2rem rgba(241, 212, 110, .3); }
+        .price-breakdown { background: var(--sage-bg-light); border-radius: 14px; padding: 1rem 1.1rem; font-size: .92rem; }
+        .price-breakdown > div { display: flex; justify-content: space-between; gap: 1rem; padding: .2rem 0; }
+        .price-breakdown .total { border-top: 1px solid var(--sage-border); margin-top: .5rem; padding-top: .65rem; font-weight: 700; font-size: 1.02rem; color: var(--sage-green-dark); }
+        #availabilityMessage { border: 0; border-radius: 12px; font-size: .88rem; padding: .75rem 1rem; }
+        .date-info { display: flex; gap: .55rem; align-items: flex-start; margin: 0 0 .9rem; padding: .55rem .75rem; border-radius: 10px; background: var(--sage-bg-light); color: var(--sage-text-secondary); font-size: .78rem; line-height: 1.45; }
+        .date-info i { color: #C0504D; margin-top: .15rem; }
+        .date-info s { color: #C0504D; text-decoration-thickness: 1.5px; }
+        .booking-reassurance { list-style: none; padding: 0; margin: 1rem 0 0; font-size: .84rem; color: var(--sage-text-secondary); }
+        .booking-reassurance li { display: flex; gap: .5rem; margin-bottom: .35rem; }
+        .booking-reassurance i { color: var(--sage-green); margin-top: .2rem; }
+
+        .btn-book-now {
+            background: var(--sage-gradient-gold);
+            border: 0;
+            color: var(--sage-green-dark);
+            font-weight: 700;
+            font-size: 1.02rem;
+            padding: .9rem 1.5rem;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(194, 155, 50, .3);
+        }
+        .btn-book-now:hover { color: var(--sage-green-dark); transform: translateY(-2px); box-shadow: 0 12px 26px rgba(194, 155, 50, .4); }
+        .btn-book-now.show { animation: dropIn .4s var(--ease); }
+        .btn-book-now:disabled { background: #E6E2D2; color: #8C8A80; box-shadow: none; transform: none; }
+        .btn-login { background: var(--sage-green); color: #fff; font-weight: 600; padding: .9rem 1.5rem; border-radius: 14px; }
+        .btn-login:hover { background: var(--sage-green-dark); color: #fff; }
+
+        .date-input-invalid { border-color: #dc3545 !important; animation: shakeInput .4s ease; }
+        @keyframes shakeInput { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+        /* ---------- Flatpickr aux couleurs de la marque ---------- */
+        .flatpickr-input[readonly] { background-color: transparent !important; cursor: pointer; }
+        .flatpickr-calendar { border-radius: 16px; border: 1px solid var(--sage-border); box-shadow: var(--shadow-lg); font-family: var(--font-body); }
+        .flatpickr-calendar.arrowTop::before, .flatpickr-calendar.arrowTop::after { display: none; }
+        .flatpickr-months { padding: .4rem .25rem; }
+        .flatpickr-current-month { font-size: 1rem; font-weight: 600; }
+        .flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg { fill: var(--sage-gold-deep); }
+        .flatpickr-day { border-radius: 10px; }
+        .flatpickr-day:hover { background: var(--sage-gold-soft); border-color: var(--sage-gold-soft); }
+        .flatpickr-day.today { border-color: var(--sage-gold-end); }
+        .flatpickr-day.selected, .flatpickr-day.selected:hover {
+            background: var(--sage-green) !important;
+            border-color: var(--sage-green) !important;
+            color: #fff !important;
+        }
+        .flatpickr-calendar .flatpickr-day.unavailable,
+        .flatpickr-calendar .flatpickr-day.unavailable:hover,
+        .flatpickr-calendar .flatpickr-day.unavailable[aria-disabled="true"] {
+            background: #FBEAEA !important;
+            border-color: transparent !important;
+            color: #C0504D !important;
+            text-decoration: line-through;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            opacity: 1;
+        }
+        @media (max-width: 575.98px) { .flatpickr-calendar { max-width: calc(100vw - 24px); } }
+
+        /* ---------- Barre de réservation mobile ---------- */
+        .floating-book-btn {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1035;
+            background: rgba(255, 255, 255, .97);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--sage-border);
+            box-shadow: 0 -8px 24px rgba(27, 33, 23, .08);
+            padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom));
+            animation: slideUp .4s var(--ease) both;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
+        .floating-book-btn .mobile-price { font-family: var(--font-heading); font-weight: 700; color: var(--sage-green-dark); line-height: 1.1; }
+        .floating-book-btn .mobile-price small { font-family: var(--font-body); font-weight: 500; font-size: .78rem; color: var(--sage-text-secondary); }
+        @media (max-width: 991.98px) { .site-footer { padding-bottom: 6rem; } }
     </style>
 @endpush
 
 @section('content')
-    <div class="container py-5">
-        <!-- Breadcrumb -->
-        {{-- <nav aria-label="breadcrumb" class="mb-4 py-3">
+    <div class="container pt-3 pt-lg-4 pb-5">
+        <nav aria-label="Fil d'Ariane">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="fas fa-house" aria-hidden="true"></i><span class="visually-hidden">Accueil</span></a></li>
                 <li class="breadcrumb-item"><a href="{{ route('residences.index') }}">Résidences</a></li>
-                <li class="breadcrumb-item active">{{ $residence->name }}</li>
+                @if ($residence->residenceType)
+                    <li class="breadcrumb-item d-none d-sm-inline-flex"><a href="{{ route('residences.index', ['type' => $residence->residence_type_id]) }}">{{ $residence->residenceType->name }}</a></li>
+                @endif
+                <li class="breadcrumb-item active" aria-current="page">{{ $residence->name }}</li>
             </ol>
-        </nav> --}}
+        </nav>
 
-        <div class="row g-4">
-            <!-- Left Column - Images and Details -->
-            <div class="col-lg-8">
-                <!-- Image Gallery -->
+        <div class="row g-4 g-xl-5">
+            {{-- Colonne gauche --}}
+            <div class="col-lg-7 col-xl-8">
+                {{-- Galerie --}}
                 <div class="image-gallery mb-4">
-                    @if ($residence->images->count() > 0)
-                        <img id="mainImage" src="{{ $residence->images->first()->full_url }}"
-                            class="img-fluid main-image w-100" alt="{{ $residence->name }}">
+                    @if ($images->count() > 0)
+                        <div class="gallery-stage" id="galleryStage" role="button" tabindex="0"
+                            aria-label="Agrandir les photos de {{ $residence->name }}">
+                            <img id="mainImage" src="{{ $images->first()->full_url }}" alt="{{ $residence->name }} - photo 1"
+                                width="1200" height="750" fetchpriority="high" decoding="async" class="img-fade">
+                            @if ($images->count() > 1)
+                                <button type="button" class="gallery-nav prev" data-gallery-step="-1" aria-label="Photo précédente"><i class="fas fa-chevron-left"></i></button>
+                                <button type="button" class="gallery-nav next" data-gallery-step="1" aria-label="Photo suivante"><i class="fas fa-chevron-right"></i></button>
+                                <span class="gallery-counter"><span id="galleryIndex">1</span> / {{ $images->count() }}</span>
+                            @endif
+                            <span class="gallery-expand"><i class="fas fa-expand me-1"></i>Agrandir</span>
+                        </div>
 
-                        @if ($residence->images->count() > 1)
-                            <div class="thumbnail-gallery">
-                                @foreach ($residence->images as $index => $image)
+                        @if ($images->count() > 1)
+                            <div class="thumbnail-gallery" role="list">
+                                @foreach ($images as $index => $image)
                                     <img src="{{ $image->full_url }}" class="thumbnail {{ $index === 0 ? 'active' : '' }}"
-                                        alt="{{ $residence->name }}"
+                                        alt="Miniature {{ $index + 1 }}" width="96" height="68" loading="lazy" decoding="async"
+                                        role="listitem" tabindex="0" data-index="{{ $index }}"
                                         onclick="changeMainImage('{{ $image->full_url }}', this)">
                                 @endforeach
                             </div>
                         @endif
                     @else
-                        <div class="main-image bg-light d-flex align-items-center justify-content-center">
-                            <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                        <div class="gallery-stage d-flex align-items-center justify-content-center" style="cursor: default; background: var(--sage-gradient-green)">
+                            <img src="{{ asset('images/logo-mark.webp') }}" alt="" style="width: 96px; height: 96px; object-fit: contain; opacity: .85">
                         </div>
                     @endif
                 </div>
 
-                <!-- Details -->
-                <div class="row mb-4">
-                    <div class="col-md-8">
-                        <h1 class="text-green mb-2">{{ $residence->name }}</h1>
-                        <h2 class="h5  my-3">
-                            <i class="bi bi-geo-alt me-2"></i>
-                            {{ $residence?->ville }} {{ $residence?->commune }}
-
-                            <p class="text-muted my-3">
-                                {{ $residence?->address }}
-                            </p>
-                        </h2>
-
-
-                        <div class="d-flex flex-wrap gap-3 mb-4">
-                            <span class="badge bg-light text-dark fs-6">{{ $residence->type_display }}</span>
-                            <span class="badge bg-light text-dark fs-6">
-                                <i class="bi bi-people me-1"></i>{{ $residence->capacity }} voyageurs
-                            </span>
-                            @if ($residence->is_featured)
-                                <span class="badge badge-gold fs-6">Résidence vedette</span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="col-md-4 text-md-end">
-                        <div class="price-display">
-                            <span class="text-gold fw-bold" style="font-size: 2rem;">
-                                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA
-                            </span>
-                            <div class="text-muted" style="font-size: 1.1rem; margin-top: 0.25rem;">
-                                ({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €)
-                            </div>
-                            <div class="text-muted">par nuit</div>
-                        </div>
+                {{-- En-tête --}}
+                <div class="residence-head mb-4">
+                    @if ($residence->is_featured)
+                        <span class="rc-badge rc-badge-gold mb-2"><i class="fas fa-star"></i>Coup de cœur</span>
+                    @endif
+                    <h1>{{ $residence->name }}</h1>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-location-dot me-1" style="color: var(--sage-gold-deep)"></i>
+                        {{ $location }}@if ($residence->address) · {{ $residence->address }}@endif
+                        @if ($residence->hasGoogleMaps())
+                            · <a href="{{ $residence->google_maps_url }}" target="_blank" rel="noopener" class="fw-semibold">Voir sur la carte</a>
+                        @endif
+                    </p>
+                    <div class="residence-facts">
+                        <span class="fact"><i class="fas fa-house"></i>{{ $residence->type_display }}</span>
+                        <span class="fact"><i class="fas fa-user-friends"></i>Jusqu'à {{ $residence->capacity }} {{ $residence->capacity > 1 ? 'voyageurs' : 'voyageur' }}</span>
+                        @if (count($amenitiesList))
+                            <span class="fact"><i class="fas fa-circle-check"></i>{{ count($amenitiesList) }} équipements</span>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Description -->
-                <div class="mb-5">
-                    <h3 class="text-green mb-3">Description</h3>
-                    <p class="text-justify">{{ $residence->description }}</p>
+                {{-- Description --}}
+                <div class="detail-block">
+                    <h2>À propos de ce logement</h2>
+                    <div class="description-text">{!! nl2br(e($residence->description)) !!}</div>
                     @if ($residence->full_description)
                         <div id="fullDescription" class="collapse">
-                            <p class="text-justify">{{ $residence->full_description }}</p>
+                            <div class="description-text mt-3">{!! nl2br(e($residence->full_description)) !!}</div>
                         </div>
-                        <button class="btn btn-link p-0 text-primary" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#fullDescription">
-                            Voir plus <i class="bi bi-chevron-down"></i>
+                        <button class="btn btn-link px-0 fw-semibold text-decoration-none mt-2" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#fullDescription" aria-expanded="false" aria-controls="fullDescription">
+                            Lire la suite <i class="fas fa-chevron-down ms-1 small"></i>
                         </button>
                     @endif
                 </div>
 
-                <!-- Amenities -->
-                @php
-                    $amenitiesList = $residence->amenities ?? [];
-                    if (is_string($amenitiesList)) {
-                        $amenitiesList = json_decode($amenitiesList, true) ?? [];
-                    }
-                    if (!is_array($amenitiesList)) {
-                        $amenitiesList = [];
-                    }
-
-                    // Mapping des icônes FontAwesome
-                    $amenityIcons = [
-                        'wifi' => 'fas fa-wifi',
-                        'piscine' => 'fas fa-swimming-pool',
-                        'climatisation' => 'fas fa-snowflake',
-                        'parking' => 'fas fa-car',
-                        'cuisine' => 'fas fa-utensils',
-                        'television' => 'fas fa-tv',
-                        'internet' => 'fas fa-wifi',
-                        'jardin' => 'fas fa-tree',
-                        'balcon' => 'fas fa-home',
-                        'terrasse' => 'fas fa-home',
-                        'garage' => 'fas fa-warehouse',
-                        'securite' => 'fas fa-shield-alt',
-                        'ascenseur' => 'fas fa-arrow-up',
-                        'spa' => 'fas fa-heart',
-                        'gym' => 'fas fa-dumbbell',
-                        'salle de sport' => 'fas fa-dumbbell',
-                        'laverie' => 'fas fa-tshirt',
-                        'lave linge' => 'fas fa-tshirt',
-                        'lave vaisselle' => 'fas fa-utensils',
-                        'micro onde' => 'fas fa-microwave',
-                        'refrigerateur' => 'fas fa-ice-cream',
-                        'four' => 'fas fa-fire',
-                        'animaux' => 'fas fa-paw',
-                        'non fumeur' => 'fas fa-ban',
-                        'fumeur' => 'fas fa-smoking',
-                        'enfants' => 'fas fa-child',
-                        'baby' => 'fas fa-baby',
-                        'bebe' => 'fas fa-baby',
-                        'air' => 'fas fa-wind',
-                        'chauffage' => 'fas fa-fire',
-                        'douche' => 'fas fa-shower',
-                        'baignoire' => 'fas fa-bath',
-                    ];
-
-                    function getAmenityIcon($amenity, $amenityIcons)
-                    {
-                        $amenityLower = strtolower($amenity);
-
-                        foreach ($amenityIcons as $keyword => $icon) {
-                            if (strpos($amenityLower, $keyword) !== false) {
-                                return $icon;
-                            }
-                        }
-
-                        return 'fas fa-check-circle';
-                    }
-                @endphp
-
-                @if (!empty($amenitiesList) && count($amenitiesList) > 0)
-                    <div class="mb-5">
-                        <h3 class="text-green mb-3">
-                            <i class="fas fa-cogs me-2"></i>Équipements
-                        </h3>
-
+                {{-- Équipements --}}
+                @if (count($amenitiesList) > 0)
+                    <div class="detail-block">
+                        <h2>Ce que propose ce logement</h2>
                         <div class="amenities-grid" id="amenitiesGrid">
                             @foreach ($amenitiesList as $index => $amenity)
-                                @php
-                                    $cleanAmenity = ucfirst(str_replace('_', ' ', trim($amenity)));
-                                    $amenityIcon = getAmenityIcon($amenity, $amenityIcons);
-                                    $isHidden = $index >= 6; // Afficher seulement les 6 premiers
-                                @endphp
-
-                                <div class="amenity-item {{ $isHidden ? 'amenities-hidden' : '' }}">
-                                    <i class="{{ $amenityIcon }} amenity-icon"></i>
-                                    <span class="amenity-text">{{ $cleanAmenity }}</span>
+                                @php $label = $amenityLabels[$amenity] ?? ucfirst(str_replace('_', ' ', trim($amenity))); @endphp
+                                <div class="amenity-item {{ $index >= 8 ? 'amenities-hidden' : '' }}">
+                                    <span class="amenity-icon"><i class="fas {{ $amenityIcon($amenity . ' ' . $label) }}"></i></span>
+                                    <span class="amenity-text">{{ $label }}</span>
                                 </div>
                             @endforeach
                         </div>
-
-                        @if (count($amenitiesList) > 6)
-                            <div class="text-center">
-                                <button class="btn btn-show-amenities" onclick="toggleAllAmenities()"
-                                    id="toggleAmenitiesBtn">
-                                    <i class="fas fa-plus me-2"></i>
-                                    Voir tous les équipements ({{ count($amenitiesList) }})
-                                </button>
-                            </div>
+                        @if (count($amenitiesList) > 8)
+                            <button class="btn btn-outline-primary mt-3" onclick="toggleAllAmenities()" id="toggleAmenitiesBtn" type="button">
+                                <i class="fas fa-plus me-2"></i>Voir les {{ count($amenitiesList) }} équipements
+                            </button>
                         @endif
                     </div>
                 @endif
-
-                <!-- Map -->
-                {{-- @if ($residence->latitude && $residence->longitude)
-                    <div class="mb-5">
-                        <h3 class="text-green mb-3">Localisation</h3>
-                        <div id="map" style="height: 300px; border-radius: 12px; background: #f8f9fa;">
-                            <!-- Vous pouvez intégrer Google Maps ou OpenStreetMap ici -->
-                            <div class="d-flex align-items-center justify-content-center h-100">
-                                <div class="text-center">
-                                    <i class="bi bi-geo-alt text-muted" style="font-size: 3rem;"></i>
-                                    <p class="text-muted mt-2">{{ $residence->address }}</p>
-                                    <small class="text-muted">
-                                        Lat: {{ $residence->latitude }}, Lng: {{ $residence->longitude }}
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif --}}
             </div>
 
-            <!-- Right Column - Booking Card -->
-            <div class="col-lg-4">
-                <div class="booking-card">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title text-center text-green mb-4">Réserver maintenant</h4>
-                            @guest
-                                <p class="text-center text-muted mb-4">
-                                    <i class="fas fa-lock me-2"></i>
-                                    <a href="{{ route('login') }}">Connectez-vous</a> pour effectuer une réservation
+            {{-- Colonne droite : réservation --}}
+            <div class="col-lg-5 col-xl-4">
+                <div class="booking-card" id="booking">
+                    <div class="booking-panel">
+                        <div class="booking-panel-head">
+                            <div class="booking-price">
+                                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA <small>/ nuit</small>
+                            </div>
+                            <div class="text-muted small">≈ {{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} € par nuit</div>
+                        </div>
 
-                                </p>
-                            @endguest
-
-                            <form id="bookingForm">
+                        <div class="booking-panel-body">
+                            <form id="bookingForm" novalidate>
                                 @csrf
                                 <input type="hidden" name="residence_id" value="{{ $residence->id }}">
 
-                                <div class="mb-3">
-                                    <label for="check_in" class="form-label fw-semibold">Date d'arrivée</label>
-                                    <input type="date" class="form-control" id="check_in" name="check_in"
-                                        min="{{ date('Y-m-d') }}" required>
+                                <div class="booking-dates">
+                                    <div>
+                                        <label for="check_in" class="form-label">Arrivée</label>
+                                        <input type="date" class="form-control" id="check_in" name="check_in"
+                                            min="{{ date('Y-m-d') }}" placeholder="Choisir" required>
+                                    </div>
+                                    <div>
+                                        <label for="check_out" class="form-label">Départ</label>
+                                        <input type="date" class="form-control" id="check_out" name="check_out" placeholder="Choisir" required>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="check_out" class="form-label fw-semibold">Date de départ</label>
-                                    <input type="date" class="form-control" id="check_out" name="check_out" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="guests" class="form-label fw-semibold">
-                                        Voyageurs <span class="text-danger">*</span>
-                                    </label>
-                                    <select class="form-control" id="guests" name="guests" required>
+                                <div class="booking-guests">
+                                    <label for="guests" class="form-label">Voyageurs</label>
+                                    <select class="form-select" id="guests" name="guests" required>
                                         <option selected disabled>Choisir</option>
                                         @for ($i = 1; $i <= $residence->capacity; $i++)
-                                            <option value="{{ $i }}">
-                                                {{ $i }} {{ $i === 1 ? 'voyageur' : 'voyageurs' }}
-                                            </option>
+                                            <option value="{{ $i }}">{{ $i }} {{ $i === 1 ? 'voyageur' : 'voyageurs' }}</option>
                                         @endfor
                                     </select>
-                                    <small class="text-muted">Capacité maximale: {{ $residence->capacity }}
-                                        voyageur{{ $residence->capacity > 1 ? 's' : '' }}</small>
                                 </div>
+                                <small class="text-muted d-block mt-1 mb-3">Capacité maximale : {{ $residence->capacity }} {{ $residence->capacity > 1 ? 'voyageurs' : 'voyageur' }}</small>
+                                <div id="dateInfo" class="date-info" role="note" hidden></div>
 
-                                <div id="priceCalculation" class="mb-3" style="display: none;">
-                                    <div class="card bg-light">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between">
-                                                <span>Prix par nuit:</span>
-                                                <span id="pricePerNight">{{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA<br><small class="text-muted">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €)</small></span>
-                                            </div>
-                                            <div class="d-flex justify-content-between">
-                                                <span>Nombre de nuits:</span>
-                                                <span id="nightsCount">0</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between">
-                                                <span>Sous-total:</span>
-                                                <span id="subtotal">0 FCFA</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between">
-                                                <span>Taxes (10%):</span>
-                                                <span id="taxes">0 FCFA</span>
-                                            </div>
-                                            <hr>
-                                            <div class="d-flex justify-content-between fw-bold">
-                                                <span>Total:</span>
-                                                <span id="totalPrice" class="text-gold">0 FCFA</span>
-                                            </div>
+                                <div id="priceCalculation" class="mb-3" style="display: none;" aria-live="polite">
+                                    <div class="price-breakdown">
+                                        <div>
+                                            <span>Prix par nuit</span>
+                                            <span id="pricePerNight">{{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA</span>
+                                        </div>
+                                        <div>
+                                            <span>Nombre de nuits</span>
+                                            <span id="nightsCount">0</span>
+                                        </div>
+                                        <div>
+                                            <span>Sous-total</span>
+                                            <span id="subtotal">0 FCFA</span>
+                                        </div>
+                                        <div class="d-none">
+                                            <span>Taxes</span>
+                                            <span id="taxes">0 FCFA</span>
+                                        </div>
+                                        <div class="total">
+                                            <span>Total</span>
+                                            <span id="totalPrice">0 FCFA</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div id="availabilityMessage" class="alert" style="display: none;"></div>
+                                <div id="availabilityMessage" class="alert" style="display: none;" role="status"></div>
 
                                 @guest
-
-                                    <a href="{{ route('login') }}" class="btn btn-login w-100">
-                                        Se connecter pour réserver
+                                    <a href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}" class="btn btn-login w-100">
+                                        <i class="fas fa-right-to-bracket me-2"></i>Se connecter pour réserver
                                     </a>
+                                    <p class="text-center small text-muted mt-2 mb-0">
+                                        Pas encore de compte ? <a href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}" class="fw-semibold">Inscrivez-vous</a>
+                                    </p>
                                 @else
-                                    <button type="button" id="checkAvailabilityBtn"
-                                        class="btn btn-outline-primary w-100 mb-2">
+                                    <button type="button" id="checkAvailabilityBtn" class="btn btn-outline-primary w-100 mb-2">
                                         Vérifier la disponibilité
                                     </button>
 
-                                    <button type="submit" id="bookNowBtn" class="btn btn-book-now w-100"
-                                        style="display: none;" disabled>
-                                        <i class="fas fa-calendar-check"></i>
-                                        Réserver maintenant
-                                        <span class="ms-2">
-                                            <i class="fas fa-arrow-right"></i>
-                                        </span>
+                                    <button type="submit" id="bookNowBtn" class="btn btn-book-now w-100" style="display: none;" disabled>
+                                        <i class="fas fa-calendar-check me-2"></i>Réserver maintenant
                                     </button>
                                 @endguest
                             </form>
+
+                            <ul class="booking-reassurance">
+                                <li><i class="fas fa-check"></i>Disponibilité vérifiée en temps réel</li>
+                                <li><i class="fas fa-check"></i>Confirmation envoyée par e-mail</li>
+                                <li><i class="fas fa-check"></i>Assistance 24h/24 pendant votre séjour</li>
+                            </ul>
                         </div>
                     </div>
-
-                    <!-- Similar Residences -->
-                    @if ($similarResidences->count() > 0)
-                        <div class="card mt-4">
-                            <div class="card-body">
-                                <h5 class="card-title text-green mb-3">Résidences similaires</h5>
-
-                                @foreach ($similarResidences as $similar)
-                                    <div class="d-flex mb-3 {{ !$loop->last ? 'pb-3 border-bottom' : '' }}">
-                                        @if ($similar->primaryImage)
-                                            <img src="{{ $similar->primaryImage->full_url }}" class="me-3"
-                                                style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
-                                                alt="{{ $similar->name }}">
-                                        @endif
-
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1">
-                                                <a href="{{ route('residences.show', $similar->slug) }}"
-                                                    class="text-decoration-none text-dark">
-                                                    {{ $similar->name }}
-                                                </a>
-                                            </h6>
-                                            <small class="text-muted d-block">
-                                                <i class="bi bi-people me-1"></i>{{ $similar->capacity }} voyageurs
-                                            </small>
-                                            <span class="text-gold fw-bold small">
-                                                {{ number_format($similar->price_per_night, 0, ',', ' ') }} FCFA/nuit
-                                            </span>
-                                            <small class="text-muted d-block">
-                                                ({{ number_format(fcfa_to_eur($similar->price_per_night), 2, ',', ' ') }} €/nuit)
-                                            </small>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
+
+        {{-- Résidences similaires --}}
+        @if ($similarResidences->count() > 0)
+            <section class="mt-5 pt-4 border-top">
+                <div class="d-flex justify-content-between align-items-end mb-4 gap-3">
+                    <div>
+                        <span class="eyebrow">À découvrir aussi</span>
+                        <h2 class="h3 mb-0">Résidences similaires</h2>
+                    </div>
+                    <a href="{{ route('residences.index', ['type' => $residence->residence_type_id]) }}" class="btn btn-outline-primary d-none d-sm-inline-flex">Tout voir</a>
+                </div>
+                <div class="row g-4">
+                    @foreach ($similarResidences as $similar)
+                        <div class="col-sm-6 col-lg-4" data-reveal style="--reveal-delay: {{ $loop->index * 0.08 }}s">
+                            @include('frontend.partials.residence-card', ['residence' => $similar])
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
     </div>
 
-    <!-- Bouton flottant mobile pour réservation -->
-    <div class="floating-book-btn d-block d-lg-none">
-        <button type="button" class="btn btn-floating-book" onclick="scrollToBooking()">
-            <i class="fas fa-calendar-alt me-2"></i>
-            <span>Réserver</span>
-            <div class="price-indicator">
-                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA/nuit<br>
-                <small>({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €)</small>
+    {{-- Visionneuse photos --}}
+    @if ($images->count() > 0)
+        <div class="modal fade" id="galleryModal" tabindex="-1" aria-label="Photos de {{ $residence->name }}" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <span class="lightbox-counter"><span id="lightboxIndex">1</span> / {{ $images->count() }}</span>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        @if ($images->count() > 1)
+                            <button type="button" class="gallery-nav prev" data-gallery-step="-1" aria-label="Photo précédente"><i class="fas fa-chevron-left"></i></button>
+                            <button type="button" class="gallery-nav next" data-gallery-step="1" aria-label="Photo suivante"><i class="fas fa-chevron-right"></i></button>
+                        @endif
+                        <img id="lightboxImage" class="lightbox-img" src="{{ $images->first()->full_url }}" alt="{{ $residence->name }}">
+                    </div>
+                </div>
             </div>
-        </button>
+        </div>
+    @endif
+
+    {{-- Barre de réservation mobile --}}
+    <div class="floating-book-btn d-lg-none">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="mobile-price">
+                {{ number_format($residence->price_per_night, 0, ',', ' ') }} FCFA <small>/ nuit</small>
+                <small class="d-block">≈ {{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €</small>
+            </div>
+            <button type="button" class="btn btn-primary px-4" onclick="scrollToBooking()">
+                <i class="fas fa-calendar-check me-2"></i>Réserver
+            </button>
+        </div>
     </div>
 @endsection
 
@@ -1100,13 +718,13 @@
                 if (missingFields.length > 0) {
                     if (missingFields.length === 3) {
                         showMessage(
-                            '📋 Veuillez remplir tous les champs : date d\'arrivée, date de départ et nombre de voyageurs.',
+                            'Choisissez vos dates d\'arrivée et de départ ainsi que le nombre de voyageurs pour voir le prix.',
                             'info');
                     } else {
                         const missingText = missingFields.length === 1 ?
                             missingFields[0] :
                             missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
-                        showMessage(`📝 Il manque encore : ${missingText}.`, 'warning');
+                        showMessage(`Il manque encore : ${missingText}.`, 'warning');
                     }
                     hideAvailabilityResults();
                     return;
@@ -1300,7 +918,7 @@
                         const missingText = missingFields.length === 1 ?
                             missingFields[0] :
                             missingFields.slice(0, -1).join(', ') + ' et ' + missingFields.slice(-1);
-                        showMessage(`❌ Veuillez remplir : ${missingText}.`, 'warning');
+                        showMessage(`Veuillez renseigner : ${missingText}.`, 'warning');
                         return;
                     }
 
@@ -1438,7 +1056,6 @@
                     .then(response => response.json())
                     .then(data => {
                         unavailableDates = data.unavailable_dates || [];
-                        console.log('Dates indisponibles chargées:', unavailableDates);
 
                         // Afficher les informations sur les dates indisponibles
                         displayUnavailableDatesInfo();
@@ -1459,31 +1076,15 @@
 
             // Fonction pour afficher les informations sur les dates indisponibles
             function displayUnavailableDatesInfo() {
-                if (unavailableDates.length > 0) {
-                    const dateInfo = document.createElement('div');
-                    dateInfo.className = 'alert alert-info date-availability-info mt-2';
-
-                    const unavailableCount = unavailableDates.length;
-                    const nextUnavailable = getNextUnavailableDate();
-
-                    let infoText = `<i class="fas fa-info-circle me-2"></i><strong>Information:</strong> `;
-
-                    if (nextUnavailable) {
-                        infoText +=
-                            `Prochaine date indisponible: <strong>${formatDateForDisplay(nextUnavailable)}</strong>. `;
-                    }
-
-                    infoText +=
-                        `Au total, ${unavailableCount} date${unavailableCount > 1 ? 's sont' : ' est'} actuellement indisponible${unavailableCount > 1 ? 's' : ''} (réservations ou maintenance). Les dates en <span style="color: #dc3545; font-weight: bold;">rouge ✕</span> sont indisponibles.`;
-
-                    dateInfo.innerHTML = `<small>${infoText}</small>`;
-
-                    // Ajouter l'info après le champ check_out s'il n'existe pas déjà
-                    const existingInfo = document.querySelector('.date-availability-info');
-                    if (!existingInfo) {
-                        checkOutInput.parentNode.appendChild(dateInfo);
-                    }
-                }
+                const zone = document.getElementById('dateInfo');
+                if (!zone || unavailableDates.length === 0) return;
+                const next = getNextUnavailableDate();
+                zone.innerHTML =
+                    '<i class="fas fa-calendar-xmark"></i>' +
+                    '<span>Certaines dates sont déjà prises' +
+                    (next ? ' (prochaine : <strong>' + formatDateForDisplay(next) + '</strong>)' : '') +
+                    '. Elles sont <s>barrées</s> dans le calendrier.</span>';
+                zone.hidden = false;
             }
 
             // Fonction pour vérifier si une date est indisponible
@@ -1559,7 +1160,6 @@
 
                 // Afficher les dates problématiques si trouvées
                 if (unavailableDatesInRange.length > 0) {
-                    console.log('Dates indisponibles dans la période:', unavailableDatesInRange);
                     const formattedDates = unavailableDatesInRange
                         .slice(0, 3)
                         .map(date => formatDateForDisplay(date))
@@ -1593,15 +1193,92 @@
             }
         });
 
-        function changeMainImage(src, thumbnail) {
-            document.getElementById('mainImage').src = src;
+        /* ---------- Galerie photos ---------- */
+        const galleryImages = @json($images->map(fn ($img) => $img->full_url)->values());
+        let galleryIndex = 0;
 
-            // Remove active class from all thumbnails
-            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+        function showImage(index) {
+            if (!galleryImages.length) return;
+            galleryIndex = (index + galleryImages.length) % galleryImages.length;
+            const src = galleryImages[galleryIndex];
+            const main = document.getElementById('mainImage');
 
-            // Add active class to clicked thumbnail
-            thumbnail.classList.add('active');
+            if (main && main.getAttribute('src') !== src) {
+                main.classList.add('is-switching');
+                const preload = new Image();
+                preload.onload = preload.onerror = () => {
+                    main.src = src;
+                    main.alt = main.alt.replace(/photo \d+$/, 'photo ' + (galleryIndex + 1));
+                    main.classList.remove('is-switching');
+                };
+                preload.src = src;
+            }
+
+            const lightbox = document.getElementById('lightboxImage');
+            if (lightbox) lightbox.src = src;
+            document.querySelectorAll('#galleryIndex, #lightboxIndex').forEach(el => el.textContent = galleryIndex + 1);
+
+            document.querySelectorAll('.thumbnail').forEach(t => {
+                const active = Number(t.dataset.index) === galleryIndex;
+                t.classList.toggle('active', active);
+                if (active) t.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+            });
         }
+
+        // Conservé pour compatibilité (attribut onclick des miniatures)
+        function changeMainImage(src, thumbnail) {
+            showImage(Number(thumbnail.dataset.index) || 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const stage = document.getElementById('galleryStage');
+            const modalEl = document.getElementById('galleryModal');
+            const modal = modalEl && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalEl) : null;
+
+            document.querySelectorAll('[data-gallery-step]').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    showImage(galleryIndex + Number(btn.dataset.galleryStep));
+                });
+            });
+
+            document.querySelectorAll('.thumbnail').forEach(t => {
+                t.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showImage(Number(t.dataset.index)); }
+                });
+            });
+
+            if (stage && modal) {
+                stage.addEventListener('click', () => modal.show());
+                stage.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); modal.show(); }
+                });
+            }
+
+            // Flèches du clavier dans la visionneuse
+            document.addEventListener('keydown', e => {
+                if (!modalEl || !modalEl.classList.contains('show')) return;
+                if (e.key === 'ArrowLeft') showImage(galleryIndex - 1);
+                if (e.key === 'ArrowRight') showImage(galleryIndex + 1);
+            });
+
+            // Balayage tactile
+            [stage, modalEl].forEach(el => {
+                if (!el) return;
+                let startX = null;
+                el.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+                el.addEventListener('touchend', e => {
+                    if (startX === null) return;
+                    const dx = e.changedTouches[0].clientX - startX;
+                    if (Math.abs(dx) > 45) showImage(galleryIndex + (dx < 0 ? 1 : -1));
+                    startX = null;
+                }, { passive: true });
+            });
+
+            // Précharger les photos suivantes quand la page est au repos
+            const idle = window.requestIdleCallback || (cb => setTimeout(cb, 1500));
+            idle(() => galleryImages.slice(1, 4).forEach(src => { const i = new Image(); i.src = src; }));
+        });
 
         function toggleAllAmenities() {
             const hiddenAmenities = document.querySelectorAll('.amenities-hidden');
@@ -1627,7 +1304,8 @@
         function scrollToBooking() {
             const bookingCard = document.querySelector('.booking-card');
             if (bookingCard) {
-                const yOffset = -130; // Offset pour la navbar fixe
+                const header = document.querySelector('.site-header');
+                const yOffset = -((header ? header.offsetHeight : 70) + 16); // hauteur du header fixe
                 const y = bookingCard.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
                 window.scrollTo({
@@ -1667,6 +1345,6 @@
     </script>
 
     <!-- Flatpickr JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/fr.js"></script>
 @endpush

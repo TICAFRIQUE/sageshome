@@ -76,7 +76,7 @@ class DashboardController extends BaseController
         $user = Auth::user();
         
         $query = $user->bookings()
-            ->with(['residence', 'residence.residenceType', 'residence.images']);
+            ->with(['residence.primaryImage', 'residence.residenceType', 'payment']);
 
         // Filtrage par statut
         if ($request->filled('status') && $request->status !== 'all') {
@@ -88,7 +88,7 @@ class DashboardController extends BaseController
         $sortDirection = $request->get('direction', 'desc');
         
         if (in_array($sortBy, ['created_at', 'check_in', 'check_out', 'total_price'])) {
-            $query->orderBy($sortBy, $sortDirection);
+            $query->orderBy($sortBy, $sortDirection === 'asc' ? 'asc' : 'desc');
         } else {
             $query->latest();
         }
@@ -125,11 +125,11 @@ class DashboardController extends BaseController
             abort(403);
         }
 
-        $booking->load(['residence', 'residence.residenceType', 'residence.images']);
+        $booking->load(['residence.primaryImage', 'residence.residenceType', 'payments']);
 
         $breadcrumb = [
             ['name' => 'Mes Réservations', 'url' => route('dashboard.bookings')],
-            ['name' => 'Réservation #' . $booking->id, 'url' => '']
+            ['name' => 'Réservation ' . $booking->booking_number, 'url' => '']
         ];
 
         return view('frontend.dashboard.booking-detail', compact('booking', 'breadcrumb'));
@@ -138,6 +138,21 @@ class DashboardController extends BaseController
     /**
      * Annule une réservation
      */
+    /**
+     * Reçu de réservation en PDF (ouvert dans le navigateur, imprimable/téléchargeable).
+     */
+    public function bookingReceipt(Booking $booking)
+    {
+        if ($booking->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $booking->load(['residence', 'payments']);
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('frontend.pdf.receipt', compact('booking'))
+            ->setPaper('a4')
+            ->stream('recu_' . $booking->booking_number . '.pdf');
+    }
     public function cancelBooking(Booking $booking)
     {
         // Vérifier que la réservation appartient au client connecté

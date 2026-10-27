@@ -5,9 +5,9 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>@yield('title') | {{config('app.name')}} </title>
+    <title>@yield('title') | Sages Home Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Tableau de bord d'administration pour le restaurant Chez Jeanne" name="description" />
+    <meta content="Administration Sages Home - gestion des résidences et réservations" name="description" />
     <meta content="Ticafrique" name="author" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- App favicon -->
@@ -28,11 +28,12 @@
     <link rel="manifest" href="{{ asset('assets/img/favicon/manifest.json') }}">
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="{{ asset('assets/img/favicon/ms-icon-144x144.png') }}">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#37542A">
     @include('backend.layouts.head-css')
 </head>
 
 <body>
+    <div id="sh-progress" aria-hidden="true"></div>
     <!-- Begin page -->
     <div id="layout-wrapper">
         @include('backend.layouts.topbar')
@@ -59,6 +60,33 @@
 
     <!-- JAVASCRIPT -->
     @include('backend.layouts.vendor-scripts')
+
+    {{-- Messages flash (success / error / warning / info) en notification --}}
+    @php
+        $flashes = collect(['success', 'error', 'warning', 'info'])
+            ->mapWithKeys(fn ($type) => [$type => session($type)])
+            ->filter(fn ($msg) => is_string($msg) && $msg !== '');
+        if ($errors->any() && !$flashes->has('error')) {
+            $flashes->put('error', $errors->count() > 1
+                ? 'Veuillez corriger les ' . $errors->count() . ' champs signalés.'
+                : $errors->first());
+        }
+    @endphp
+    @if ($flashes->isNotEmpty())
+        <script>
+            (function () {
+                if (!window.Swal) return;
+                var toast = Swal.mixin({
+                    toast: true, position: 'top-end', showConfirmButton: false, showCloseButton: true,
+                    timer: 5000, timerProgressBar: true
+                });
+                var queue = @json($flashes);
+                Object.keys(queue).reduce(function (p, type) {
+                    return p.then(function () { return toast.fire({ icon: type, title: queue[type] }); });
+                }, Promise.resolve());
+            })();
+        </script>
+    @endif
 </body>
 
 </html>

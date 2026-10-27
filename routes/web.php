@@ -75,6 +75,7 @@ Route::middleware(['auth'])->prefix('client')->group(function () {
         Route::get('/', 'index')->name('dashboard.index');
         Route::get('/bookings', 'bookings')->name('dashboard.bookings');
         Route::get('/bookings/{booking}', 'bookingShow')->name('dashboard.booking.show');
+        Route::get('/bookings/{booking}/receipt', 'bookingReceipt')->name('dashboard.booking.receipt');
         Route::patch('/bookings/{booking}/cancel', 'cancelBooking')->name('dashboard.booking.cancel');
         Route::get('/profile', 'profile')->name('dashboard.profile');
         Route::patch('/profile', 'updateProfile')->name('dashboard.profile.update');
@@ -215,7 +216,12 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
             Route::post('/', 'store')->name('admin.bookings.store');
             Route::post('/check-availability', 'checkAvailability')->name('admin.bookings.check-availability');
             Route::post('/available-residences', 'getAvailableResidences')->name('admin.bookings.available-residences');
+            Route::get('/export', 'export')->name('admin.bookings.export');
+            Route::get('/export-pdf', 'exportPdf')->name('admin.bookings.export-pdf');
+            Route::get('/report/pdf', 'reportPdf')->name('admin.bookings.report.pdf');
+            Route::get('/{booking}/pdf', 'bookingPdf')->name('admin.bookings.pdf');
             Route::get('/report', 'report')->name('admin.bookings.report');
+            Route::get('/report/export', 'reportExport')->name('admin.bookings.report.export');
             Route::get('/calendar', 'calendar')->name('admin.bookings.calendar');
             Route::get('/calendar-data', 'calendarData')->name('admin.bookings.calendar-data');
             Route::get('/new-bookings', 'getNewBookings')->name('admin.bookings.new-bookings');
@@ -235,11 +241,13 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
             Route::get('/create', 'create')->name('admin.clients.create');
             Route::post('/', 'store')->name('admin.clients.store');
             Route::get('/export', 'export')->name('admin.clients.export');
-            Route::get('/{user}', 'show')->name('admin.clients.show');
-            Route::get('/{user}/edit', 'edit')->name('admin.clients.edit');
-            Route::put('/{user}', 'update')->name('admin.clients.update');
-            Route::delete('/{user}', 'destroy')->name('admin.clients.destroy');
-            Route::post('/{user}/restore', 'restore')->name('admin.clients.restore');
+            // {client} doit correspondre au nom du paramètre du contrôleur (User $client)
+            Route::get('/{client}', 'show')->name('admin.clients.show')->withTrashed();
+            Route::get('/{client}/edit', 'edit')->name('admin.clients.edit')->withTrashed();
+            Route::put('/{client}', 'update')->name('admin.clients.update')->withTrashed();
+            Route::post('/{client}/reset-password', 'resetPassword')->name('admin.clients.reset-password')->withTrashed();
+            Route::delete('/{client}', 'destroy')->name('admin.clients.destroy');
+            Route::post('/{client}/restore', 'restore')->name('admin.clients.restore')->withTrashed();
         });
     });
 });

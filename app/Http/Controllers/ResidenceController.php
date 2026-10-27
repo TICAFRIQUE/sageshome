@@ -34,10 +34,30 @@ class ResidenceController extends Controller
             $query->byCommune($request->commune);
         }
 
-        $residences = $query->orderBy('sort_order')->paginate(12);
+        // Tri
+        switch ($request->sort) {
+            case 'price_asc':
+                $query->orderBy('price_per_night');
+                break;
+            case 'price_desc':
+                $query->orderByDesc('price_per_night');
+                break;
+            case 'newest':
+                $query->latest();
+                break;
+            default:
+                $query->orderByDesc('is_featured')->orderBy('sort_order');
+        }
 
-        // Récupérer les types de résidences actifs pour les filtres
-        $residenceTypes = ResidenceType::active()->ordered()->get();
+        $residences = $query->paginate(12)->withQueryString();
+
+        // Types actifs + nombre de résidences disponibles (raccourcis par type)
+        $residenceTypes = ResidenceType::active()->ordered()
+            ->withCount(['residences as available_residences_count' => function ($q) {
+                $q->available();
+            }])
+            ->get();
+        $totalAvailable = $residenceTypes->sum('available_residences_count');
 
         // Récupérer TOUTES les villes et communes disponibles pour les filtres
         $allVillesCommunes = config('ville-commune');
@@ -51,8 +71,9 @@ class ResidenceController extends Controller
 
         return view('frontend.residences.index', compact(
             'residences', 
-            'residenceTypes', 
-            'availableVilles', 
+            'residenceTypes',
+            'totalAvailable',
+            'availableVilles',
             'availableCommunes',
             'allVillesCommunes'
         ));

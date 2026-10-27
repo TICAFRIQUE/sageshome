@@ -1,871 +1,564 @@
 @extends('layouts.app')
 
-@section('title', 'Sages Home - Résidences de luxe')
+@section('title', 'Sages Home - Résidences meublées haut de gamme à Abidjan')
+@section('body_class', 'page-home')
+
+@push('preload')
+    <link rel="preload" as="image" type="image/webp" fetchpriority="high"
+        imagesrcset="{{ asset('images/hero-640.webp') }} 640w, {{ asset('images/hero-1100.webp') }} 1100w, {{ asset('images/hero-1920.webp') }} 1920w"
+        imagesizes="100vw">
+@endpush
+
+@php
+    $phone = $parametre?->contact1 ?: $parametre?->contact2;
+    $email = $parametre?->email1 ?: 'infos@sageshome.ci';
+@endphp
 
 @section('content')
-    <!-- Hero Banner Section -->
-    <section class="hero-banner position-relative overflow-hidden">
-        <div class="container position-relative">
-            <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
-                <div class="col-12 text-center">
-                    <div class="hero-content text-white mb-4">
-                        <h1 class="display-4 fw-bold mb-3 text-white">
-                            Bienvenue chez Sages Home
-                        </h1>
-                        <p class="lead mb-4 text-white">
-                            Vivez l'expérience du confort raffiné, au cœur de nos résidences sélectionnées avec soin.
-                        </p>
-                    </div>
+    {{-- ================= HERO ================= --}}
+    <section class="home-hero">
+        <picture class="home-hero-bg" aria-hidden="true">
+            <source type="image/webp"
+                srcset="{{ asset('images/hero-640.webp') }} 640w, {{ asset('images/hero-1100.webp') }} 1100w, {{ asset('images/hero-1920.webp') }} 1920w"
+                sizes="100vw">
+            <img src="{{ asset('images/hero-1100.jpg') }}" alt="" width="1920" height="1280" fetchpriority="high"
+                decoding="async">
+        </picture>
 
-                    <a href="{{ route('residences.index') }}" class="btn btn-primary btn-lg px-4 py-3">
-                        <i class="fas fa-home me-2"></i>Découvrir nos résidences
-                    </a>
-                </div>
+        <div class="container position-relative">
+            <div class="hero-content">
+                <span class="hero-eyebrow"><i class="fas fa-location-dot me-2"></i>Résidences meublées · Abidjan</span>
+                <h1 class="hero-title">Votre chez-vous <span class="text-gold-gradient">haut de gamme</span>, le temps d'un séjour</h1>
+                <p class="hero-lead">Appartements et studios entièrement équipés, sécurisés et prêts à vous accueillir.
+                    Réservez en quelques clics, nous nous occupons du reste.</p>
+
+                <ul class="hero-trust list-unstyled">
+                    <li><i class="fas fa-shield-halved"></i>Résidences vérifiées</li>
+                    <li><i class="fas fa-headset"></i>Assistance 24h/24</li>
+                    <li><i class="fas fa-lock"></i>Paiement sécurisé</li>
+                </ul>
             </div>
         </div>
     </section>
 
-    <!-- Featured Residences Section -->
+    {{-- Recherche (chevauche le hero) --}}
+    <div class="container hero-search">
+        @include('frontend.partials.search-form', ['prefix' => 'hero'])
+    </div>
+
+    {{-- Chiffres clés --}}
+    <section class="container">
+        <div class="stats-strip" data-reveal>
+            <div class="stat">
+                <strong>{{ $stats['residences'] }}</strong>
+                <span>{{ $stats['residences'] > 1 ? 'résidences disponibles' : 'résidence disponible' }}</span>
+            </div>
+            <div class="stat">
+                <strong>{{ max($stats['communes'], 1) }}</strong>
+                <span>{{ $stats['communes'] > 1 ? 'quartiers prisés' : 'quartier prisé' }}</span>
+            </div>
+            <div class="stat">
+                <strong>24/7</strong>
+                <span>assistance sur place</span>
+            </div>
+            <div class="stat">
+                <strong><i class="fas fa-bolt"></i></strong>
+                <span>réservation instantanée</span>
+            </div>
+        </div>
+    </section>
+
+    {{-- ================= COUPS DE CŒUR ================= --}}
     @if ($featuredResidences->count() > 0)
-        <section id="residences-vedette" class="py-5 bg-light">
+        <section class="section" id="residences-vedette">
             <div class="container">
-                <div class="row mb-5">
-                    <div class="col-lg-8 mx-auto text-center">
-                        <h2 class="display-5 fw-bold mb-3" style="color: var(--sage-green-dark);">
-                            <i class="fas fa-star me-3" style="color: var(--sage-gold-end);"></i>
-                            Résidences en Vedette
-                        </h2>
-                        <p class="lead text-muted">
-                            Découvrez notre sélection exclusive des meilleures résidences,
-                            choisies pour leur emplacement privilégié et leurs services exceptionnels.
-                        </p>
+                <div class="section-head d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+                    <div data-reveal>
+                        <span class="eyebrow">Sélection</span>
+                        <h2 class="section-title">Nos coups de cœur</h2>
+                        <p class="section-lead mb-0">Des adresses choisies pour leur emplacement, leur confort et la qualité
+                            de leurs prestations.</p>
                     </div>
+                    <a href="{{ route('residences.index') }}" class="btn btn-outline-primary flex-shrink-0" data-reveal>
+                        Toutes les résidences<i class="fas fa-arrow-right ms-2"></i>
+                    </a>
                 </div>
 
-                <div class="row g-4 mb-5">
+                <div class="row g-4">
                     @foreach ($featuredResidences as $residence)
-                        <div class="col-lg-4 col-md-6">
-                            <div class="card residence-card h-100 border-0 shadow-sm">
-                                <div class="position-relative">
-                                    @if ($residence->primaryImage)
-                                        <img src="{{ $residence->primaryImage->full_url }}"
-                                            class="card-img-top residence-image" alt="{{ $residence->name }}"
-                                            style="height: 250px; object-fit: cover;">
-                                    @else
-                                        <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center"
-                                            style="height: 250px; background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));">
-                                            <i class="fas fa-home text-white fa-3x"></i>
-                                        </div>
-                                    @endif
-
-                                    <div class="position-absolute top-0 end-0 p-3">
-                                        <span class="badge badge-gold fs-6 px-3 py-2">
-                                            <i class="fas fa-star me-1"></i>Vedette
-                                        </span>
-                                    </div>
-
-                                    <div class="position-absolute bottom-0 start-0 p-3">
-                                        <div
-                                            class="d-flex align-items-center bg-white bg-opacity-90 rounded-pill px-3 py-1">
-                                            <i class="fas fa-map-marker-alt me-1" style="color: var(--sage-gold-end);"></i>
-                                            <small class="fw-medium">
-                                                {{ $residence->ville ?? 'Abidjan' }}{{ $residence->commune ? ', ' . $residence->commune : '' }}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="card-body p-4">
-                                    <h5 class="card-title fw-bold mb-2" style="color: var(--sage-green-dark);">
-                                        {{ $residence->name }}
-                                    </h5>
-
-                                    <!-- Localisation -->
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-map-marker-alt me-2 text-muted"></i>
-                                        <small class="text-muted">
-                                            {{ $residence->ville ?? 'Abidjan' }}{{ $residence->commune ? ', ' . $residence->commune : '' }}
-                                            @if ($residence->address)
-                                                <br><span
-                                                    class="text-muted">{{ Str::limit($residence->address, 30) }}</span>
-                                            @endif
-                                        </small>
-                                    </div>
-
-                                    <p class="card-text text-muted mb-3">
-                                        {{ Str::limit($residence->description, 80) }}
-                                    </p>
-
-
-
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-6">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-users me-2" style="color: var(--sage-gold-end);"></i>
-                                                <small class="text-muted">{{ $residence->capacity }} voyageurs</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-bed me-2" style="color: var(--sage-gold-end);"></i>
-                                                <small class="text-muted">{{ $residence->bedrooms ?? 'N/A' }}
-                                                    chambres</small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span
-                                                class="text-gold fw-bold fs-4">{{ number_format($residence->price_per_night, 0, ',', ' ') }}
-                                                FCFA</span>
-                                            <small class="text-muted d-block">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €) par nuit</small>
-                                        </div>
-
-                                        <a href="{{ route('residences.show', $residence->slug) }}"
-                                            class="btn btn-primary btn-lg">
-                                            <i class="fas fa-arrow-right me-2"></i>Voir détails
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-sm-6 col-lg-4" data-reveal style="--reveal-delay: {{ ($loop->index % 3) * 0.08 }}s">
+                            @include('frontend.partials.residence-card', [
+                                'residence' => $residence,
+                                'eager' => $loop->index < 3,
+                            ])
                         </div>
                     @endforeach
-                </div>
-
-                <div class="text-center">
-                    <a href="{{ route('residences.index') }}" class="btn btn-outline-primary btn-lg px-5 py-3">
-                        <i class="fas fa-th-large me-2"></i>Voir toutes les résidences vedettes
-                    </a>
                 </div>
             </div>
         </section>
     @endif
 
-    <!-- Residences by Category -->
-    <section class="py-5 bg-white">
-        <div class="container">
-            <div class="row mb-5">
-                <div class="col-lg-8 mx-auto text-center">
-                    <h2 class="display-5 fw-bold mb-3" style="color: var(--sage-green-dark);">
-                        <i class="fas fa-th-large me-3" style="color: var(--sage-gold-end);"></i>
-                        Nos Types de Résidences
-                    </h2>
-                    <p class="lead text-muted">
-                        Que vous recherchiez un studio cosy ou un appartement spacieux,
-                        nous avons la résidence parfaite pour vos besoins.
-                    </p>
+    {{-- ================= PAR TYPE ================= --}}
+    @if ($allResidenceTypes->count() > 0)
+        <section class="section bg-sage-light" id="types">
+            <div class="container">
+                <div class="section-head text-center" data-reveal>
+                    <span class="eyebrow">Explorer</span>
+                    <h2 class="section-title">Trouvez le logement qui vous ressemble</h2>
+                    <p class="section-lead mx-auto mb-0">Du studio cosy pour un voyage d'affaires à l'appartement familial,
+                        choisissez le format adapté à votre séjour.</p>
                 </div>
-            </div>
 
-            <div class="row">
-                @php
-                    $gradients = [
-                        'linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary))',
-                        'linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end))',
-                        'linear-gradient(135deg, #2F4A33, #4A6B42)',
-                        'linear-gradient(135deg, var(--sage-green-secondary), var(--sage-green-dark))',
-                        'linear-gradient(135deg, #4A6B42, var(--sage-gold-start))',
-                    ];
+                <div class="type-tabs-wrap" data-reveal>
+                    <ul class="nav type-tabs" role="tablist">
+                        @foreach ($allResidenceTypes as $type)
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ $loop->first ? 'active' : '' }}" id="type-tab-{{ $type->id }}"
+                                    data-bs-toggle="pill" data-bs-target="#type-pane-{{ $type->id }}" type="button"
+                                    role="tab" aria-controls="type-pane-{{ $type->id }}"
+                                    aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                                    {{ $type->name }}
+                                    <span class="count">{{ $type->available_residences_count }}</span>
+                                </button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
 
-                    $icons = ['fas fa-home', 'fas fa-building', 'fas fa-city', 'fas fa-hotel', 'fas fa-warehouse'];
-                @endphp
-
-                @foreach ($allResidenceTypes as $index => $residenceType)
-                    @if ($residenceType->residences->count() > 0)
-                        <div class="col-12 mb-5">
-                            <!-- En-tête du type de résidence -->
-                            <div class="row mb-4">
-                                <div class="col-12">
-                                    <div class="card border-0 shadow-sm">
-                                        <div class="card-header text-white text-center py-4"
-                                            style="background: {{ $gradients[$index % count($gradients)] }} !important;">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-2 text-center">
-                                                    <i class="{{ $icons[$index % count($icons)] }} text-gold fa-3x"></i>
-                                                </div>
-                                                <div class="col-md-8 text-center text-md-start">
-                                                    <h3 class="fw-bold text-white mb-1">{{ $residenceType->name }}</h3>
-                                                    <p class="text-white-75 mb-0">
-                                                        {{ $residenceType->description ?? 'Découvrez nos résidences de qualité' }}
-                                                    </p>
-                                                </div>
-                                                <div class="col-md-2 text-center">
-                                                    <span class="badge bg-white text-dark px-3 py-2 fs-6">
-                                                        {{ $residenceType->residences->count() }}
-                                                        résidence{{ $residenceType->residences->count() > 1 ? 's' : '' }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Liste des résidences en colonnes de 3 -->
+                <div class="tab-content">
+                    @foreach ($allResidenceTypes as $type)
+                        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="type-pane-{{ $type->id }}"
+                            role="tabpanel" aria-labelledby="type-tab-{{ $type->id }}" tabindex="0">
+                            @if ($type->description)
+                                <p class="text-center text-muted mb-4">{{ $type->description }}</p>
+                            @endif
                             <div class="row g-4">
-                                @foreach ($residenceType->residences->take(6) as $residence)
-                                    <div class="col-lg-4 col-md-6">
-                                        <div class="card residence-card h-100 border-0 shadow-sm">
-                                            <div class="position-relative">
-                                                @if ($residence->primaryImage)
-                                                    <img src="{{ $residence->primaryImage->full_url }}"
-                                                        class="card-img-top residence-image" alt="{{ $residence->name }}"
-                                                        style="height: 200px; object-fit: cover;">
-                                                @else
-                                                    <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center"
-                                                        style="height: 200px; background: {{ $gradients[$index % count($gradients)] }};">
-                                                        <i class="fas fa-home text-white fa-2x"></i>
-                                                    </div>
-                                                @endif
-
-                                                <div class="position-absolute top-0 end-0 p-3">
-                                                    <span class="badge badge-gold fs-6 px-2 py-1">
-                                                        <i class="fas fa-star me-1"></i>{{ $residenceType->name }}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div class="card-body p-3">
-                                                <h5 class="card-title fw-bold mb-2"
-                                                    style="color: var(--sage-green-dark);">
-                                                    {{ $residence->name }}
-                                                </h5>
-
-                                                <!-- Localisation -->
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <i class="fas fa-map-marker-alt me-1 text-muted"
-                                                        style="font-size: 0.8rem;"></i>
-                                                    <small class="text-muted">
-                                                        {{ $residence->ville ?? 'Abidjan' }}{{ $residence->commune ? ', ' . $residence->commune : '' }}
-                                                    </small>
-                                                </div>
-
-                                                <p class="card-text text-muted mb-2 small">
-                                                    {{ Str::limit($residence->description, 60) }}
-                                                </p>
-
-                                                <!-- Équipements compacts -->
-                                                @if ($residence->equipements && count($residence->equipements) > 0)
-                                                    <div class="mb-2">
-                                                        <div class="d-flex flex-wrap gap-1">
-                                                            @foreach ($residence->equipements->take(2) as $equipement)
-                                                                <span class="badge bg-light text-dark border"
-                                                                    style="font-size: 0.7rem;">
-                                                                    <i class="fas fa-check me-1"
-                                                                        style="color: var(--sage-gold-end); font-size: 0.7rem;"></i>
-                                                                    {{ Str::limit($equipement->name, 8) }}
-                                                                </span>
-                                                            @endforeach
-                                                            @if (count($residence->equipements) > 2)
-                                                                <span class="badge bg-secondary"
-                                                                    style="font-size: 0.7rem;">
-                                                                    +{{ count($residence->equipements) - 2 }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @endif
-
-                                                <div class="row g-2 mb-3 text-center">
-                                                    <div class="col-4">
-                                                        <div class="d-flex flex-column align-items-center">
-                                                            <i class="fas fa-users mb-1"
-                                                                style="color: var(--sage-gold-end);"></i>
-                                                            <small class="text-muted">{{ $residence->capacity }}p</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <div class="d-flex flex-column align-items-center">
-                                                            <i class="fas fa-bed mb-1"
-                                                                style="color: var(--sage-gold-end);"></i>
-                                                            <small
-                                                                class="text-muted">{{ $residence->bedrooms ?? 'N/A' }}</small>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-4">
-                                                        <div class="d-flex flex-column align-items-center">
-                                                            <i class="fas fa-star mb-1"
-                                                                style="color: var(--sage-gold-end);"></i>
-                                                            <small class="text-muted">5.0</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <span
-                                                            class="text-gold fw-bold fs-5">{{ number_format($residence->price_per_night, 0, ',', ' ') }}
-                                                            FCFA</span>
-                                                        <small class="text-muted d-block">({{ number_format(fcfa_to_eur($residence->price_per_night), 2, ',', ' ') }} €) par nuit</small>
-                                                    </div>
-
-                                                    <a href="{{ route('residences.show', $residence->slug) }}"
-                                                        class="btn btn-outline-primary btn-sm">
-                                                        <i class="fas fa-arrow-right me-1"></i>Voir détails
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
+                                @foreach ($type->residences as $residence)
+                                    <div class="col-sm-6 col-lg-4">
+                                        @include('frontend.partials.residence-card', [
+                                            'residence' => $residence,
+                                            'showType' => false,
+                                        ])
                                     </div>
                                 @endforeach
                             </div>
-
-                            @if ($residenceType->residences->count() > 6)
-                                <div class="text-center mt-4">
-                                    <a href="{{ route('residences.index', ['type' => $residenceType->id]) }}"
-                                        class="btn btn-primary btn-lg px-4">
-                                        <i class="fas fa-eye me-2"></i>Voir toutes les {{ $residenceType->name }}
-                                        ({{ $residenceType->residences->count() }})
-                                    </a>
-                                </div>
-                            @endif
+                            <div class="text-center mt-4 pt-2">
+                                <a href="{{ route('residences.index', ['type' => $type->id]) }}" class="btn btn-green btn-lg">
+                                    @if ($type->available_residences_count > $type->residences->count())
+                                        Voir les {{ $type->available_residences_count }} résidences « {{ $type->name }} »
+                                    @else
+                                        Explorer la catégorie « {{ $type->name }} »
+                                    @endif
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
                         </div>
-                    @endif
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    {{-- ================= COMMENT ÇA MARCHE ================= --}}
+    <section class="section">
+        <div class="container">
+            <div class="section-head text-center" data-reveal>
+                <span class="eyebrow">Simple et rapide</span>
+                <h2 class="section-title">Réservez en 3 étapes</h2>
+            </div>
+            <div class="row g-4 steps">
+                @foreach ([
+                    ['icon' => 'fa-magnifying-glass', 'title' => 'Choisissez', 'text' => 'Indiquez vos dates et le nombre de voyageurs, puis comparez les résidences disponibles.'],
+                    ['icon' => 'fa-calendar-check', 'title' => 'Réservez', 'text' => 'Vérifiez la disponibilité en temps réel et confirmez votre séjour en ligne.'],
+                    ['icon' => 'fa-key', 'title' => 'Installez-vous', 'text' => 'Recevez votre confirmation par e-mail et profitez d\'un logement prêt à vivre.'],
+                ] as $step)
+                    <div class="col-md-4" data-reveal style="--reveal-delay: {{ $loop->index * 0.1 }}s">
+                        <div class="step">
+                            <span class="step-number">0{{ $loop->iteration }}</span>
+                            <div class="step-icon"><i class="fas {{ $step['icon'] }}"></i></div>
+                            <h3 class="h5">{{ $step['title'] }}</h3>
+                            <p class="text-muted mb-0">{{ $step['text'] }}</p>
+                        </div>
+                    </div>
                 @endforeach
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <div style="position: relative; top: -100px;"></div>
-    <section class="py-5 bg-light">
+    {{-- ================= POURQUOI ================= --}}
+    <section class="section bg-sage-light" id="pourquoi">
         <div class="container">
-            <div class="row mb-5">
-                <div class="col-lg-8 mx-auto text-center">
-                    <h2 class="display-5 fw-bold mb-3" style="color: var(--sage-green-dark);">
-                        <i class="fas fa-heart me-3" style="color: var(--sage-gold-end);"></i>
-                        Pourquoi Choisir Sages Home ?
-                    </h2>
-                    <p class="lead text-muted">
-                        Notre engagement envers l'excellence se reflète dans chaque aspect de votre séjour.
-                    </p>
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-5" data-reveal>
+                    <span class="eyebrow">Pourquoi Sages Home</span>
+                    <h2 class="section-title">Le confort d'un hôtel, la liberté d'un chez-soi</h2>
+                    <p class="section-lead">Chaque résidence est visitée, équipée et entretenue par nos équipes pour vous
+                        garantir un séjour sans mauvaise surprise.</p>
+                    <a href="{{ route('residences.index') }}" class="btn btn-primary btn-lg mt-2">
+                        Découvrir les résidences<i class="fas fa-arrow-right ms-2"></i>
+                    </a>
                 </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-6">
-                    <div class="card feature-card h-100 border-0 shadow-sm text-center">
-                        <div class="card-body p-5">
-                            <div class="feature-icon mb-4">
-                                <div class="icon-circle mx-auto d-flex align-items-center justify-content-center"
-                                    style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary)); border-radius: 50%;">
-                                    <i class="fas fa-shield-alt text-white fa-2x"></i>
-                                </div>
-                            </div>
-                            <h4 class="fw-bold mb-3 text-green">Sécurisé & Vérifié</h4>
-                            <p class="text-muted">
-                                Toutes nos résidences sont rigoureusement vérifiées et sécurisées pour garantir
-                                votre tranquillité d'esprit pendant tout votre séjour.
-                            </p>
-                            <ul class="list-unstyled mt-3">
-                                <li><i class="fas fa-check text-success me-2"></i>Propriétés vérifiées</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Sécurité 24h/24</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Assurance incluse</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <div class="card feature-card h-100 border-0 shadow-sm text-center">
-                        <div class="card-body p-5">
-                            <div class="feature-icon mb-4">
-                                <div class="icon-circle mx-auto d-flex align-items-center justify-content-center"
-                                    style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end)); border-radius: 50%;">
-                                    <i class="fas fa-gem text-white fa-2x"></i>
-                                </div>
-                            </div>
-                            <h4 class="fw-bold mb-3 text-green">Luxe & Raffinement</h4>
-                            <p class="text-muted">
-                                Nos résidences sont sélectionnées avec soin pour offrir le summum du confort
-                                et de l'élégance dans les quartiers les plus prestigieux.
-                            </p>
-                            <ul class="list-unstyled mt-3">
-                                <li><i class="fas fa-check text-success me-2"></i>Équipements haut de gamme</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Design moderne</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Services premium</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 mx-auto">
-                    <div class="card feature-card h-100 border-0 shadow-sm text-center">
-                        <div class="card-body p-5">
-                            <div class="feature-icon mb-4">
-                                <div class="icon-circle mx-auto d-flex align-items-center justify-content-center"
-                                    style="width: 80px; height: 80px; background: linear-gradient(135deg, #2F4A33, #4A6B42); border-radius: 50%;">
-                                    <i class="fas fa-headset text-white fa-2x"></i>
-                                </div>
-                            </div>
-                            <h4 class="fw-bold mb-3 text-green">Support Dédié 24/7</h4>
-                            <p class="text-muted">
-                                Notre équipe d'experts est disponible à tout moment pour vous accompagner
-                                et répondre à tous vos besoins durant votre séjour.
-                            </p>
-                            <ul class="list-unstyled mt-3">
-                                <li><i class="fas fa-check text-success me-2"></i>Support multilingue</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Assistance urgente</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Conciergerie premium</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CTA Section avec Contact -->
-            <div class="row mt-5" id="contact" style="scroll-margin-top: 170px;">
-                <div class="col-12">
-                    <div class="card cta-card border-0 overflow-hidden">
-                        <div class="card-body p-0">
-                            <div class="row g-0">
-                                <div class="col-md-8">
-                                    <div class="p-5 h-100 d-flex flex-column justify-content-center"
-                                        style="background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary));">
-                                        <h3 class="text-white fw-bold mb-3">
-                                            <i class="fas fa-envelope me-3" style="color: var(--sage-gold-end);"></i>
-                                            Contactez-Nous
-                                        </h3>
-                                        <p class="text-white-50 mb-4">
-                                            Notre équipe est à votre disposition pour vous accompagner
-                                        </p>
-
-                                        <!-- Informations de contact -->
-                                        <div class="row g-3 mb-4">
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="contact-icon me-3">
-                                                        <div class="icon-circle d-flex align-items-center justify-content-center"
-                                                            style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
-                                                            <i class="fas fa-map-marker-alt text-white"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-white fw-bold mb-1">Adresse</h6>
-                                                        <small class="text-white-50">
-                                                            {{ $parametre?->localisation ?? 'Abidjan , Cote d\'Ivoire' }}
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="contact-icon me-3">
-                                                        <div class="icon-circle d-flex align-items-center justify-content-center"
-                                                            style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
-                                                            <i class="fas fa-phone text-white"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-white fw-bold mb-1">Téléphone</h6>
-                                                        <small class="text-white-50"> <a
-                                                                href="tel:{{ $parametre?->contact1 }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact1 }}</a>
-                                                        </small><br>
-                                                        <small class="text-white-50"> <a
-                                                                href="tel:{{ $parametre?->contact2 }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact2 }}</a>
-                                                        </small><br>
-                                                         <small class="text-white-50"> <a
-                                                                href="tel:{{ $parametre?->contact3 }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->contact3 }}</a>
-                                                        </small>
-
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="contact-icon me-3">
-                                                        <div class="icon-circle d-flex align-items-center justify-content-center"
-                                                            style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
-                                                            <i class="fas fa-envelope text-white"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-white fw-bold mb-1">Email</h6>
-                                                        <small class="text-white-50">
-                                                            <a href="mailto:{{ $parametre?->email1 ?? 'infos@sageshome.ci' }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->email1 ?? 'infos@sageshome.ci' }}</a>
-                                                        </small><br>
-                                                        <small class="text-white-50">
-                                                            <a href="mailto:{{ $parametre?->email2 }}"
-                                                                class="text-white-50 text-decoration-none">{{ $parametre?->email2 }}</a>
-                                                        </small>
-                                                       
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="contact-icon me-3">
-                                                        <div class="icon-circle d-flex align-items-center justify-content-center"
-                                                            style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%;">
-                                                            <i class="fas fa-share-alt text-white"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-white fw-bold mb-1">Suivez-nous</h6>
-                                                        <div class="d-flex gap-2">
-                                                            <a href="{{ $parametre?->lien_facebook ?? '#' }}" class="social-link" title="Facebook">
-                                                                <div class="social-icon-small"
-                                                                    style="background: #1877f2;">
-                                                                    <i class="fab fa-facebook-f text-white"></i>
-                                                                </div>
-                                                            </a>
-                                                            <a href="{{ $parametre?->lien_instagram ?? '#' }}" class="social-link" title="Instagram">
-                                                                <div class="social-icon-small"
-                                                                    style="background: #e1306c;">
-                                                                    <i class="fab fa-instagram text-white"></i>
-                                                                </div>
-                                                            </a>
-                                                            
-                                                            <a href="https://wa.me/{{$parametre?->contact2}}?text=Bonjour, je suis interessé(e) par vos residences Sages Home." target="_blank" class="social-link" title="WhatsApp">
-                                                                <div class="social-icon-small"
-                                                                    style="background: #25d366;">
-                                                                    <i class="fab fa-whatsapp text-white"></i>
-                                                                </div>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex flex-wrap gap-3">
-                                            <a href="{{ route('residences.index') }}" class="btn btn-light btn-lg px-4">
-                                                <i class="fas fa-search me-2"></i>Explorer nos résidences
-                                            </a>
-                                            <a href="tel:+22527200000" class="btn btn-outline-light btn-lg px-4">
-                                                <i class="fas fa-phone me-2"></i>Appelez-nous
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="h-100 d-flex align-items-center justify-content-center p-5"
-                                        style="background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));">
-                                        <div class="text-center">
-                                            <i class="fas fa-award text-white fa-5x mb-3"></i>
-                                            <h4 class="text-white fw-bold">Excellence Garantie</h4>
-                                            <p class="text-white-75">5 étoiles sur 5</p>
-                                        </div>
+                <div class="col-lg-7">
+                    <div class="row g-3">
+                        @foreach ([
+                            ['icon' => 'fa-shield-halved', 'title' => 'Sécurité 24h/24', 'text' => 'Résidences sécurisées et propriétés vérifiées par nos soins.'],
+                            ['icon' => 'fa-couch', 'title' => 'Tout équipé', 'text' => 'Wi-Fi, climatisation, cuisine équipée : il ne manque que vos valises.'],
+                            ['icon' => 'fa-broom', 'title' => 'Ménage assuré', 'text' => 'Logements préparés et nettoyés avec soin avant chaque arrivée.'],
+                            ['icon' => 'fa-headset', 'title' => 'Équipe disponible', 'text' => 'Une question pendant votre séjour ? Nous répondons jour et nuit.'],
+                        ] as $feature)
+                            <div class="col-sm-6" data-reveal style="--reveal-delay: {{ $loop->index * 0.08 }}s">
+                                <div class="feature">
+                                    <div class="feature-icon"><i class="fas {{ $feature['icon'] }}"></i></div>
+                                    <div>
+                                        <h3 class="h6 mb-1">{{ $feature['title'] }}</h3>
+                                        <p class="text-muted small mb-0">{{ $feature['text'] }}</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    {{-- ================= CONTACT ================= --}}
+    <section class="section pb-0" id="contact">
+        <div class="container">
+            <div class="contact-card" data-reveal>
+                <div class="row g-0">
+                    <div class="col-lg-7 contact-main">
+                        <span class="eyebrow text-gold-light">Contact</span>
+                        <h2 class="section-title text-white">Parlons de votre prochain séjour</h2>
+                        <p class="text-white-75 mb-4">Une demande particulière, un séjour longue durée ou un groupe ?
+                            Notre équipe vous répond rapidement.</p>
+
+                        <div class="row g-3">
+                            @if ($parametre?->localisation)
+                                <div class="col-sm-6">
+                                    <div class="contact-item">
+                                        <i class="fas fa-location-dot"></i>
+                                        <div><span>Adresse</span>{{ $parametre->localisation }}</div>
+                                    </div>
+                                </div>
+                            @endif
+                            @php $tels = array_filter([$parametre?->contact1, $parametre?->contact2, $parametre?->contact3]); @endphp
+                            @if (count($tels))
+                                <div class="col-sm-6">
+                                    <div class="contact-item">
+                                        <i class="fas fa-phone"></i>
+                                        <div>
+                                            <span>Téléphone</span>
+                                            @foreach ($tels as $tel)
+                                                <a href="tel:{{ preg_replace('/[^\d+]/', '', $tel) }}">{{ $tel }}</a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            <div class="col-sm-6">
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <div>
+                                        <span>E-mail</span>
+                                        @foreach (array_unique(array_filter([$email, $parametre?->email2])) as $mail)
+                                            <a href="mailto:{{ $mail }}">{{ $mail }}</a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="contact-item">
+                                    <i class="fas fa-clock"></i>
+                                    <div><span>Disponibilité</span>7j/7, 24h/24</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 contact-aside">
+                        <img src="{{ asset('images/logo-mark.webp') }}" alt="" width="72" height="72" loading="lazy" class="mb-3">
+                        <h3 class="h4 mb-2">Prêt à réserver ?</h3>
+                        <p class="mb-4">Consultez les disponibilités en temps réel et réservez en ligne.</p>
+                        <div class="d-grid gap-2">
+                            <a href="{{ route('residences.index') }}" class="btn btn-green btn-lg">
+                                <i class="fas fa-magnifying-glass me-2"></i>Voir les résidences
+                            </a>
+                            @if ($phone)
+                                <a href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}" class="btn btn-outline-green btn-lg">
+                                    <i class="fas fa-phone me-2"></i>Nous appeler
+                                </a>
+                            @else
+                                <a href="mailto:{{ $email }}" class="btn btn-outline-green btn-lg">
+                                    <i class="fas fa-envelope me-2"></i>Nous écrire
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 @endsection
 
 @push('styles')
     <style>
-        /* Hero Banner Styles */
-        .hero-banner {
-            min-height: 60vh;
+        /* ---------- Hero ---------- */
+        .home-hero {
             position: relative;
+            min-height: clamp(520px, 78vh, 760px);
+            display: flex;
+            align-items: center;
+            padding: 4rem 0 7rem;
+            color: #fff;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .home-hero-bg,
+        .home-hero-bg img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        .home-hero-bg img { animation: heroZoom 18s var(--ease) both; }
+        .home-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
             background:
-                linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-                url('{{ asset('images/banner2.jpg') }}');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+                linear-gradient(90deg, rgba(22, 34, 16, .88) 0%, rgba(30, 46, 22, .7) 45%, rgba(30, 46, 22, .25) 100%),
+                linear-gradient(0deg, rgba(22, 34, 16, .45), transparent 40%);
         }
-
-        .min-vh-75 {
-            min-height: 75vh;
+        @keyframes heroZoom {
+            from { transform: scale(1.08); }
+            to { transform: scale(1); }
         }
-
-        .min-vh-100 {
-            min-height: 100vh;
+        .hero-content { max-width: 640px; animation: heroIn .9s var(--ease) both; }
+        @keyframes heroIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: none; }
         }
-
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            padding: .45rem 1rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .22);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            font-size: .85rem;
+            font-weight: 500;
+            margin-bottom: 1.25rem;
+        }
+        .hero-eyebrow i { color: var(--sage-gold-start); }
         .hero-title {
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
-            line-height: 1.2;
+            color: #fff;
+            font-size: clamp(2.1rem, 5.2vw, 3.75rem);
+            font-weight: 700;
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.25rem;
         }
-
-        .hero-content p {
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #F7E39B, #F1D46E 40%, #D9B04A);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
+        .text-gold-light { color: var(--sage-gold-start) !important; }
+        .hero-lead {
+            font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+            color: rgba(255, 255, 255, .88);
+            max-width: 560px;
+            margin-bottom: 1.75rem;
+        }
+        .hero-trust { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin: 0; font-size: .92rem; color: rgba(255, 255, 255, .9); }
+        .hero-trust i { color: var(--sage-gold-start); margin-right: .45rem; }
 
-        .search-card {
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .hero-search {
             position: relative;
-            z-index: 3;
+            z-index: 5;
+            margin-top: -4.5rem;
         }
 
-        .search-card .form-control:focus,
-        .search-card .form-select:focus {
-            border-color: var(--sage-gold-end);
-            box-shadow: 0 0 0 0.2rem rgba(242, 209, 138, 0.25);
+        /* ---------- Chiffres clés ---------- */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--sage-border);
+            background: #fff;
+        }
+        .stat { text-align: center; padding: .25rem; }
+        .stat + .stat { border-left: 1px solid var(--sage-border); }
+        .stat strong {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 700;
+            color: var(--sage-green);
+            line-height: 1.1;
+        }
+        .stat strong i { color: var(--sage-gold-deep); font-size: .85em; }
+        .stat span { font-size: .85rem; color: var(--sage-text-secondary); }
+        @media (max-width: 767.98px) {
+            .stats-strip { grid-template-columns: repeat(2, 1fr); padding: 1rem; }
+            .stat:nth-child(3) { border-left: 0; }
+            .stat:nth-child(n+3) { border-top: 1px solid var(--sage-border); padding-top: 1rem; }
         }
 
-        /* Animation for scroll indicator */
-        .animate-bounce {
-            animation: bounce 2s infinite;
+        /* ---------- Onglets types ---------- */
+        .type-tabs-wrap { margin-bottom: 2rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .type-tabs-wrap::-webkit-scrollbar { display: none; }
+        .type-tabs {
+            display: inline-flex;
+            flex-wrap: nowrap;
+            gap: .4rem;
+            padding: .4rem;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid var(--sage-border);
+            box-shadow: var(--shadow-xs);
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        @media (max-width: 767.98px) {
+            .type-tabs { left: 0; transform: none; }
+        }
+        .type-tabs .nav-link {
+            white-space: nowrap;
+            border-radius: 999px;
+            padding: .6rem 1.1rem;
+            color: var(--sage-text);
+            font-weight: 500;
+            font-size: .93rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            transition: background .25s var(--ease), color .25s var(--ease);
+        }
+        .type-tabs .nav-link:hover { background: var(--sage-gold-soft); color: var(--sage-green-dark); }
+        .type-tabs .nav-link.active { background: var(--sage-green); color: #fff; }
+        .type-tabs .count {
+            min-width: 22px;
+            height: 22px;
+            padding: 0 6px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .72rem;
+            font-weight: 600;
+            background: var(--sage-bg-light);
+            color: var(--sage-green-dark);
+        }
+        .type-tabs .nav-link.active .count { background: var(--sage-gold-start); }
+
+        /* ---------- Étapes ---------- */
+        .step {
+            position: relative;
+            height: 100%;
+            padding: 2rem 1.75rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--sage-border);
+            background: #fff;
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+        }
+        .step:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+        .step-number {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.5rem;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 2.25rem;
+            color: var(--sage-gold-soft);
+            -webkit-text-stroke: 1px rgba(194, 155, 50, .35);
+            line-height: 1;
+        }
+        .step-icon,
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--sage-gradient-gold);
+            color: var(--sage-green-dark);
+            font-size: 1.3rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 8px 18px rgba(194, 155, 50, .25);
         }
 
-        @keyframes bounce {
-
-            0%,
-            20%,
-            53%,
-            80%,
-            100% {
-                transform: translate3d(0, 0, 0);
-            }
-
-            40%,
-            43% {
-                transform: translate3d(0, -10px, 0);
-            }
-
-            70% {
-                transform: translate3d(0, -5px, 0);
-            }
-
-            90% {
-                transform: translate3d(0, -2px, 0);
-            }
+        /* ---------- Atouts ---------- */
+        .feature {
+            display: flex;
+            gap: 1rem;
+            height: 100%;
+            padding: 1.35rem;
+            border-radius: var(--radius);
+            background: #fff;
+            border: 1px solid var(--sage-border);
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease);
         }
+        .feature:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .feature-icon { width: 48px; height: 48px; flex-shrink: 0; margin-bottom: 0; font-size: 1.1rem; border-radius: 14px; }
 
-        /* Residence Cards */
-        .residence-card {
-            transition: all 0.3s ease;
-            overflow: hidden;
+        /* ---------- Contact ---------- */
+        .contact-card { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); }
+        .contact-main { background: var(--sage-gradient-green); padding: clamp(2rem, 5vw, 3.5rem); }
+        .contact-aside {
+            background: var(--sage-gradient-gold);
+            color: var(--sage-green-dark);
+            padding: clamp(2rem, 5vw, 3.5rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-
-        .residence-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+        .contact-aside h3 { color: var(--sage-green-dark); }
+        .contact-aside .btn-outline-green { --bs-btn-border-color: rgba(38, 59, 29, .5); --bs-btn-color: var(--sage-green-dark); }
+        .contact-item {
+            display: flex;
+            gap: .85rem;
+            padding: 1rem;
+            border-radius: var(--radius);
+            background: rgba(255, 255, 255, .07);
+            border: 1px solid rgba(255, 255, 255, .1);
+            color: #fff;
+            height: 100%;
+            font-size: .93rem;
+            word-break: break-word;
         }
-
-        .residence-image {
-            transition: transform 0.3s ease;
-        }
-
-        .residence-card:hover .residence-image {
-            transform: scale(1.05);
-        }
-
-        /* Category Cards */
-        .category-card {
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        .mini-residence-card {
-            transition: transform 0.2s ease;
-            overflow: hidden;
-        }
-
-        .mini-residence-card:hover {
-            transform: scale(1.05);
-        }
-
-        /* Feature Cards */
-        .feature-card {
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .icon-circle {
-            transition: transform 0.3s ease;
-        }
-
-        .feature-card:hover .icon-circle {
-            transform: scale(1.1);
-        }
-
-        /* CTA Card */
-        .cta-card {
-            overflow: hidden;
-        }
-
-        /* Contact Section Styles */
-        .contact-card {
-            transition: all 0.3s ease;
-        }
-
-        .contact-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .social-link {
-            text-decoration: none;
-            transition: transform 0.3s ease;
-        }
-
-        .social-link:hover {
-            transform: scale(1.1);
-        }
-
-        .social-icon {
-            width: 30px;
-            height: 30px;
+        .contact-item > i {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            background: rgba(241, 212, 110, .18);
+            color: var(--sage-gold-start);
         }
+        .contact-item span { display: block; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(255, 255, 255, .6); margin-bottom: .15rem; }
+        .contact-item a { display: block; color: #fff; text-decoration: none; }
+        .contact-item a:hover { color: var(--sage-gold-start); }
 
-        .social-icon-small {
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-        }
-
-        .contact-icon .icon-circle {
-            transition: transform 0.3s ease;
-        }
-
-        .contact-card:hover .contact-icon .icon-circle {
-            transform: scale(1.05);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .hero-banner {
-                min-height: 50vh;
-                background-attachment: scroll;
+        @media (max-width: 991.98px) {
+            .home-hero { padding: 3rem 0 6rem; min-height: 520px; }
+            .home-hero::before {
+                background: linear-gradient(180deg, rgba(22, 34, 16, .55) 0%, rgba(22, 34, 16, .85) 100%);
             }
-
-            .contact-card {
-                margin-bottom: 1rem;
-            }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .hero-banner {
-                min-height: 60vh;
-            }
-
-            .hero-title {
-                font-size: 3rem !important;
-            }
-
-            .lead {
-                font-size: 1.3rem !important;
-            }
-
-            .btn-primary {
-                font-size: 1.1rem !important;
-                padding: 0.8rem 1.5rem !important;
-            }
-        }
-
-        /* Smooth scroll behavior */
-        html {
-            scroll-behavior: smooth;
+            .hero-search { margin-top: -4rem; }
         }
     </style>
-@endpush
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Validation des dates
-            const checkInInput = document.getElementById('check_in');
-            const checkOutInput = document.getElementById('check_out');
-
-            if (checkInInput && checkOutInput) {
-                checkInInput.addEventListener('change', function() {
-                    const checkInDate = new Date(this.value);
-                    const nextDay = new Date(checkInDate);
-                    nextDay.setDate(checkInDate.getDate() + 1);
-
-                    checkOutInput.min = nextDay.toISOString().split('T')[0];
-
-                    if (checkOutInput.value && new Date(checkOutInput.value) <= checkInDate) {
-                        checkOutInput.value = nextDay.toISOString().split('T')[0];
-                    }
-                });
-            }
-
-            // Smooth scroll pour les ancres
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-
-            // Animation des cartes au scroll
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-
-            // Appliquer l'animation aux éléments
-            document.querySelectorAll('.residence-card, .category-card, .feature-card').forEach(card => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                observer.observe(card);
-            });
-
-            // Parallax effect pour le hero banner
-            window.addEventListener('scroll', function() {
-                const scrolled = window.pageYOffset;
-                const heroBackground = document.querySelector('.hero-background');
-
-                if (heroBackground && scrolled < window.innerHeight) {
-                    const rate = scrolled * -0.3;
-                    heroBackground.style.transform = `translate3d(0, ${rate}px, 0)`;
-                }
-            });
-
-            // Animation du scroll indicator
-            const scrollIndicator = document.querySelector('.scroll-indicator');
-            if (scrollIndicator) {
-                window.addEventListener('scroll', function() {
-                    const scrolled = window.pageYOffset;
-                    if (scrolled > 100) {
-                        scrollIndicator.style.opacity = '0';
-                    } else {
-                        scrollIndicator.style.opacity = '1';
-                    }
-                });
-            }
-        });
-    </script>
 @endpush

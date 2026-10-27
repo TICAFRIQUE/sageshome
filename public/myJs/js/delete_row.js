@@ -57,15 +57,19 @@ function delete_row(route) {
             var url = "/admin/" + route + "/delete/";
 
             Swal.fire({
-                title: "Etes-vous sûr(e) de vouloir supprimer ?",
-                text: "Cette action est irréversible!",
+                title: "Supprimer cet élément ?",
+                text: "Cette action est définitive.",
                 icon: "warning",
                 showCancelButton: true,
-                confirmButtonText: "Supprimer!",
+                confirmButtonText: "Oui, supprimer",
                 cancelButtonText: "Annuler",
+                reverseButtons: true,
+                focusCancel: true,
                 customClass: {
-                    confirmButton: "btn btn-primary w-xs me-2 mt-2",
-                    cancelButton: "btn btn-danger w-xs mt-2",
+                    popup: "sh-swal",
+                    confirmButton: "btn btn-danger px-4",
+                    cancelButton: "btn btn-light px-4",
+                    actions: "gap-2",
                 },
                 buttonsStyling: false,
                 showCloseButton: true,
@@ -78,14 +82,12 @@ function delete_row(route) {
                         success: function (response) {
                             if (response.status == 200) {
                                 Swal.fire({
-                                    title: "Supprimé!",
-                                    text: "Suppression effectuée avec succès.",
+                                    toast: true,
+                                    position: "top-end",
                                     icon: "success",
-                                    customClass: {
-                                        confirmButton:
-                                            "btn btn-primary w-xs mt-2",
-                                    },
-                                    buttonsStyling: false,
+                                    title: "Élément supprimé",
+                                    showConfirmButton: false,
+                                    timer: 2000,
                                 });
                                 $("#row_" + Id).remove();
                                 location.reload();

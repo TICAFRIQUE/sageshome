@@ -1,1145 +1,348 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="fr" class="no-js">
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script>document.documentElement.className = document.documentElement.className.replace('no-js', 'js');</script>
 
-    {{-- SEO Meta Tags --}}
-    <title>@yield('title', 'Sages Home - Résidences de luxe en Côte d\'Ivoire')</title>
-    <meta name="description" content="@yield('meta_description', 'Découvrez nos résidences de luxe avec services premium en Côte d\'Ivoire. Réservez votre séjour d\'exception avec Sages Home - Excellence, confort et service personnalisé 24/7.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'résidence luxe, location villa Abidjan, appartement meublé Côte d\'Ivoire, hébergement premium, location courte durée, services hôteliers, résidence haut standing, Sages Home')">
+    {{-- SEO --}}
+    <title>@yield('title', 'Sages Home - Résidences meublées haut de gamme à Abidjan')</title>
+    <meta name="description" content="@yield('meta_description', 'Réservez une résidence meublée haut de gamme à Abidjan avec Sages Home : appartements et studios équipés, sécurisés, avec assistance 24h/24.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'résidence meublée Abidjan, location courte durée Côte d\'Ivoire, appartement meublé Cocody, studio meublé, Sages Home')">
     <meta name="author" content="Sages Home">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="@yield('canonical', request()->url())">
 
-    {{-- Open Graph / Facebook --}}
+    {{-- Open Graph / Twitter --}}
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:url" content="@yield('og_url', request()->url())">
-    <meta property="og:title" content="@yield('og_title', 'Sages Home - Résidences de luxe en Côte d\'Ivoire')">
-    <meta property="og:description" content="@yield('og_description', 'Découvrez nos résidences de luxe avec services premium en Côte d\'Ivoire.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/logo.png'))">
+    <meta property="og:title" content="@yield('og_title', 'Sages Home - Résidences meublées à Abidjan')">
+    <meta property="og:description" content="@yield('og_description', 'Appartements et studios meublés haut de gamme, réservables en ligne.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/hero-1100.jpg'))">
     <meta property="og:site_name" content="Sages Home">
     <meta property="og:locale" content="fr_FR">
-
-    {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="@yield('twitter_url', request()->url())">
-    <meta name="twitter:title" content="@yield('twitter_title', 'Sages Home - Résidences de luxe')">
-    <meta name="twitter:description" content="@yield('twitter_description', 'Découvrez nos résidences de luxe avec services premium.')">
-    <meta name="twitter:image" content="@yield('twitter_image', asset('images/logo.png'))">
+    <meta name="twitter:title" content="@yield('twitter_title', 'Sages Home - Résidences meublées')">
+    <meta name="twitter:description" content="@yield('twitter_description', 'Appartements et studios meublés haut de gamme à Abidjan.')">
+    <meta name="twitter:image" content="@yield('twitter_image', asset('images/hero-1100.jpg'))">
 
-    {{-- Mobile & Theme --}}
+    {{-- Mobile & thème --}}
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Sages Home">
-    <meta name="theme-color" content="#2F4A33">
-    <meta name="msapplication-TileColor" content="#2F4A33">
+    <meta name="theme-color" content="#37542A">
 
     {{-- Favicons --}}
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/favicon/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon/favicon-16x16.png') }}">
     <link rel="manifest" href="{{ asset('images/favicon/site.webmanifest') }}">
-    <!-- Fonts -->
+
+    {{-- Connexions anticipées vers les CDN --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-
-    <!-- Styles -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <style>
-        :root {
-            --sage-gold-start: #F2D18A;
-            --sage-gold-end: #C29B32;
-            --sage-green-dark: #2F4A33;
-            --sage-green-secondary: #4A6B42;
-            --sage-bg-light: #F8F8F8;
-            --sage-text-secondary: #888888;
-            --sage-black-premium: #1A1A1A;
-            --sage-white: #FFFFFF;
-            --sage-border: #e9ecef;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            color: var(--sage-black-premium);
-            background-color: var(--sage-white);
-            line-height: 1.6;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            color: var(--sage-green-dark);
-        }
-
-        /* Couleurs personnalisées */
-        .text-gold {
-            color: var(--sage-gold-end) !important;
-        }
-
-        .text-green {
-            color: var(--sage-green-dark) !important;
-        }
-
-        .text-green-secondary {
-            color: var(--sage-green-secondary) !important;
-        }
-
-        .bg-gold {
-            background-color: var(--sage-gold-start) !important;
-        }
-
-        .bg-green {
-            background-color: var(--sage-green-dark) !important;
-        }
-
-        .badge-gold {
-            background-color: var(--sage-gold-start) !important;
-            color: var(--sage-green-dark) !important;
-        }
-
-        /* Navbar styles */
-        .navbar {
-            background: var(--sage-white);
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-            padding: 16px 0;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1030;
-        }
-
-        /* Sections de la navbar */
-        .navbar-brand-section {
-            flex: 0 0 auto;
-        }
-
-        .search-section {
-            flex: 1 1 auto;
-            max-width: 700px;
-            margin: 0 2rem;
-        }
-
-        .navbar-icons-section {
-            flex: 0 0 auto;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-        }
-
-        .navbar-brand img {
-            height: 45px;
-            margin-right: 12px;
-        }
-
-        .navbar-brand .brand-text {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            color: var(--sage-green-dark);
-            font-size: 1.5rem;
-            margin: 0;
-        }
-
-        .search-form {
-            background: var(--sage-white);
-            border-radius: 15px;
-            padding: 1rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            border: 2px solid var(--sage-gold-start);
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .search-form .form-control,
-        .search-form .form-select {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 10px 12px;
-            font-family: 'Inter', sans-serif;
-            background: var(--sage-white);
-            min-height: 42px;
-            transition: all 0.3s ease;
-        }
-
-        .search-form .form-control:focus,
-        .search-form .form-select:focus {
-            box-shadow: 0 0 0 2px rgba(47, 74, 51, 0.15);
-            background: var(--sage-white);
-            border-color: var(--sage-green-secondary);
-        }
-
-        .search-form .form-label {
-            color: var(--sage-green-dark);
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-size: 0.8rem;
-        }
-
-        .search-form .btn {
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-weight: 600;
-            background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));
-            border: none;
-            color: var(--sage-white);
-            min-height: 42px;
-            transition: all 0.3s ease;
-        }
-
-        .search-form .btn:hover {
-            background: linear-gradient(135deg, var(--sage-gold-end), var(--sage-gold-start));
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(194, 155, 50, 0.3);
-        }
-
-        /* Texte de recherche */
-        .search-text {
-            margin-bottom: 0.5rem;
-        }
-
-        .search-subtitle {
-            font-size: 0.9rem;
-            color: var(--sage-green-dark);
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-            opacity: 0.8;
-            letter-spacing: 0.5px;
-        }
-
-        .contact-icon {
-            background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));
-            color: var(--sage-white);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .contact-icon:hover {
-            background: linear-gradient(135deg, var(--sage-gold-end), var(--sage-gold-start));
-            transform: scale(1.1);
-            color: var(--sage-white);
-        }
-
-        .auth-links a {
-            color: var(--sage-green-dark);
-            text-decoration: none;
-            margin: 0 12px;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-            padding: 8px 16px;
-            border-radius: 8px;
-        }
-
-        .auth-links a:hover {
-            color: var(--sage-white);
-            background: var(--sage-green-secondary);
-        }
-
-        /* Icônes de navigation */
-        .nav-icon-btn {
-            background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary));
-            color: var(--sage-white);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: none;
-            font-size: 1.1rem;
-        }
-
-        .nav-icon-btn:hover {
-            background: linear-gradient(135deg, var(--sage-green-secondary), var(--sage-green-dark));
-            transform: scale(1.1);
-            color: var(--sage-white);
-            box-shadow: 0 4px 15px rgba(47, 74, 51, 0.3);
-        }
-
-        .nav-icon-btn:focus {
-            box-shadow: 0 0 0 3px rgba(47, 74, 51, 0.2);
-            outline: none;
-        }
-
-        /* Dropdown de compte moderne */
-        .account-dropdown {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            padding: 0.5rem 0;
-            min-width: 250px;
-            margin-top: 10px;
-        }
-
-        .account-dropdown .dropdown-header {
-            background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary));
-            color: var(--sage-white);
-            padding: 1rem 1.25rem;
-            margin: 0 0 0.5rem 0;
-            border-radius: 0;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .account-dropdown .dropdown-item {
-            padding: 0.75rem 1.25rem;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            border: none;
-        }
-
-        .account-dropdown .dropdown-item:hover {
-            background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));
-            color: var(--sage-white);
-            transform: translateX(5px);
-        }
-
-        .account-dropdown .dropdown-item.text-danger:hover {
-            background: rgb(200, 198, 198);
-            color: rgb(12, 1, 1);
-        }
-
-        .account-dropdown .dropdown-divider {
-            margin: 0.5rem 1rem;
-            border-color: var(--sage-border);
-        }
-
-        /* Hero section */
-        .hero-banner {
-            height: 70vh;
-            background: linear-gradient(rgba(47, 74, 51, 0.6), rgba(47, 74, 51, 0.6)), url('/images/hero-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            color: var(--sage-white);
-        }
-
-        .hero-banner h1 {
-            color: var(--sage-white);
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-banner .lead {
-            font-size: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));
-            border: none;
-            font-weight: 500;
-            padding: 12px 30px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--sage-gold-end), var(--sage-gold-start));
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(194, 155, 50, 0.4);
-        }
-
-        .btn-outline-primary {
-            color: var(--sage-gold-end);
-            border-color: var(--sage-gold-end);
-            font-weight: 500;
-            padding: 12px 30px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-outline-primary:hover {
-            background: linear-gradient(135deg, var(--sage-gold-start), var(--sage-gold-end));
-            border-color: var(--sage-gold-start);
-            color: var(--sage-white);
-            transform: translateY(-2px);
-        }
-
-        /* Cards */
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-img-top {
-            border-radius: 12px 12px 0 0;
-            height: 220px;
-            object-fit: cover;
-        }
-
-        /* Footer */
-        .footer {
-            background-color: var(--sage-green-dark);
-            color: var(--sage-white);
-            padding: 4rem 0 2rem;
-            margin-top: 5rem;
-        }
-
-        .footer h5 {
-            color: var(--sage-white);
-            margin-bottom: 1.5rem;
-        }
-
-        .footer a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer a:hover {
-            color: var(--sage-white);
-        }
-
-        /* Payment methods */
-        .payment-method {
-            padding: 0.75rem 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 100px;
-        }
-
-        .payment-method:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-3px);
-        }
-
-        .payment-method img {
-            max-height: 40px;
-            object-fit: contain;
-        }
-
-        /* Mobile responsive */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 8px 0;
-            }
-
-            main {
-                padding-top: 60px !important;
-            }
-
-            .navbar-brand img {
-                height: 35px;
-            }
-
-            .navbar-brand .brand-text {
-                font-size: 1.2rem;
-            }
-
-            .search-form {
-                margin-top: 15px;
-                padding: 15px;
-            }
-
-            .hero-banner h1 {
-                font-size: 2rem;
-            }
-
-            .search-section {
-                margin: 0;
-            }
-
-            .navbar-icons-section {
-                gap: 10px !important;
-            }
-        }
-
-        /* Boutons flottants */
-        .floating-buttons {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            z-index: 1050;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .floating-btn {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            font-size: 1.4rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            border: none;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-        }
-
-        .floating-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-        }
-
-        .floating-btn:active {
-            transform: translateY(0);
-        }
-
-        /* Bouton retour en haut */
-        .back-to-top {
-            background: linear-gradient(135deg, var(--sage-green-dark), var(--sage-green-secondary));
-            color: white;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .back-to-top.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .back-to-top:hover {
-            background: linear-gradient(135deg, var(--sage-green-secondary), var(--sage-green-dark));
-            color: white;
-        }
-
-        /* Bouton WhatsApp */
-        .whatsapp-btn {
-            background: #25D366;
-            color: white;
-            animation: whatsappPulse 2s infinite;
-        }
-
-        .whatsapp-btn:hover {
-            background: #128C7E;
-            color: white;
-            animation: none;
-        }
-
-        /* Animation du bouton WhatsApp */
-        @keyframes whatsappPulse {
-            0% {
-                box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 4px 25px rgba(37, 211, 102, 0.6), 0 0 0 15px rgba(37, 211, 102, 0.1);
-            }
-
-            100% {
-                box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
-            }
-        }
-
-        /* Responsive pour boutons flottants */
-        @media (max-width: 768px) {
-            .floating-buttons {
-                right: 15px;
-                bottom: 15px;
-                gap: 12px;
-            }
-
-            .floating-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preload" as="image" href="{{ asset('images/logo-mark.webp') }}" type="image/webp">
+    @stack('preload')
+
+    {{-- Polices (graisses limitées au strict nécessaire) --}}
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap">
+
+    {{-- Styles --}}
+    <link rel="stylesheet" href="{{ asset('vendor/bootstrap-5.3.3/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    {{-- Bootstrap Icons : non bloquant (utilisé seulement sur quelques pages) --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </noscript>
+    <link rel="stylesheet" href="{{ asset('css/front.css') }}?v={{ filemtime(public_path('css/front.css')) }}">
 
     @stack('styles')
 </head>
 
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <div class="d-flex w-100 align-items-center justify-content-between">
-                <!-- Logo à gauche -->
-                <div class="navbar-brand-section">
-                    <a class="navbar-brand" href="{{ route('home') }}">
-                        <img src="{{ asset('images/logo.png') }}" alt="Sages Home" style="height: 95px;"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
-                        {{-- <h4 class="brand-text d-none d-md-inline">SAGES HOME</h4> --}}
-                    </a>
-                </div>
+@php
+    $waNumber = preg_replace('/\D+/', '', (string) ($parametre?->contact2 ?: $parametre?->contact1));
+    if ($waNumber && strlen($waNumber) <= 10) {
+        $waNumber = '225' . $waNumber;
+    }
+    $phone = $parametre?->contact1 ?: $parametre?->contact2;
+    $socials = collect([
+        'facebook-f' => $parametre?->lien_facebook,
+        'instagram' => $parametre?->lien_instagram,
+        'x-twitter' => $parametre?->lien_twitter,
+        'linkedin-in' => $parametre?->lien_linkedin,
+    ])->filter();
+@endphp
 
+<body class="@yield('body_class')">
+    <a href="#main-content" class="skip-link">Aller au contenu</a>
+    <div id="page-progress" aria-hidden="true"></div>
 
-                <!-- Formulaire de recherche au milieu (desktop) -->
-                <div class="search-section d-none d-lg-flex flex-column justify-content-center flex-grow-1">
-                    <div class="search-text text-center mb-2">
-                        <span class="search-subtitle">Commencez votre recherche dès à présent</span>
-                    </div>
-                    <form class="search-form d-flex align-items-center" method="GET"
-                        action="{{ route('search', ['residences']) }}">
-                        <div class="row g-2 w-100 align-items-end">
-                            <div class="col-2">
-                                <label class="form-label small fw-medium text-dark mb-1">Arrivée</label>
-                                <input type="date" class="form-control" name="check_in" required>
-                            </div>
-                            <div class="col-2">
-                                <label class="form-label small fw-medium text-dark mb-1">Départ</label>
-                                <input type="date" class="form-control" name="check_out" required>
-                            </div>
-                            <div class="col-2">
-                                <label class="form-label small fw-medium text-dark mb-1">Voyageurs</label>
-                                <select class="form-select" name="guests" required>
-                                    <option value="">Choisir</option>
-                                    <option value="1">1 voyageur</option>
-                                    <option value="2">2 voyageurs</option>
-                                    <option value="3">3 voyageurs</option>
-                                    <option value="4">4 voyageurs</option>
-                                    <option value="5">5+ voyageurs</option>
-                                </select>
-                            </div>
-                            <div class="col-2">
-                                <label class="form-label small fw-medium text-dark mb-1">Ville</label>
-                                <select class="form-select" name="ville" id="header_ville">
-                                    <option value="">Toutes</option>
-                                    @php
-                                        $villesCommunes = config('ville-commune');
-                                        $availableVilles = collect(array_keys($villesCommunes));
-                                    @endphp
-                                    @foreach ($availableVilles as $ville)
-                                        <option value="{{ $ville }}">{{ $ville }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-2">
-                                <label class="form-label small fw-medium text-dark mb-1">Commune</label>
-                                <select class="form-select" name="commune" id="header_commune">
-                                    <option value="">Toutes</option>
-                                </select>
-                            </div>
-                            <div class="col-2">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    {{-- ================= HEADER ================= --}}
+    <header class="site-header">
+        <div class="container d-flex align-items-center justify-content-between gap-3">
+            <a class="brand" href="{{ route('home') }}" aria-label="Sages Home - Accueil">
+                <picture>
+                    <source srcset="{{ asset('images/logo-mark.webp') }}" type="image/webp">
+                    <img src="{{ asset('images/logo-mark.png') }}" alt="" class="brand-mark" width="44" height="44">
+                </picture>
+                <span>
+                    <span class="brand-name">SAGES HOME</span>
+                    <span class="brand-tagline">Immo · Résidences · Voyages</span>
+                </span>
+            </a>
 
-                <!-- Icônes à droite -->
-                <div class="navbar-icons-section d-flex align-items-center gap-3">
-                    <!-- Icône d'accueil -->
-                    <a href="{{ route('home') }}" class="nav-icon-btn" title="Retour à l'accueil">
-                        <i class="fas fa-home"></i>
-                    </a>
+            {{-- Navigation desktop --}}
+            <nav class="d-none d-lg-flex main-nav" aria-label="Navigation principale">
+                <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}"
+                    @if (request()->routeIs('home')) aria-current="page" @endif>Accueil</a>
+                <a class="nav-link {{ request()->routeIs('residences.*') ? 'active' : '' }}"
+                    href="{{ route('residences.index') }}"
+                    @if (request()->routeIs('residences.*')) aria-current="page" @endif>Nos résidences</a>
+                <a class="nav-link" href="{{ route('home') }}#contact">Contact</a>
+            </nav>
 
-                    <!-- Icône de compte avec dropdown -->
-                    <div class="dropdown">
-                        <button class="nav-icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                            aria-expanded="false" title="Mon compte">
-                            <i class="fas fa-user"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end account-dropdown">
-                            @auth
-                                <li class="dropdown-header">
-                                    <i class="fas fa-user-circle me-2"></i>
-                                    {{ Auth::user()->name ?? 'Mon compte' }}
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                @role('developpeur')
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('dashboard.index') }}">
-                                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                        </a>
-                                    </li>
-                                @endrole
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('dashboard.bookings') }}">
-                                        <i class="fas fa-calendar-alt me-2"></i>Mes réservations
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('dashboard.profile') }}">
-                                        <i class="fas fa-user-edit me-2"></i>Mon profil
-                                    </a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <form method="POST" action="{{ route('logout') }}" class="mb-0">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                        </button>
-                                    </form>
-                                </li>
-                            @else
-                                <li class="dropdown-header">
-                                    <i class="fas fa-user-plus me-2"></i>
-                                    Accès compte
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                        href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Connexion
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item"
-                                        href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}">
-                                        <i class="fas fa-user-plus me-2"></i>Inscription
-                                    </a>
-                                </li>
-                            @endauth
-                        </ul>
-                    </div>
+            <div class="d-flex align-items-center gap-2">
+                {{-- Recherche --}}
+                <button class="header-search-trigger d-none d-md-inline-flex" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#searchPanel" aria-expanded="false" aria-controls="searchPanel">
+                    <span>Où et quand ?</span>
+                    <span class="trigger-icon"><i class="fas fa-search"></i></span>
+                </button>
+                <button class="header-icon-btn d-md-none" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#searchPanel" aria-expanded="false" aria-controls="searchPanel"
+                    aria-label="Rechercher une résidence">
+                    <i class="fas fa-search"></i>
+                </button>
 
-
-
-                    <!-- Menu toggle mobile -->
-                    <button class="navbar-toggler nav-icon-btn d-lg-none border-0" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#navbarNav" title="Menu">
-                        <i class="fas fa-search"></i>
-                    </button>
-
-                    <!-- Icône de contact -->
-                    <a href="/#contact" class="contact-icon" title="Nous contacter">
-                        <i class="fas fa-phone"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Menu mobile -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="w-100 mt-3 d-lg-none">
-                    <!-- Formulaire de recherche mobile -->
-                    <form class="search-form mb-3" method="GET" action="{{ route('search', ['residences']) }}">
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="form-label small fw-medium text-dark mb-1">Arrivée</label>
-                                <input type="date" class="form-control" name="check_in" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label small fw-medium text-dark mb-1">Départ</label>
-                                <input type="date" class="form-control" name="check_out" required>
-                            </div>
-                            <div class="col-4">
-                                <label class="form-label small fw-medium text-dark mb-1">Voyageurs</label>
-                                <select class="form-select" name="guests" required>
-                                    <option value="">Choisir</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5+</option>
-                                </select>
-                            </div>
-                            <div class="col-4">
-                                <label class="form-label small fw-medium text-dark mb-1">Ville</label>
-                                <select class="form-select" name="ville" id="mobile_ville">
-                                    <option value="">Toutes</option>
-                                    @php
-                                        $villesCommunes = config('ville-commune');
-                                        $availableVilles = collect(array_keys($villesCommunes));
-                                    @endphp
-                                    @foreach ($availableVilles as $ville)
-                                        <option value="{{ $ville }}">{{ $ville }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-4">
-                                <label class="form-label small fw-medium text-dark mb-1">Commune</label>
-                                <select class="form-select" name="commune" id="mobile_commune">
-                                    <option value="">Toutes</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Navigation mobile -->
-                    {{-- <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('home') }}">
-                                <i class="fas fa-home me-2"></i>Accueil
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('residences.index') }}">
-                                <i class="fas fa-building me-2"></i>Résidences
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#contact">
-                                <i class="fas fa-envelope me-2"></i>Contact
-                            </a>
-                        </li>
-                        @guest
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Connexion
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}">
-                                    <i class="fas fa-user-plus me-2"></i>Inscription
-                                </a>
-                            </li>
-                        @endguest
+                {{-- Compte --}}
+                <div class="dropdown d-none d-lg-block">
+                    <button class="header-icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" aria-label="Mon compte">
                         @auth
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('dashboard.index') }}">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Mon compte
-                                </a>
+                            <span class="account-avatar">{{ Str::upper(Str::substr(Auth::user()->name ?? 'U', 0, 1)) }}</span>
+                        @else
+                            <i class="fas fa-user"></i>
+                        @endauth
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end account-dropdown">
+                        @auth
+                            <li class="dropdown-header">
+                                <i class="fas fa-user-circle me-2"></i>{{ Auth::user()->name ?? 'Mon compte' }}
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('dashboard.bookings') }}">
-                                    <i class="fas fa-calendar-alt me-2"></i>Mes réservations
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                            @role('developpeur')
+                                <li><a class="dropdown-item" href="{{ route('dashboard.index') }}"><i class="fas fa-gauge me-2"></i>Tableau de bord</a></li>
+                            @endrole
+                            <li><a class="dropdown-item" href="{{ route('dashboard.bookings') }}"><i class="fas fa-calendar-alt me-2"></i>Mes réservations</a></li>
+                            <li><a class="dropdown-item" href="{{ route('dashboard.profile') }}"><i class="fas fa-user-pen me-2"></i>Mon profil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
                                 <form method="POST" action="{{ route('logout') }}" class="mb-0">
                                     @csrf
-                                    <button type="submit" class="nav-link btn btn-link text-start text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                    </button>
+                                    <button type="submit" class="dropdown-item text-danger"><i class="fas fa-right-from-bracket me-2"></i>Se déconnecter</button>
                                 </form>
                             </li>
+                        @else
+                            <li class="dropdown-header">Bienvenue chez Sages Home</li>
+                            <li><a class="dropdown-item" href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}"><i class="fas fa-right-to-bracket me-2"></i>Se connecter</a></li>
+                            <li><a class="dropdown-item" href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}"><i class="fas fa-user-plus me-2"></i>Créer un compte</a></li>
                         @endauth
-                    </ul> --}}
+                    </ul>
                 </div>
+
+                @if ($phone)
+                    <a href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}" class="btn btn-green d-none d-xl-inline-flex align-items-center rounded-pill px-3">
+                        <i class="fas fa-phone me-2"></i>{{ $phone }}
+                    </a>
+                @endif
+
+                {{-- Menu mobile --}}
+                <button class="header-icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-label="Ouvrir le menu">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Main Content -->
-    <main style="padding-top: 120px;">
-        <!-- Alerts -->
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    {{-- Panneau de recherche --}}
+    <div class="collapse search-panel" id="searchPanel">
+        <div class="container search-panel-inner">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="h5 mb-0">Trouvez votre résidence</p>
+                <button type="button" class="btn-close" data-bs-toggle="collapse" data-bs-target="#searchPanel"
+                    aria-label="Fermer la recherche"></button>
             </div>
-        @endif
+            @include('frontend.partials.search-form', ['prefix' => 'panel'])
+        </div>
+    </div>
 
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
-                <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    {{-- Menu mobile (offcanvas) --}}
+    <div class="offcanvas offcanvas-end mobile-menu" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header">
+            <a class="brand" href="{{ route('home') }}" id="mobileMenuLabel">
+                <img src="{{ asset('images/logo-mark.webp') }}" alt="" class="brand-mark" width="40" height="40">
+                <span class="brand-name">SAGES HOME</span>
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer le menu"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            <nav aria-label="Navigation mobile">
+                <a class="mobile-nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}"><i class="fas fa-house"></i>Accueil</a>
+                <a class="mobile-nav-link {{ request()->routeIs('residences.*') ? 'active' : '' }}" href="{{ route('residences.index') }}"><i class="fas fa-building"></i>Nos résidences</a>
+                <a class="mobile-nav-link" href="{{ route('home') }}#contact"><i class="fas fa-envelope"></i>Contact</a>
+            </nav>
+
+            <p class="menu-section-title">Mon compte</p>
+            @auth
+                <a class="mobile-nav-link" href="{{ route('dashboard.bookings') }}"><i class="fas fa-calendar-alt"></i>Mes réservations</a>
+                <a class="mobile-nav-link" href="{{ route('dashboard.profile') }}"><i class="fas fa-user-pen"></i>Mon profil</a>
+                <form method="POST" action="{{ route('logout') }}" class="mb-0">
+                    @csrf
+                    <button type="submit" class="mobile-nav-link w-100 border-0 bg-transparent text-danger"><i class="fas fa-right-from-bracket text-danger"></i>Se déconnecter</button>
+                </form>
+            @else
+                <a class="mobile-nav-link" href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}"><i class="fas fa-right-to-bracket"></i>Se connecter</a>
+                <a class="mobile-nav-link" href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}"><i class="fas fa-user-plus"></i>Créer un compte</a>
+            @endauth
+
+            <div class="mt-auto pt-4 d-grid gap-2">
+                <a href="{{ route('residences.index') }}" class="btn btn-primary btn-lg">Réserver une résidence</a>
+                @if ($phone)
+                    <a href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}" class="btn btn-outline-primary"><i class="fas fa-phone me-2"></i>{{ $phone }}</a>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ================= CONTENU ================= --}}
+    <main id="main-content" tabindex="-1">
+        @if (session('success') || session('error'))
+            <div class="container pt-3">
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show flash-alert mb-0" role="alert">
+                        <i class="fas fa-circle-check me-2"></i>{{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show flash-alert mb-0" role="alert">
+                        <i class="fas fa-circle-exclamation me-2"></i>{{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                @endif
             </div>
         @endif
 
         @yield('content')
     </main>
 
-    <!-- Footer -->
-    <footer class="footer">
+    {{-- ================= FOOTER ================= --}}
+    <footer class="site-footer">
         <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="{{ asset('images/logo.png') }}" alt="Sages Home" height="40" class="me-2">
-                        <h5 class="mb-0">SAGES HOME</h5>
+            <div class="row g-4 g-lg-5">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="{{ asset('images/logo-mark.webp') }}" alt="" width="40" height="40" loading="lazy">
+                        <span class="footer-brand-name">SAGES HOME</span>
                     </div>
-                    <p class="opacity-75">Vivez l'expérience du confort raffiné dans nos résidences sélectionnées avec
-                        soin pour votre plus grand plaisir.</p>
-                    <div class="social-links">
-                        <a href="{{ $parametre?->lien_facebook }}" class="me-3"><i
-                                class="fab fa-facebook fs-5"></i></a>
-                        <a href="{{ $parametre?->lien_instagram }}" class="me-3"><i
-                                class="fab fa-instagram fs-5"></i></a>
-                        <a href="{{ $parametre?->lien_twitter }}" class="me-3"><i
-                                class="fab fa-twitter fs-5"></i></a>
-                        <a href="{{ $parametre?->lien_linkedin }}" class="me-3"><i
-                                class="fab fa-linkedin fs-5"></i></a>
-                    </div>
+                    <p class="mb-4">Des résidences meublées haut de gamme, sélectionnées avec soin, pour des séjours
+                        confortables et sans souci en Côte d'Ivoire.</p>
+                    @if ($socials->isNotEmpty())
+                        <div class="d-flex gap-2">
+                            @foreach ($socials as $icon => $link)
+                                <a href="{{ $link }}" class="social-btn" target="_blank" rel="noopener"
+                                    aria-label="{{ ucfirst(Str::before($icon, '-')) }}"><i class="fab fa-{{ $icon }}"></i></a>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
 
-                <div class="col-md-2 mb-4">
-                    <h5>Navigation</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ route('home') }}">Accueil</a></li>
-                        <li class="mb-2"><a href="{{ route('residences.index') }}">Résidences</a></li>
-                        <li class="mb-2"><a href="/#contact">Contact</a></li>
-                        {{-- <li class="mb-2"><a href="#about">À propos</a></li> --}}
+                <div class="col-6 col-lg-2">
+                    <h2>Navigation</h2>
+                    <ul class="list-unstyled footer-links mb-0">
+                        <li><a href="{{ route('home') }}">Accueil</a></li>
+                        <li><a href="{{ route('residences.index') }}">Nos résidences</a></li>
+                        <li><a href="{{ route('home') }}#pourquoi">Pourquoi nous choisir</a></li>
+                        <li><a href="{{ route('home') }}#contact">Contact</a></li>
                     </ul>
                 </div>
 
-                <div class="col-md-3 mb-4">
-                    <h5>Services</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#services">Nos services</a></li>
-                        <li class="mb-2"><a href="#concierge">Conciergerie 24/7</a></li>
-                        <li class="mb-2"><a href="#spa">Spa & Wellness</a></li>
-                        <li class="mb-2"><a href="#restaurant">Restauration</a></li>
+                <div class="col-6 col-lg-2">
+                    <h2>Mon espace</h2>
+                    <ul class="list-unstyled footer-links mb-0">
+                        @auth
+                            <li><a href="{{ route('dashboard.bookings') }}">Mes réservations</a></li>
+                            <li><a href="{{ route('dashboard.profile') }}">Mon profil</a></li>
+                        @else
+                            <li><a href="{{ route('login') }}">Se connecter</a></li>
+                            <li><a href="{{ route('register') }}">Créer un compte</a></li>
+                        @endauth
                     </ul>
                 </div>
 
-                <div class="col-md-3 mb-4">
-                    <h5>Contact</h5>
-
-                    @if ($parametre?->localisation)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-map-marker-alt me-2"></i>
-                            {{ $parametre?->localisation }}
-                        </p>
-                    @endif
-
-                    @if ($parametre?->siege_social)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-building me-2"></i>
-                            {{ $parametre?->siege_social }}
-                        </p>
-                    @endif
-
-                    @if ($parametre?->contact1)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-phone me-2"></i>
-                            <a href="tel:{{ $parametre?->contact1 }}">{{ $parametre?->contact1 }}</a>
-                        </p>
-                    @endif
-
-                    @if ($parametre?->contact2)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-phone me-2"></i>
-                            <a href="tel:{{ $parametre?->contact2 }}">{{ $parametre?->contact2 }}</a>
-                        </p>
-                    @endif
-
-                    @if ($parametre?->contact3)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-phone me-2"></i>
-                            <a href="tel:{{ $parametre?->contact3 }}">{{ $parametre?->contact3 }}</a>
-                        </p>
-                    @endif
-
-                    @if ($parametre?->email1)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-envelope me-2"></i>
-                            <a href="mailto:{{ $parametre?->email1 }}">{{ $parametre?->email1 }}</a>
-                        </p>
-                    @endif
-
-                    @if ($parametre?->email2)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-envelope me-2"></i>
-                            <a href="mailto:{{ $parametre?->email2 }}">{{ $parametre?->email2 }}</a>
-                        </p>
-                    @endif
-
-                    @if ($parametre?->google_maps)
-                        <p class="opacity-75 mb-2">
-                            <i class="fas fa-map me-2"></i>
-                            <a href="{{ $parametre?->google_maps }}" target="_blank">Voir sur Google Maps</a>
-                        </p>
-                    @endif
-
-                    <p class="opacity-75">
-                        <i class="fas fa-clock me-2"></i>
-                        Service 24h/24, 7j/7
-                    </p>
+                <div class="col-lg-4">
+                    <h2>Nous joindre</h2>
+                    <ul class="list-unstyled footer-contact mb-0">
+                        @if ($parametre?->localisation)
+                            <li><i class="fas fa-location-dot"></i><span>{{ $parametre->localisation }}</span></li>
+                        @endif
+                        @foreach (array_filter([$parametre?->contact1, $parametre?->contact2, $parametre?->contact3]) as $tel)
+                            <li><i class="fas fa-phone"></i><a href="tel:{{ preg_replace('/[^\d+]/', '', $tel) }}">{{ $tel }}</a></li>
+                        @endforeach
+                        @foreach (array_filter([$parametre?->email1, $parametre?->email2]) as $mail)
+                            <li><i class="fas fa-envelope"></i><a href="mailto:{{ $mail }}">{{ $mail }}</a></li>
+                        @endforeach
+                        @if ($parametre?->google_maps)
+                            <li><i class="fas fa-map"></i><a href="{{ $parametre->google_maps }}" target="_blank" rel="noopener">Voir sur Google Maps</a></li>
+                        @endif
+                        <li><i class="fas fa-clock"></i><span>Assistance 24h/24, 7j/7</span></li>
+                    </ul>
                 </div>
             </div>
 
-            <hr class="my-4 opacity-25">
+            <hr class="footer-divider my-4">
 
-            <!-- Moyens de paiement -->
-            <div class="row mb-4">
-                <div class="col-12 text-center">
-                    <h6 class="opacity-75 mb-3">Moyens de paiement acceptés</h6>
-                    <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
-                        <div class="payment-method">
-                            <img src="https://lexxprint.com/wp-content/uploads/2022/03/wave.png" alt="Wave"
-                                height="40">
-                        </div>
-                        <div class="payment-method">
-                            <i class="fas fa-money-bill-wave fs-2 opacity-75"></i>
-                            <small class="d-block opacity-75">Espèces</small>
-                        </div>
-                    </div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center flex-wrap gap-2 justify-content-center">
+                    <span class="small me-1">Paiements acceptés :</span>
+                    <span class="payment-pill">
+                        <img src="https://lexxprint.com/wp-content/uploads/2022/03/wave.png" alt="" width="20" height="20" loading="lazy">Wave
+                    </span>
+                    <span class="payment-pill"><i class="fas fa-money-bill-wave"></i>Espèces</span>
                 </div>
-            </div>
-
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="opacity-75 mb-0">&copy; {{ date('Y') }} Sages Home. Tous droits réservés. |
-                        developed by <a href="https://www.ticafrique.ci/" target="_blank"
-                            class="text-reset text-decoration-underline">Ticafrique</a></p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <a href="#" class="me-3 opacity-75">Politique de confidentialité</a>
-                    <a href="#" class="opacity-75">Conditions d'utilisation</a>
-                </div>
+                <p class="small mb-0 text-center text-md-end">
+                    &copy; {{ date('Y') }} Sages Home. Tous droits réservés · Réalisé par
+                    <a href="https://www.ticafrique.ci/" target="_blank" rel="noopener" class="text-decoration-underline">Ticafrique</a>
+                </p>
             </div>
         </div>
     </footer>
 
-    <!--inclure token csrf dans les scripts js-->
-    <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-    </script>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Définir les dates minimales pour les champs de date
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
-            const checkInInputs = document.querySelectorAll('input[name="check_in"]');
-            const checkOutInputs = document.querySelectorAll('input[name="check_out"]');
-
-            checkInInputs.forEach(function(checkInInput, index) {
-                checkInInput.min = today;
-                checkInInput.addEventListener('change', function() {
-                    const checkInDate = new Date(this.value);
-                    const nextDay = new Date(checkInDate.getTime() + 24 * 60 * 60 * 1000);
-                    if (checkOutInputs[index]) {
-                        checkOutInputs[index].min = nextDay.toISOString().split('T')[0];
-                    }
-                });
-            });
-
-            // Gestion dynamique des communes
-            const villesCommunes = @json(config('ville-commune'));
-
-            // Pour le formulaire desktop
-            const headerVille = document.getElementById('header_ville');
-            const headerCommune = document.getElementById('header_commune');
-
-            if (headerVille && headerCommune) {
-                headerVille.addEventListener('change', function() {
-                    updateCommunes(this.value, headerCommune);
-                });
-            }
-
-            // Pour le formulaire mobile
-            const mobileVille = document.getElementById('mobile_ville');
-            const mobileCommune = document.getElementById('mobile_commune');
-
-            if (mobileVille && mobileCommune) {
-                mobileVille.addEventListener('change', function() {
-                    updateCommunes(this.value, mobileCommune);
-                });
-            }
-
-            function updateCommunes(selectedVille, communeSelect) {
-                const communes = villesCommunes[selectedVille] || [];
-
-                // Vider la liste des communes
-                communeSelect.innerHTML = '<option value="">Toutes</option>';
-
-                if (communes.length > 0) {
-                    // Ajouter les communes disponibles
-                    communes.forEach(function(commune) {
-                        const option = document.createElement('option');
-                        option.value = commune;
-                        option.textContent = commune;
-                        communeSelect.appendChild(option);
-                    });
-                    communeSelect.disabled = false;
-                } else {
-                    communeSelect.disabled = true;
-                }
-            }
-
-            // Smooth scroll pour les liens d'ancrage
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-
-    <!-- Boutons flottants -->
+    {{-- Boutons flottants --}}
     <div class="floating-buttons">
-        <!-- Bouton retour en haut -->
-        <button type="button" class="floating-btn back-to-top" id="backToTop" title="Retour en haut">
+        <button type="button" class="floating-btn back-to-top" id="backToTop" aria-label="Retour en haut de page">
             <i class="fas fa-chevron-up"></i>
         </button>
-
-        <!-- Bouton WhatsApp -->
-        <a href="https://wa.me/{{ $parametre?->contact2 }}?text=Bonjour, je suis intéressé(e) par vos résidences Sages Home."
-            target="_blank" class="floating-btn whatsapp-btn" title="Contactez-nous sur WhatsApp">
-            <i class="fab fa-whatsapp"></i>
-        </a>
+        @if ($waNumber)
+            <a href="https://wa.me/{{ $waNumber }}?text={{ rawurlencode('Bonjour, je suis intéressé(e) par vos résidences Sages Home.') }}"
+                target="_blank" rel="noopener" class="floating-btn whatsapp-btn" aria-label="Nous écrire sur WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+        @endif
     </div>
 
-    <script>
-        // Gestion du bouton retour en haut
-        document.addEventListener('DOMContentLoaded', function() {
-            const backToTopBtn = document.getElementById('backToTop');
-
-            // Afficher/masquer le bouton selon le scroll
-            window.addEventListener('scroll', function() {
-                if (window.pageYOffset > 300) {
-                    backToTopBtn.classList.add('show');
-                } else {
-                    backToTopBtn.classList.remove('show');
-                }
-            });
-
-            // Clic sur le bouton retour en haut
-            backToTopBtn.addEventListener('click', function() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-        });
-    </script>
+    {{-- Scripts --}}
+    <script>window.SAGES_VILLES_COMMUNES = @json(config('ville-commune'));</script>
+    <script src="{{ asset('vendor/bootstrap-5.3.3/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('js/front.js') }}?v={{ filemtime(public_path('js/front.js')) }}"></script>
 
     @stack('scripts')
 </body>

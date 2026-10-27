@@ -20,24 +20,25 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        // Récupérer toutes les résidences par catégorie avec les types dynamiques
-        $residenceTypes = ResidenceType::active()->ordered()->with(['residences' => function($query) {
-            $query->available()->with(['primaryImage', 'residenceType'])->orderBy('sort_order')->take(4);
-        }])->get();
+        // Types actifs avec le nombre de résidences disponibles et seulement
+        // les 6 premières résidences de chaque type (limite par type, Laravel 11+)
+        $allResidenceTypes = ResidenceType::active()->ordered()
+            ->withCount(['residences as available_residences_count' => function ($query) {
+                $query->available();
+            }])
+            ->with(['residences' => function ($query) {
+                $query->available()->with(['primaryImage', 'residenceType'])->orderBy('sort_order')->limit(6);
+            }])
+            ->get()
+            ->filter(fn ($type) => $type->available_residences_count > 0)
+            ->values();
 
-        // Pour la compatibilité avec la vue existante, créer un tableau avec les clés attendues
-        $residencesByType = [
-            'studio_1ch' => $residenceTypes->where('id', 2)->first()?->residences ?? collect(),
-            'appartement_2ch' => $residenceTypes->where('id', 4)->first()?->residences ?? collect(),
-            'appartement_3ch' => $residenceTypes->where('id', 5)->first()?->residences ?? collect(),
+        $stats = [
+            'residences' => Residence::available()->count(),
+            'communes' => Residence::available()->whereNotNull('commune')->distinct()->count('commune'),
         ];
 
-        // Récupérer tous les types avec toutes leurs résidences pour l'affichage dynamique
-        $allResidenceTypes = ResidenceType::active()->ordered()->with(['residences' => function($query) {
-            $query->available()->with(['primaryImage', 'residenceType'])->orderBy('sort_order');
-        }])->get();
-
-        return view('frontend.home', compact('featuredResidences', 'residencesByType', 'allResidenceTypes'));
+        return view('frontend.home', compact('featuredResidences', 'allResidenceTypes', 'stats'));
     }
 
     public function search(Request $request)

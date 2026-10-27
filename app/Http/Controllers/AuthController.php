@@ -27,7 +27,11 @@ class AuthController extends Controller
         $previous = url()->previous();
         $current = url()->current();
 
-        if (
+        // Redirection explicite (?redirect=...) limitée au même domaine
+        $redirect = $request->query('redirect');
+        if (is_string($redirect) && parse_url($redirect, PHP_URL_HOST) === $request->getHost()) {
+            session(['url.intended' => $redirect]);
+        } elseif (
             $previous !== $current &&
             !str_contains($previous, '/login') &&
             !str_contains($previous, '/register')
@@ -65,7 +69,11 @@ class AuthController extends Controller
         $previous = url()->previous();
         $current = url()->current();
 
-        if (
+        // Redirection explicite (?redirect=...) limitée au même domaine
+        $redirect = $request->query('redirect');
+        if (is_string($redirect) && parse_url($redirect, PHP_URL_HOST) === $request->getHost()) {
+            session(['url.intended' => $redirect]);
+        } elseif (
             $previous !== $current &&
             !str_contains($previous, '/login') &&
             !str_contains($previous, '/register')

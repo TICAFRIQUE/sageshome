@@ -601,7 +601,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.delete-image').forEach(button => {
         button.addEventListener('click', function() {
             const imageId = this.dataset.imageId;
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+            const showError = () => window.Swal
+                ? Swal.fire({ toast: true, position: 'top-end', icon: 'error', title: 'Erreur lors de la suppression de l\'image', showConfirmButton: false, timer: 4000 })
+                : alert('Erreur lors de la suppression de l\'image');
+            const ask = window.SH && SH.confirm
+                ? SH.confirm('Supprimer cette image ? Elle sera retirée définitivement de la galerie.', { danger: true, confirmText: 'Oui, supprimer' })
+                : Promise.resolve(confirm('Êtes-vous sûr de vouloir supprimer cette image ?'));
+            ask.then(ok => {
+                if (!ok) return;
                 fetch(`/admin/sages-home/residences/${imageId}/image`, {
                     method: 'DELETE',
                     headers: {
@@ -614,14 +621,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         document.getElementById(`image-${imageId}`).remove();
                     } else {
-                        alert('Erreur lors de la suppression de l\'image');
+                        showError();
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Erreur lors de la suppression de l\'image');
+                    showError();
                 });
-            }
+            });
         });
     });
 

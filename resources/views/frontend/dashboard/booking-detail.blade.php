@@ -1,225 +1,132 @@
 @extends('layouts.app')
 
-@section('title', 'Détail de la réservation - Sages Home')
+@section('title', 'Réservation ' . $booking->booking_number . ' | Sages Home')
+
+@php
+    $statusLabels = ['pending' => 'En attente', 'confirmed' => 'Confirmée', 'completed' => 'Terminée', 'cancelled' => 'Annulée'];
+    $paymentLabels = ['pending' => 'En attente', 'processing' => 'En cours', 'completed' => 'Payé', 'failed' => 'Échec'];
+    $in = \Carbon\Carbon::parse($booking->check_in_date ?? $booking->check_in);
+    $out = \Carbon\Carbon::parse($booking->check_out_date ?? $booking->check_out);
+    $total = $booking->final_amount ?: $booking->total_amount;
+    $paid = $booking->payment_status === 'paid';
+    $canCancel = in_array($booking->status, ['pending', 'confirmed']) && $in->isFuture();
+    $banner = match ($booking->status) {
+        'confirmed', 'completed' => ['is-success', 'fa-circle-check', 'Réservation ' . strtolower($statusLabels[$booking->status])],
+        'cancelled' => ['is-pending', 'fa-circle-xmark', 'Réservation annulée'],
+        default => ['is-pending', 'fa-clock', 'Réservation en attente de confirmation'],
+    };
+@endphp
 
 @section('content')
-<div class="container py-5">
-    <!-- En-tête avec titre et actions -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h2 class="text-primary mb-0">Réservation #{{ $booking->id }}</h2>
-                    <p class="text-muted mb-0">Détails complets de votre réservation</p>
-                </div>
-                <div class="btn-group">
-                    <a href="{{ route('dashboard.bookings') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left me-1"></i>Retour à la liste
-                    </a>
-                    @if($booking->status === 'pending' || $booking->status === 'confirmed')
-                        @if(\Carbon\Carbon::parse($booking->check_in)->isFuture())
-                            <form action="{{ route('dashboard.booking.cancel', $booking) }}" method="POST" 
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')" style="display: inline;">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-outline-danger">
-                                    <i class="bi bi-x-circle me-1"></i>Annuler
-                                </button>
-                            </form>
-                        @endif
-                    @endif
-                </div>
+    <div class="container booking-page">
+        <nav aria-label="Fil d'Ariane">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="fas fa-house"></i><span class="visually-hidden">Accueil</span></a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard.bookings') }}">Mes réservations</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ $booking->booking_number }}</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+            <div>
+                <h1>{{ $booking->residence?->name }}</h1>
+                <p class="page-sub mb-0">Réservation {{ $booking->booking_number }} · faite le {{ $booking->created_at->translatedFormat('j F Y') }}</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 no-print">
+                <a href="{{ route('dashboard.booking.receipt', $booking) }}" target="_blank" rel="noopener" class="btn btn-primary">
+                    <i class="fas fa-file-pdf me-2"></i>Télécharger / imprimer le reçu
+                </a>
             </div>
         </div>
-    </div>
 
-<div class="row">
-    <!-- Informations principales -->
-    <div class="col-lg-8 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle me-2"></i>Détails de la réservation
-                    </h5>
-                    @switch($booking->status)
-                        @case('pending')
-                            <span class="badge bg-warning fs-6">En attente</span>
-                            @break
-                        @case('confirmed')
-                            <span class="badge bg-success fs-6">Confirmée</span>
-                            @break
-                        @case('cancelled')
-                            <span class="badge bg-danger fs-6">Annulée</span>
-                            @break
-                        @case('completed')
-                            <span class="badge bg-info fs-6">Terminée</span>
-                            @break
-                    @endswitch
-                </div>
+        <div class="status-banner {{ $banner[0] }}" role="status">
+            <i class="fas {{ $banner[1] }}"></i>
+            <div><strong>{{ $banner[2] }}</strong>
+                @if ($booking->status === 'pending' && !$paid)
+                    Réglez votre séjour pour le confirmer.
+                @elseif ($canCancel)
+                    Annulation gratuite jusqu'à 24 h avant l'arrivée.
+                @endif
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <!-- Image de la résidence -->
-                    <div class="col-md-5 mb-3">
-                        @if($booking->residence->primaryImage)
-                            <img src="{{ Storage::url($booking->residence->primaryImage->image_path) }}" 
-                                 class="img-fluid rounded shadow" 
-                                 style=\"height: 250px; width: 100%; object-fit: cover;\" 
-                                 alt="{{ $booking->residence->name }}">
-                        @else
-                            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow" 
-                                 style="height: 250px;">
-                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
-                            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7 col-xl-8">
+                <section class="panel">
+                    <h2>Votre séjour</h2>
+                    <dl class="info-grid">
+                        <div><dt>Arrivée</dt><dd>{{ ucfirst($in->translatedFormat('l j F Y')) }} <span class="text-muted">· dès 15 h</span></dd></div>
+                        <div><dt>Départ</dt><dd>{{ ucfirst($out->translatedFormat('l j F Y')) }} <span class="text-muted">· avant 11 h</span></dd></div>
+                        <div><dt>Voyageurs</dt><dd>{{ $booking->guests }}</dd></div>
+                        <div><dt>Durée</dt><dd>{{ $booking->nights }} {{ $booking->nights > 1 ? 'nuits' : 'nuit' }}</dd></div>
+                        <div><dt>Adresse</dt><dd>{{ $booking->residence?->address ?: $booking->residence?->location_display }}</dd></div>
+                    </dl>
+                    <div class="d-flex flex-wrap gap-2 mt-3 no-print">
+                        @if ($booking->residence?->hasGoogleMaps())
+                            <a href="{{ $booking->residence->google_maps_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-map-location-dot me-1"></i>Itinéraire</a>
+                        @endif
+                        @if ($booking->residence)
+                            <a href="{{ route('residences.show', $booking->residence->slug) }}" class="btn btn-sm btn-outline-primary">Voir la résidence</a>
                         @endif
                     </div>
-                    
-                    <!-- Informations de la résidence -->
-                    <div class="col-md-7">
-                        <h4 class="text-primary mb-2">{{ $booking->residence->name }}</h4>
-                        <p class="text-muted mb-3">{{ $booking->residence->residenceType->name }}</p>
-                        
-                        @if($booking->residence->description)
-                            <p class="mb-3">{{ Str::limit($booking->residence->description, 150) }}</p>
-                        @endif
-                        
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="bi bi-geo-alt text-primary me-2"></i>
-                                    <span>{{ $booking->residence->address }}</span>
-                                </div>
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="bi bi-people text-primary me-2"></i>
-                                    <span>Jusqu'à {{ $booking->residence->residenceType->capacity }} personne{{ $booking->residence->residenceType->capacity > 1 ? 's' : '' }}</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="bi bi-currency-exchange text-primary me-2"></i>
-                                    <span>{{ number_format($booking->residence->price_per_night, 0, ',', ' ') }} FCFA/nuit</span>
-                                </div>
-                                @if($booking->residence->residenceType->bedrooms)
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-door-closed text-primary me-2"></i>
-                                        <span>{{ $booking->residence->residenceType->bedrooms }} chambre{{ $booking->residence->residenceType->bedrooms > 1 ? 's' : '' }}</span>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Récapitulatif de la réservation -->
-    <div class="col-lg-4 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-calendar-check me-2"></i>Récapitulatif
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="text-muted small">Arrivée</label>
-                            <div class="fw-bold">{{ \Carbon\Carbon::parse($booking->check_in)->format('d/m/Y') }}</div>
-                            <div class="text-muted small">{{ \Carbon\Carbon::parse($booking->check_in)->format('l') }}</div>
-                        </div>
-                        <div class="col-6">
-                            <label class="text-muted small">Départ</label>
-                            <div class="fw-bold">{{ \Carbon\Carbon::parse($booking->check_out)->format('d/m/Y') }}</div>
-                            <div class="text-muted small">{{ \Carbon\Carbon::parse($booking->check_out)->format('l') }}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="text-muted small">Durée</label>
-                            <div class="fw-bold">{{ \Carbon\Carbon::parse($booking->check_in)->diffInDays(\Carbon\Carbon::parse($booking->check_out)) }} nuit{{ \Carbon\Carbon::parse($booking->check_in)->diffInDays(\Carbon\Carbon::parse($booking->check_out)) > 1 ? 's' : '' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <label class="text-muted small">Voyageurs</label>
-                            <div class="fw-bold">{{ $booking->guests }} personne{{ $booking->guests > 1 ? 's' : '' }}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr>
-                
-                <!-- Détails financiers -->
-                <div class="mb-4">
-                    <h6 class="text-primary mb-3">Détails financiers</h6>
-                    
-                    @php
-                        $nights = \Carbon\Carbon::parse($booking->check_in)->diffInDays(\Carbon\Carbon::parse($booking->check_out));
-                        $pricePerNight = $booking->residence->price_per_night;
-                        $subtotal = $nights * $pricePerNight;
-                        $taxes = $booking->total_price - $subtotal;
-                    @endphp
-                    
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>{{ number_format($pricePerNight, 0, ',', ' ') }} FCFA × {{ $nights }} nuit{{ $nights > 1 ? 's' : '' }}</span>
-                        <span>{{ number_format($subtotal, 0, ',', ' ') }} FCFA</span>
-                    </div>
-                    
-                    @if($taxes > 0)
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Taxes et frais</span>
-                            <span>{{ number_format($taxes, 0, ',', ' ') }} FCFA</span>
-                        </div>
-                    @endif
-                    
-                    <hr>
-                    
-                    <div class="d-flex justify-content-between mb-0">
-                        <span class="fw-bold">Total</span>
-                        <span class="fw-bold h5 text-primary">{{ number_format($booking->total_price, 0, ',', ' ') }} FCFA</span>
-                    </div>
-                </div>
-                
-                <div class="small text-muted">
-                    <i class="bi bi-calendar-plus me-1"></i>
-                    Réservé le {{ $booking->created_at->format('d/m/Y à H:i') }}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                </section>
 
-<!-- Informations complémentaires -->
-@if($booking->special_requests || $booking->notes)
-    <div class="row">
-        <div class="col-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-chat-text me-2"></i>Informations complémentaires
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @if($booking->special_requests)
-                        <div class="mb-3">
-                            <h6>Demandes spéciales</h6>
-                            <p class="mb-0">{{ $booking->special_requests }}</p>
+                @if ($booking->special_requests)
+                    <section class="panel"><h2>Vos demandes</h2><p class="mb-0 text-muted">{{ $booking->special_requests }}</p></section>
+                @endif
+
+                <section class="panel">
+                    <h2>Paiements</h2>
+                    @if ($booking->payments->count())
+                        <div class="table-responsive">
+                            <table class="table table-sm small align-middle mb-0">
+                                <thead class="text-muted"><tr><th class="fw-medium">Date</th><th class="fw-medium">Mode</th><th class="fw-medium">Statut</th><th class="fw-medium text-end">Montant</th></tr></thead>
+                                <tbody>
+                                    @foreach ($booking->payments as $p)
+                                        <tr>
+                                            <td>{{ $p->created_at->format('d/m/Y H:i') }}</td>
+                                            <td>{{ $p->method_display }}</td>
+                                            <td><span class="badge rounded-pill {{ $p->status === 'completed' ? 'text-bg-success' : ($p->status === 'failed' ? 'text-bg-danger' : 'text-bg-warning') }}">{{ $paymentLabels[$p->status] ?? $p->status }}</span></td>
+                                            <td class="text-end">{{ number_format($p->amount, 0, ',', ' ') }} FCFA</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
+                    @else
+                        <p class="text-muted mb-2">Aucun paiement enregistré.</p>
                     @endif
-                    
-                    @if($booking->notes)
-                        <div class="mb-0">
-                            <h6>Notes</h6>
-                            <p class="mb-0">{{ $booking->notes }}</p>
-                        </div>
+                    @if ($booking->status === 'pending' && !$paid)
+                        <a href="{{ route('booking.payment', $booking) }}" class="btn btn-primary mt-3 no-print">Payer maintenant</a>
+                    @endif
+                </section>
+
+                <div class="d-flex flex-wrap gap-2 no-print">
+                    <a href="{{ route('dashboard.bookings') }}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Mes réservations</a>
+                    @if ($canCancel)
+                        <form action="{{ route('dashboard.booking.cancel', $booking) }}" method="POST"
+                            onsubmit="return confirm('Annuler cette réservation ?')">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-link text-danger">Annuler la réservation</button>
+                        </form>
                     @endif
                 </div>
             </div>
+
+            <div class="col-lg-5 col-xl-4">
+                @include('frontend.booking.partials.summary', [
+                    'residence' => $booking->residence,
+                    'checkIn' => $in,
+                    'checkOut' => $out,
+                    'guests' => $booking->guests,
+                    'nights' => $booking->nights,
+                    'pricePerNight' => $booking->price_per_night,
+                    'subtotal' => $booking->total_price,
+                    'tax' => $booking->tax_amount,
+                    'total' => $total,
+                    'reference' => $booking->booking_number,
+                ])
+            </div>
         </div>
     </div>
-@endif
-
-</div> <!-- Fermeture du container -->
 @endsection

@@ -21,6 +21,33 @@
 </div>
 <!-- end page title -->
 
+@if (session('generated_password'))
+    @php
+        $pwd = session('generated_password');
+        $msg = "Bonjour " . $client->username . ", voici vos identifiants Sages Home :\nE-mail : " . $client->email . "\nMot de passe : " . $pwd . "\nConnexion : " . route('login');
+        $wa = preg_replace('/\D/', '', (string) $client->phone);
+        if ($wa && strlen($wa) <= 10) { $wa = '225' . $wa; }
+    @endphp
+    <div class="card mb-3" style="background: var(--sh-gold-soft); border: 1px dashed rgba(194,155,50,.55);">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <span class="d-flex align-items-center justify-content-center bg-white rounded-3" style="width:44px;height:44px;color:var(--sh-gold-deep);font-size:1.3rem"><i class="ri-key-2-line"></i></span>
+            <div class="flex-grow-1">
+                <div class="fw-semibold">Identifiants du client</div>
+                <div class="small text-muted">Ce mot de passe ne sera plus affiché : transmettez-le maintenant au client.</div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <code class="fs-5 fw-bold px-3 py-2 bg-white rounded" style="letter-spacing:.18em;color:var(--sh-green)">{{ $pwd }}</code>
+                <button type="button" class="btn btn-light" data-copy="{{ $pwd }}"><i class="ri-file-copy-line me-1"></i>Copier</button>
+                <button type="button" class="btn btn-light" data-copy="{{ $msg }}"><i class="ri-chat-copy-line me-1"></i>Copier le message</button>
+                @if ($wa)
+                    <a class="btn btn-success" target="_blank" rel="noopener" href="https://wa.me/{{ $wa }}?text={{ rawurlencode($msg) }}"><i class="ri-whatsapp-line me-1"></i>WhatsApp</a>
+                @endif
+                <a class="btn btn-light" href="mailto:{{ $client->email }}?subject={{ rawurlencode('Vos identifiants Sages Home') }}&body={{ rawurlencode($msg) }}"><i class="ri-mail-send-line me-1"></i>E-mail</a>
+            </div>
+        </div>
+    </div>
+@endif
+
 <div class="row">
     <!-- Informations du client -->
     <div class="col-xl-4">
@@ -100,6 +127,12 @@
                 </div>
 
                 <div class="mt-4">
+                    <form method="POST" action="{{ route('admin.clients.reset-password', $client) }}" class="mb-2"
+                        data-confirm="Réinitialiser le mot de passe de {{ $client->username }} ? L'ancien mot de passe ne fonctionnera plus."
+                        data-confirm-button="Réinitialiser" data-confirm-danger="true">
+                        @csrf
+                        <button type="submit" class="btn btn-soft-warning btn-sm w-100"><i class="ri-key-2-line me-1"></i>Réinitialiser le mot de passe</button>
+                    </form>
                     <div class="d-flex gap-2">
                         <a href="{{ route('admin.clients.edit', $client) }}" class="btn btn-primary btn-sm flex-fill">
                             <i class="ri-edit-line me-1"></i>Modifier
@@ -126,7 +159,7 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        <h4 class="mb-1 text-success">{{ number_format($analytics['total_amount'], 2) }} €</h4>
+                        <h4 class="mb-1 text-success">{{ number_format($analytics['total_amount'], 0, ',', ' ') }} <small class="fs-6">FCFA</small></h4>
                         <p class="text-muted mb-0">Total Dépensé</p>
                     </div>
                 </div>
@@ -173,24 +206,24 @@
                                 @foreach($client->bookings->take(10) as $booking)
                                 <tr>
                                     <td>
-                                        <span class="fw-medium">#{{ $booking->reference ?? $booking->id }}</span><br>
+                                        <span class="fw-medium">{{ $booking->booking_number ?? $booking->id }}</span><br>
                                         <small class="text-muted">{{ $booking->created_at->format('d/m/Y') }}</small>
                                     </td>
                                     <td>
                                         @if($booking->residence)
                                             <div>
                                                 <span class="fw-medium">{{ $booking->residence->name }}</span><br>
-                                                <small class="text-muted">{{ $booking->residence->location }}</small>
+                                                <small class="text-muted">{{ $booking->residence->location_display }}</small>
                                             </div>
                                         @else
                                             <span class="text-muted">Résidence supprimée</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($booking->check_in && $booking->check_out)
+                                        @if(($booking->check_in_date ?? $booking->check_in) && ($booking->check_out_date ?? $booking->check_out))
                                             <div>
-                                                <strong>Du:</strong> {{ \Carbon\Carbon::parse($booking->check_in)->format('d/m/Y') }}<br>
-                                                <strong>Au:</strong> {{ \Carbon\Carbon::parse($booking->check_out)->format('d/m/Y') }}
+                                                <strong>Du:</strong> {{ \Carbon\Carbon::parse($booking->check_in_date ?? $booking->check_in)->format('d/m/Y') }}<br>
+                                                <strong>Au:</strong> {{ \Carbon\Carbon::parse($booking->check_out_date ?? $booking->check_out)->format('d/m/Y') }}
                                             </div>
                                         @else
                                             <span class="text-muted">Dates non définies</span>
@@ -198,7 +231,7 @@
                                     </td>
                                     <td>
                                         @if($booking->total_amount)
-                                            <span class="fw-bold text-success">{{ number_format($booking->total_amount, 2) }} €</span>
+                                            <span class="fw-bold text-success">{{ number_format($booking->total_amount, 0, ',', ' ') }} FCFA</span>
                                         @else
                                             <span class="text-muted">N/A</span>
                                         @endif
@@ -285,7 +318,7 @@
                     <div class="timeline-content">
                         <h6 class="timeline-title">Nouvelle réservation</h6>
                         <p class="text-muted mb-1">
-                            Réservation #{{ $booking->reference ?? $booking->id }}
+                            Réservation {{ $booking->booking_number ?? $booking->id }}
                             @if($booking->residence)
                                 pour {{ $booking->residence->name }}
                             @endif

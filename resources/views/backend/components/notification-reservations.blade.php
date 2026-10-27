@@ -1,153 +1,85 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
-
-
-<div class="dropdown ms-2 header-item">
-    <button type="button" class="btn btn-icon btn-topbar position-relative" id="notifDropdown" data-bs-toggle="dropdown">
-        <i class="bx bx-bell fs-20"></i>
+<div class="dropdown ms-1 header-item">
+    <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle position-relative"
+        id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Nouvelles réservations">
+        <i class="bx bx-bell fs-22"></i>
         <span id="notif-count-reservations"
-            class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle p-1">...</span>
+            class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger d-none">0</span>
     </button>
 
     <div class="dropdown-menu dropdown-menu-end dropdown-menu-lg p-0" aria-labelledby="notifDropdown">
-        <div class="p-3 border-bottom">
-            <h6 class="m-0">Notifications</h6>
+        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="m-0">Nouvelles réservations</h6>
+            <span class="text-muted small">Mise à jour auto</span>
         </div>
-        <div id="notif-list-reservations" style="max-height:300px; overflow:auto;">
-            <div class="p-3 text-center text-muted">Chargement...</div>
+        <div id="notif-list-reservations" style="max-height:320px; overflow:auto;">
+            <div class="p-4 text-center text-muted small">Aucune nouvelle réservation</div>
         </div>
-        <div class="dropdown-divider"></div>
-        <div class="p-2 text-center">
-            <a href="{{ route('admin.bookings.index') }}" class="btn btn-sm btn-link">Voir toutes</a>
+        <div class="p-2 border-top text-center">
+            <a href="{{ route('admin.bookings.index', ['status' => 'pending']) }}" class="btn btn-sm btn-soft-primary w-100">
+                Voir les réservations en attente
+            </a>
         </div>
     </div>
 </div>
 
-
-
 <script>
-    function checkNewReservations() {
-        $.ajax({
-            url: "{{ route('admin.bookings.new-bookings') }}",
-            method: "GET",
-            success: function(data) {
-                if (data.count > 0) {
-                    // Mettre à jour le badge
-                    $("#notif-count-reservations").text(data.count || 0);
-                    // Vider et reconstruire la liste
-                    const listContainer = $("#notif-list-reservations");
-                    listContainer.empty();
+    (function () {
+        var endpoint = "{{ route('admin.bookings.new-bookings') }}";
+        var sound = "{{ asset('audio/notify_bell.wav') }}";
+        var known = new Set();
+        var first = true;
+        var timer = null;
 
-                    data.bookings.forEach(function(booking) {
-                        const bookingHtml = `
-                        <a class="dropdown-item d-flex align-items-start" href="${booking.show_url || '#'}">
-                            <div class="me-2"><i class="bi bi-clock-history text-success"></i></div>
-                            <div>
-                                <div class="small fw-semibold">${booking.reference} - ${booking.guest_name}</div>
-                                <div class="small text-muted">${booking.created_at}</div>
-                                <div class="small text-success fw-bold">${(booking.total_amount || 0).toLocaleString('fr-FR')} FCFA</div>
-                            </div>
-                        </a>
-                    `;
-                        listContainer.append(bookingHtml);
-                    });
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
 
-                    // Jouer le son directement
-                    const alertSound = new Audio("{{ asset('audio/notify_bell.wav') }}");
-                    alertSound.play();
-                } else {
-                    // Si aucune nouvelle réservation, masquer le badge
-                    $("#notif-count-reservations").text('0');
-                    $("#notif-list-reservations").html(
-                        '<div class="p-3 text-center text-muted">Aucune nouvelle réservation</div>');
-                }
-            },
-            error: function(xhr) {
-                console.error("Erreur lors de la récupération des réservations.");
-            },
-        });
-    }
+        function render(data) {
+            var badge = document.getElementById('notif-count-reservations');
+            var list = document.getElementById('notif-list-reservations');
+            if (!badge || !list) return;
 
-    // Vérifier les nouvelles réservations toutes les 10 secondes
-    setInterval(checkNewReservations, 10000);
+            var count = data.count || 0;
+            badge.textContent = count;
+            badge.classList.toggle('d-none', count === 0);
+
+            if (!count) {
+                list.innerHTML = '<div class="p-4 text-center text-muted small">Aucune nouvelle réservation</div>';
+                return;
+            }
+
+            list.innerHTML = (data.bookings || []).map(function (b) {
+                return '<a class="dropdown-item d-flex gap-2 py-2 px-3 border-bottom" href="' + esc(b.show_url) + '">' +
+                    '<span class="sh-avatar"><i class="ri-calendar-check-line"></i></span>' +
+                    '<span class="flex-grow-1 min-w-0">' +
+                    '<span class="d-block fw-semibold small text-truncate">' + esc(b.reference) + ' · ' + esc(b.guest_name) + '</span>' +
+                    '<span class="d-block small text-muted text-truncate">' + esc(b.residence_name) + ' · ' + esc(b.created_at) + '</span>' +
+                    '<span class="d-block small fw-semibold text-success">' + esc(b.total_amount) + '</span>' +
+                    '</span></a>';
+            }).join('');
+
+            // Son uniquement pour les réservations jamais vues
+            var hasNew = false;
+            (data.bookings || []).forEach(function (b) {
+                if (!known.has(b.reference)) { hasNew = true; known.add(b.reference); }
+            });
+            if (hasNew && !first) {
+                try { new Audio(sound).play().catch(function () {}); } catch (e) {}
+            }
+        }
+
+        function poll() {
+            if (document.hidden) return;
+            fetch(endpoint, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) { if (data) { render(data); first = false; } })
+                .catch(function () {});
+        }
+
+        poll();
+        timer = setInterval(poll, 20000);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
+    })();
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{{-- <script>
-(function(){
-    const endpoint = "{{ route('commandes.newOrderCount') }}";
-    const intervalMs = 10000; // 10s
-
-    function updateNotifications(data) {
-        const badge = document.getElementById('notif-count-reservations');
-        const list = document.getElementById('notif-list-reservations');
-
-        if (badge) {
-            const prevCount = parseInt(badge.textContent || '0', 10);
-            badge.textContent = data.count || 0;
-            badge.style.display = (data.count && data.count > 0) ? 'inline-block' : 'none';
-
-            if (data.count > prevCount) {
-                badge.classList.add('animate__animated', 'animate__bounceIn');
-                setTimeout(() => badge.classList.remove('animate__animated', 'animate__bounceIn'), 1000);
-            }
-        }
-
-        if (list) {
-            list.innerHTML = '';
-            (data.orders || []).forEach(o => {
-                const a = document.createElement('a');
-                a.className = 'dropdown-item d-flex align-items-start';
-                a.href = o.url || '#';
-                a.innerHTML = `
-                    <div class="me-2"><i class="bi bi-bag-check text-success"></i></div>
-                    <div>
-                        <div class="small fw-semibold">Commande ${o.code}</div>
-                        <div class="small text-muted">${o.created_at}</div>
-                    </div>
-                `;
-                list.appendChild(a);
-            });
-
-            if ((data.orders || []).length === 0) {
-                const empty = document.createElement('div');
-                empty.className = 'p-3 text-center text-muted';
-                empty.textContent = 'Aucune notification';
-                list.appendChild(empty);
-            }
-        }
-        
-    }
-
-    async function poll() {
-        try {
-            const res = await fetch(endpoint, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'same-origin'
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            updateNotifications(data);
-        } catch (err) {
-            console.error('Polling error', err);
-        }
-    }
-
-    poll();
-    setInterval(poll, intervalMs);
-})();
-</script> --}}

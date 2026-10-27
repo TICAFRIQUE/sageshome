@@ -1,40 +1,36 @@
 @extends('backend.layouts.master')
 
-@section('title', isset($client) ? 'Modifier Client' : 'Nouveau Client')
+@php
+    $editing = isset($client);
+    $countries = ["Côte d'Ivoire", 'Sénégal', 'Mali', 'Burkina Faso', 'Guinée', 'Togo', 'Bénin', 'Ghana', 'Cameroun', 'Maroc', 'France', 'Belgique', 'Canada', 'États-Unis', 'Autre'];
+    $currentCountry = old('country', $client->country ?? "Côte d'Ivoire");
+@endphp
+
+@section('title', $editing ? 'Modifier le client' : 'Nouveau client')
 
 @section('content')
-<!-- start page title -->
-<div class="row">
-    <div class="col-12">
-        <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-galaxy-transparent">
-            <h4 class="mb-sm-0">{{ isset($client) ? 'Modifier Client' : 'Nouveau Client' }}</h4>
-            <div class="page-title-right">
-                <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Accueil</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.sages-home.dashboard') }}">Sages Home</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.clients.index') }}">Clients</a></li>
-                    <li class="breadcrumb-item active">
-                        {{ isset($client) ? 'Modifier' : 'Nouveau' }}
-                    </li>
-                </ol>
-            </div>
+    <div class="sh-page-head">
+        <div>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Tableau de bord</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.clients.index') }}">Clients</a></li>
+                <li class="breadcrumb-item active">{{ $editing ? 'Modifier' : 'Nouveau' }}</li>
+            </ol>
+            <h1>{{ $editing ? 'Modifier ' . $client->username : 'Nouveau client' }}</h1>
         </div>
-    </div>
-</div>
-<!-- end page title -->
-
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    {{ isset($client) ? 'Modifier les informations du client' : 'Ajouter un nouveau client' }}
-                </h5>
+        @if ($editing)
+            <div class="sh-actions">
+                <a href="{{ route('admin.clients.show', $client) }}" class="btn btn-light"><i class="ri-user-line me-1"></i>Voir la fiche</a>
             </div>
-            <form action="{{ isset($client) ? route('admin.clients.update', $client) : route('admin.clients.store') }}" 
-                  method="POST" class="needs-validation" novalidate>
+        @endif
+    </div>
+
+    <div class="row justify-content-center g-3">
+        <div class="col-xl-8">
+            <form action="{{ $editing ? route('admin.clients.update', $client) : route('admin.clients.store') }}"
+                method="POST" class="card needs-validation" novalidate autocomplete="off">
                 @csrf
-                @if(isset($client))
+                @if ($editing)
                     @method('PUT')
                 @endif
 
@@ -49,254 +45,173 @@
                         </div>
                     @endif
 
-                    <div class="row">
-                        <!-- Informations personnelles -->
-                        <div class="col-12">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="ri-user-line me-2"></i>Informations Personnelles
-                            </h6>
+                    <div class="form-section-title mt-0"><i class="ri-user-line"></i>Identité</div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Nom complet <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username"
+                                value="{{ old('username', $client->username ?? '') }}" placeholder="Ex. Kouadio Jean" required autofocus>
+                            @error('username')<div class="invalid-feedback">{{ $message }}</div>@else<div class="invalid-feedback">Le nom est obligatoire.</div>@enderror
                         </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">Nom d'utilisateur <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('username') is-invalid @enderror" 
-                                   id="username" name="username" 
-                                   value="{{ old('username', $client->username ?? '') }}" 
-                                   placeholder="Nom d'utilisateur" required>
-                            @error('username')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Adresse email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                   id="email" name="email" 
-                                   value="{{ old('email', $client->email ?? '') }}" 
-                                   placeholder="email@exemple.com" required>
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <label for="phone" class="form-label">Téléphone</label>
-                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
-                                   id="phone" name="phone" 
-                                   value="{{ old('phone', $client->phone ?? '') }}" 
-                                   placeholder="+33 1 23 45 67 89">
-                            @error('phone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        @if(!isset($client))
-                        <div class="col-md-6 mb-3">
-                            <label for="password" class="form-label">Mot de passe <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                       id="password" name="password" 
-                                       placeholder="Mot de passe" required>
-                                <button type="button" class="btn btn-outline-secondary" id="toggle-password">
-                                    <i class="ri-eye-line" id="password-icon"></i>
-                                </button>
+                                <span class="input-group-text"><i class="ri-phone-line"></i></span>
+                                <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone"
+                                    value="{{ old('phone', $client->phone ?? '') }}" placeholder="07 00 00 00 00" inputmode="tel">
+                                @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <small class="text-muted">Minimum 8 caractères</small>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
-                        @endif
-
-                        <!-- Adresse -->
-                        <div class="col-12 mt-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="ri-map-pin-line me-2"></i>Adresse
-                            </h6>
-                        </div>
-
-                        <div class="col-12 mb-3">
-                            <label for="address" class="form-label">Adresse complète</label>
-                            <textarea class="form-control @error('address') is-invalid @enderror" 
-                                      id="address" name="address" rows="2" 
-                                      placeholder="Numéro, rue, quartier...">{{ old('address', $client->address ?? '') }}</textarea>
-                            @error('address')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="city" class="form-label">Ville</label>
-                            <input type="text" class="form-control @error('city') is-invalid @enderror" 
-                                   id="city" name="city" 
-                                   value="{{ old('city', $client->city ?? '') }}" 
-                                   placeholder="Ville">
-                            @error('city')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="country" class="form-label">Pays</label>
-                            <select class="form-select @error('country') is-invalid @enderror" 
-                                    id="country" name="country">
-                                <option value="">Sélectionner un pays</option>
-                                <option value="Sénégal" {{ old('country', $client->country ?? '') === 'Sénégal' ? 'selected' : '' }}>Sénégal</option>
-                                <option value="France" {{ old('country', $client->country ?? '') === 'France' ? 'selected' : '' }}>France</option>
-                                <option value="Côte d'Ivoire" {{ old('country', $client->country ?? '') === "Côte d'Ivoire" ? 'selected' : '' }}>Côte d'Ivoire</option>
-                                <option value="Mali" {{ old('country', $client->country ?? '') === 'Mali' ? 'selected' : '' }}>Mali</option>
-                                <option value="Burkina Faso" {{ old('country', $client->country ?? '') === 'Burkina Faso' ? 'selected' : '' }}>Burkina Faso</option>
-                                <option value="Maroc" {{ old('country', $client->country ?? '') === 'Maroc' ? 'selected' : '' }}>Maroc</option>
-                                <option value="Algérie" {{ old('country', $client->country ?? '') === 'Algérie' ? 'selected' : '' }}>Algérie</option>
-                                <option value="Tunisie" {{ old('country', $client->country ?? '') === 'Tunisie' ? 'selected' : '' }}>Tunisie</option>
-                                <option value="Canada" {{ old('country', $client->country ?? '') === 'Canada' ? 'selected' : '' }}>Canada</option>
-                                <option value="États-Unis" {{ old('country', $client->country ?? '') === 'États-Unis' ? 'selected' : '' }}>États-Unis</option>
-                                <option value="Autre" {{ old('country', $client->country ?? '') === 'Autre' ? 'selected' : '' }}>Autre</option>
-                            </select>
-                            @error('country')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Statut et notifications -->
-                        @if(isset($client))
-                        <div class="col-12 mt-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="ri-settings-3-line me-2"></i>Paramètres du Compte
-                            </h6>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="email_verified_at" class="form-label">Email vérifié</label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="email_verified" name="email_verified" 
-                                       {{ old('email_verified', $client->email_verified_at ? 'on' : '') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="email_verified">
-                                    Email vérifié
-                                </label>
+                        <div class="col-md-12">
+                            <label for="email" class="form-label">Adresse e-mail <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="ri-mail-line"></i></span>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email"
+                                    value="{{ old('email', $client->email ?? '') }}" placeholder="client@exemple.com" required>
+                                @error('email')<div class="invalid-feedback">{{ $message }}</div>@else<div class="invalid-feedback">Saisissez une adresse e-mail valide.</div>@enderror
                             </div>
-                            <small class="text-muted">
-                                @if($client->email_verified_at)
-                                    Vérifié le {{ $client->email_verified_at->format('d/m/Y à H:i') }}
-                                @else
-                                    Email non vérifié
-                                @endif
-                            </small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Statut du compte</label>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" 
-                                       id="account_active" name="account_active" 
-                                       {{ old('account_active', !$client->deleted_at ? 'on' : '') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="account_active">
-                                    Compte actif
-                                </label>
-                            </div>
-                            <small class="text-muted">Désactiver empêche la connexion du client</small>
-                        </div>
-                        @endif
-
-                        <!-- Notes administratives -->
-                        <div class="col-12 mt-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="ri-file-text-line me-2"></i>Notes Administratives
-                            </h6>
-                        </div>
-
-                        <div class="col-12 mb-3">
-                            <label for="admin_notes" class="form-label">Notes internes</label>
-                            <textarea class="form-control @error('admin_notes') is-invalid @enderror" 
-                                      id="admin_notes" name="admin_notes" rows="3" 
-                                      placeholder="Notes visibles uniquement par les administrateurs...">{{ old('admin_notes', $client->admin_notes ?? '') }}</textarea>
-                            <small class="text-muted">Ces notes ne sont pas visibles par le client</small>
-                            @error('admin_notes')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="form-text">Sert d'identifiant de connexion sur le site.</div>
                         </div>
                     </div>
+
+                    @unless ($editing)
+                        <div class="form-section-title"><i class="ri-lock-password-line"></i>Mot de passe</div>
+                        <div class="password-box">
+                            <label for="password" class="form-label">Mot de passe généré</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control password-input @error('password') is-invalid @enderror" id="password" name="password"
+                                    value="{{ old('password', $generatedPassword ?? '') }}" minlength="8" maxlength="64" spellcheck="false"
+                                    autocomplete="new-password" aria-describedby="passwordHelp">
+                                <button type="button" class="btn btn-light" id="regenerate-password" title="Générer un autre mot de passe" data-bs-toggle="tooltip">
+                                    <i class="ri-refresh-line"></i>
+                                </button>
+                                <button type="button" class="btn btn-light" id="copy-password" title="Copier" data-bs-toggle="tooltip">
+                                    <i class="ri-file-copy-line"></i>
+                                </button>
+                                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="form-text" id="passwordHelp">
+                                8 caractères, lettres majuscules et chiffres. Il sera réaffiché après l'enregistrement
+                                pour être transmis au client (e-mail, WhatsApp…).
+                            </div>
+                        </div>
+                    @endunless
+
+                    <div class="form-section-title"><i class="ri-map-pin-line"></i>Adresse</div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="address" class="form-label">Adresse</label>
+                            <input type="text" class="form-control" id="address" name="address"
+                                value="{{ old('address', $client->address ?? '') }}" placeholder="Quartier, rue, repère…">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="city" class="form-label">Ville</label>
+                            <input type="text" class="form-control" id="city" name="city"
+                                value="{{ old('city', $client->city ?? '') }}" placeholder="Abidjan">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="country" class="form-label">Pays</label>
+                            <select class="form-select" id="country" name="country">
+                                <option value="">Non précisé</option>
+                                @foreach ($countries as $country)
+                                    <option value="{{ $country }}" @selected($currentCountry === $country)>{{ $country }}</option>
+                                @endforeach
+                                @if ($currentCountry && !in_array($currentCountry, $countries))
+                                    <option value="{{ $currentCountry }}" selected>{{ $currentCountry }}</option>
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    @if ($editing)
+                        <div class="form-section-title"><i class="ri-settings-3-line"></i>Compte</div>
+                        <input type="hidden" name="email_verified_present" value="1">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="email_verified" name="email_verified" value="1"
+                                @checked(old('email_verified', $client->email_verified_at ? 1 : 0))>
+                            <label class="form-check-label" for="email_verified">Adresse e-mail vérifiée</label>
+                        </div>
+                        <div class="form-text">
+                            @if ($client->email_verified_at)
+                                Vérifiée le {{ $client->email_verified_at->format('d/m/Y à H:i') }}
+                            @else
+                                Pas encore vérifiée
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
-                <div class="card-footer">
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('admin.clients.index') }}" class="btn btn-light">
-                            <i class="ri-arrow-left-line me-1"></i>Annuler
-                        </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="ri-save-line me-1"></i>
-                            {{ isset($client) ? 'Mettre à jour' : 'Créer le client' }}
-                        </button>
-                    </div>
+                <div class="card-footer d-flex justify-content-between gap-2">
+                    <a href="{{ $editing ? route('admin.clients.show', $client) : route('admin.clients.index') }}" class="btn btn-light">Annuler</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="ri-save-line me-1"></i>{{ $editing ? 'Enregistrer' : 'Créer le client' }}
+                    </button>
                 </div>
             </form>
         </div>
+
+        @if ($editing)
+            <div class="col-xl-4">
+                <div class="card">
+                    <div class="card-header"><h5 class="card-title mb-0"><i class="ri-lock-password-line me-1"></i>Mot de passe</h5></div>
+                    <div class="card-body">
+                        <p class="text-muted small">Génère un nouveau mot de passe de 8 caractères (majuscules et chiffres). L'ancien ne fonctionnera plus.</p>
+                        <form method="POST" action="{{ route('admin.clients.reset-password', $client) }}"
+                            data-confirm="Réinitialiser le mot de passe de {{ $client->username }} ? L'ancien mot de passe ne fonctionnera plus."
+                            data-confirm-button="Réinitialiser" data-confirm-danger="true">
+                            @csrf
+                            <button type="submit" class="btn btn-soft-warning w-100"><i class="ri-key-2-line me-1"></i>Réinitialiser le mot de passe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
-</div>
 @endsection
 
-@push('js')
-<script>
-// Validation du formulaire
-(function() {
-    'use strict';
-    window.addEventListener('load', function() {
-        var forms = document.getElementsByClassName('needs-validation');
-        var validation = Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    }, false);
-})();
-
-// Toggle password visibility
-document.getElementById('toggle-password')?.addEventListener('click', function() {
-    const passwordInput = document.getElementById('password');
-    const passwordIcon = document.getElementById('password-icon');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        passwordIcon.classList.remove('ri-eye-line');
-        passwordIcon.classList.add('ri-eye-off-line');
-    } else {
-        passwordInput.type = 'password';
-        passwordIcon.classList.remove('ri-eye-off-line');
-        passwordIcon.classList.add('ri-eye-line');
-    }
-});
-
-// Validation en temps réel de l'email
-document.getElementById('email').addEventListener('input', function() {
-    const emailInput = this;
-    const email = emailInput.value;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (email && !emailRegex.test(email)) {
-        emailInput.classList.add('is-invalid');
-        emailInput.classList.remove('is-valid');
-    } else if (email) {
-        emailInput.classList.remove('is-invalid');
-        emailInput.classList.add('is-valid');
-    } else {
-        emailInput.classList.remove('is-invalid', 'is-valid');
-    }
-});
-
-// Auto-format phone number
-document.getElementById('phone').addEventListener('input', function() {
-    let value = this.value.replace(/\D/g, '');
-    if (value.startsWith('33')) {
-        value = '+' + value.substring(0, 2) + ' ' + value.substring(2);
-    } else if (value.startsWith('221')) {
-        value = '+' + value.substring(0, 3) + ' ' + value.substring(3);
-    }
-    this.value = value;
-});
-</script>
+@push('styles')
+    <style>
+        .password-box { padding: 1rem; border-radius: 12px; background: var(--sh-gold-soft); border: 1px dashed rgba(194, 155, 50, .45); }
+        .password-input { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.1rem; letter-spacing: .18em; font-weight: 700; text-transform: uppercase; }
+    </style>
 @endpush
+
+@section('script')
+    <script>
+        (function () {
+            var input = document.getElementById('password');
+            if (!input) return;
+            var LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ', DIGITS = '23456789';
+
+            function rand(max) {
+                var a = new Uint32Array(1);
+                window.crypto.getRandomValues(a);
+                return a[0] % max;
+            }
+            function pick(s) { return s.charAt(rand(s.length)); }
+            function generate() {
+                var chars = [pick(LETTERS), pick(LETTERS), pick(DIGITS), pick(DIGITS)];
+                while (chars.length < 8) chars.push(pick(LETTERS + DIGITS));
+                for (var i = chars.length - 1; i > 0; i--) { var j = rand(i + 1); var t = chars[i]; chars[i] = chars[j]; chars[j] = t; }
+                return chars.join('');
+            }
+
+            input.addEventListener('input', function () { this.value = this.value.toUpperCase().replace(/\s/g, ''); });
+
+            document.getElementById('regenerate-password').addEventListener('click', function () {
+                input.value = generate();
+                input.classList.remove('is-invalid');
+                input.focus();
+                input.select();
+            });
+
+            document.getElementById('copy-password').addEventListener('click', function () {
+                var btn = this;
+                navigator.clipboard.writeText(input.value).then(function () {
+                    btn.innerHTML = '<i class="ri-check-line text-success"></i>';
+                    setTimeout(function () { btn.innerHTML = '<i class="ri-file-copy-line"></i>'; }, 1500);
+                });
+            });
+        })();
+    </script>
+@endsection

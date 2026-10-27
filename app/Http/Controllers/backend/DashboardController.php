@@ -12,203 +12,123 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    //index for dashboard
     public function index(Request $request)
     {
-        // Statistiques générales pour le dashboard
-        $totalResidences = Residence::count();
-        $totalBookings = Booking::count();
-        $totalRevenue = Payment::where('status', 'completed')->sum('amount');
-        
-        // Réservations récentes
-        $recentBookings = Booking::with('residence')
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
-            
-        // Statistiques des réservations par statut
-        $bookingStats = Booking::selectRaw('status, count(*) as count')
-            ->groupBy('status')
-            ->get();
-
-        // ========== REVENUS PAR PÉRIODE ==========
         $today = Carbon::today();
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $startOfYear = Carbon::now()->startOfYear();
+        $startOfMonth = now()->startOfMonth();
+        // Même période le mois dernier (pour une comparaison juste)
+        $lastMonthStart = now()->subMonthNoOverflow()->startOfMonth();
+        $lastMonthSameDay = now()->subMonthNoOverflow();
 
-        // Revenus globaux par période
-        $revenueToday = Payment::where('status', 'completed')
-            ->whereDate('created_at', $today)
-            ->sum('amount');
+        $validStatuses = ['confirmed', 'completed'];
+        $paid = fn () => Payment::where('status', 'completed');
 
-        $revenueWeek = Payment::where('status', 'completed')
-            ->whereDate('created_at', '>=', $startOfWeek)
-            ->sum('amount');
+        // ---------- Indicateurs clés ----------
+        $revenueMonth = $paid()->whereBetween('created_at', [$startOfMonth, now()])->sum('amount');
+        $revenueLastMonth = $paid()->whereBetween('created_at', [$lastMonthStart, $lastMonthSameDay])->sum('amount');
 
-        $revenueMonth = Payment::where('status', 'completed')
-            ->whereDate('created_at', '>=', $startOfMonth)
-            ->sum('amount');
+        $bookingsMonth = Booking::whereBetween('created_at', [$startOfMonth, now()])->count();
+        $bookingsLastMonth = Booking::whereBetween('created_at', [$lastMonthStart, $lastMonthSameDay])->count();
 
-        $revenueYear = Payment::where('status', 'completed')
-            ->whereDate('created_at', '>=', $startOfYear)
-            ->sum('amount');
+        $totalResidences = Residence::count();
+        $occupiedToday = Booking::whereIn('status', $validStatuses)
+            ->whereDate('check_in_date', '<=', $today)
+            ->whereDate('check_out_date', '>', $today)
+            ->distinct('residence_id')
+            ->count('residence_id');
 
-        // ========== REVENUS PAR RÉSIDENCE PAR PÉRIODE ==========
-        // Revenus par résidence - Aujourd'hui
-        $revenueByResidenceToday = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', $today)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
+        $trend = fn ($now, $before) => $before > 0 ? round(($now - $before) / $before * 100) : null;
+
+        $kpis = [
+            'revenue_month' => $revenueMonth,
+            'revenue_trend' => $trend($revenueMonth, $revenueLastMonth),
+            'bookings_month' => $bookingsMonth,
+            'bookings_trend' => $trend($bookingsMonth, $bookingsLastMonth),
+            'occupied_today' => $occupiedToday,
+            'total_residences' => $totalResidences,
+            'occupancy_today' => $totalResidences > 0 ? round($occupiedToday / $totalResidences * 100) : 0,
+            'pending' => Booking::where('status', 'pending')->count(),
+            'to_collect' => Booking::whereIn('status', ['pending', 'confirmed'])
+                ->whereDoesntHave('payments', fn ($q) => $q->where('status', 'completed'))
+                ->sum('total_amount'),
+            'revenue_today' => $paid()->whereDate('created_at', $today)->sum('amount'),
+            'revenue_year' => $paid()->whereBetween('created_at', [now()->startOfYear(), now()])->sum('amount'),
+        ];
+
+        // ---------- Mouvements du jour ----------
+        $arrivals = Booking::with('residence')
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereDate('check_in_date', $today)
+            ->orderBy('check_in_date')->get();
+
+        $departures = Booking::with('residence')
+            ->whereIn('status', $validStatuses)
+            ->whereDate('check_out_date', $today)
             ->get();
 
-        // Revenus par résidence - Cette semaine
-        $revenueByResidenceWeek = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', '>=', $startOfWeek)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
+        $upcoming = Booking::with('residence')
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereDate('check_in_date', '>', $today)
+            ->whereDate('check_in_date', '<=', $today->copy()->addDays(7))
+            ->orderBy('check_in_date')
+            ->take(8)->get();
+
+        // ---------- Réservations récentes ----------
+        $recentBookings = Booking::with(['residence', 'payment'])
+            ->latest()
+            ->take(8)
             ->get();
 
-        // Revenus par résidence - Ce mois
-        $revenueByResidenceMonth = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', '>=', $startOfMonth)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
-            ->get();
+        // ---------- Encaissements des 12 derniers mois (1 requête) ----------
+        $from = now()->subMonths(11)->startOfMonth();
+        $monthly = Payment::where('status', 'completed')
+            ->where('created_at', '>=', $from)
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as ym, SUM(amount) as total, COUNT(*) as nb")
+            ->groupBy('ym')
+            ->pluck('total', 'ym');
 
-        // Revenus par résidence - Cette année
-        $revenueByResidenceYear = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', '>=', $startOfYear)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
+        $bookingsMonthly = Booking::where('created_at', '>=', $from)
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as ym, COUNT(*) as nb")
+            ->groupBy('ym')
+            ->pluck('nb', 'ym');
+
+        $chart = ['labels' => [], 'revenue' => [], 'bookings' => []];
+        for ($i = 0; $i < 12; $i++) {
+            $month = $from->copy()->addMonths($i);
+            $key = $month->format('Y-m');
+            $chart['labels'][] = ucfirst($month->translatedFormat('M y'));
+            $chart['revenue'][] = (int) ($monthly[$key] ?? 0);
+            $chart['bookings'][] = (int) ($bookingsMonthly[$key] ?? 0);
+        }
+
+        // ---------- Répartition par statut ----------
+        $bookingStats = Booking::selectRaw('status, COUNT(*) as count')->groupBy('status')->pluck('count', 'status');
+
+        // ---------- Top résidences du mois (CA réservé) ----------
+        $topResidences = Booking::whereIn('bookings.status', $validStatuses)
+            ->whereBetween('check_in_date', [$startOfMonth->toDateString(), now()->endOfMonth()->toDateString()])
             ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
+            ->select('residences.id', 'residences.name', DB::raw('SUM(bookings.total_amount) as total'), DB::raw('COUNT(*) as nb'))
             ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
+            ->orderByDesc('total')
+            ->take(5)
             ->get();
 
         return view('backend.pages.index', compact(
-            'totalResidences',
-            'totalBookings', 
-            'totalRevenue',
+            'kpis',
+            'arrivals',
+            'departures',
+            'upcoming',
             'recentBookings',
+            'chart',
             'bookingStats',
-            'revenueToday',
-            'revenueWeek',
-            'revenueMonth',
-            'revenueYear',
-            'revenueByResidenceToday',
-            'revenueByResidenceWeek',
-            'revenueByResidenceMonth',
-            'revenueByResidenceYear'
+            'topResidences'
         ));
     }
 
-    // Dashboard Sages Home
+    // Ancienne URL du tableau de bord Sages Home : même contenu
     public function sagesHomeDashboard(Request $request)
     {
-        // Statistiques générales pour le dashboard Sages Home
-        $totalResidences = Residence::count();
-        $totalBookings = Booking::count();
-        $totalRevenue = Payment::where('status', 'completed')->sum('amount');
-        
-        // Réservations récentes
-        $recentBookings = Booking::with('residence')
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
-            
-        // Statistiques des réservations par statut
-        $bookingStats = Booking::selectRaw('status, count(*) as count')
-            ->groupBy('status')
-            ->get();
-
-        // ========== REVENUS PAR PÉRIODE ==========
-        $today = Carbon::today();
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $startOfYear = Carbon::now()->startOfYear();
-
-        // Revenus globaux par période
-        $revenueToday = Payment::where('status', 'completed')
-            ->whereDate('created_at', $today)
-            ->sum('amount');
-
-        $revenueWeek = Payment::where('status', 'completed')
-            ->whereDate('created_at', '>=', $startOfWeek)
-            ->sum('amount');
-
-        $revenueMonth = Payment::where('status', 'completed')
-            ->whereDate('created_at', '>=', $startOfMonth)
-            ->sum('amount');
-
-        $revenueYear = Payment::where('status', 'completed')
-            ->whereDate('created_at', '>=', $startOfYear)
-            ->sum('amount');
-
-        // ========== REVENUS PAR RÉSIDENCE PAR PÉRIODE ==========
-        // Revenus par résidence - Aujourd'hui
-        $revenueByResidenceToday = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', $today)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
-            ->get();
-
-        // Revenus par résidence - Cette semaine
-        $revenueByResidenceWeek = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', '>=', $startOfWeek)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
-            ->get();
-
-        // Revenus par résidence - Ce mois
-        $revenueByResidenceMonth = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', '>=', $startOfMonth)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
-            ->get();
-
-        // Revenus par résidence - Cette année
-        $revenueByResidenceYear = Payment::where('payments.status', 'completed')
-            ->whereDate('payments.created_at', '>=', $startOfYear)
-            ->join('bookings', 'payments.booking_id', '=', 'bookings.id')
-            ->join('residences', 'bookings.residence_id', '=', 'residences.id')
-            ->select('residences.id', 'residences.name', DB::raw('SUM(payments.amount) as total'))
-            ->groupBy('residences.id', 'residences.name')
-            ->orderBy('total', 'desc')
-            ->get();
-
-        return view('backend.pages.sages-home.dashboard', compact(
-            'totalResidences',
-            'totalBookings', 
-            'totalRevenue',
-            'recentBookings',
-            'bookingStats',
-            'revenueToday',
-            'revenueWeek',
-            'revenueMonth',
-            'revenueYear',
-            'revenueByResidenceToday',
-            'revenueByResidenceWeek',
-            'revenueByResidenceMonth',
-            'revenueByResidenceYear'
-        ));
+        return $this->index($request);
     }
 }
