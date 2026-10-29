@@ -44,7 +44,7 @@
                                     <p class="text-muted">Sign in to continue to Velzon.</p>
                                 </div>
                                 <div class="p-2 mt-4">
-                                    <form action="{{ route('admin.login') }}" method="post" class="needs-validation"
+                                    <form action="{{ route('admin.login.submit') }}" method="post" class="needs-validation"
                                         novalidate>
                                         @csrf
                                         <div class="mb-3">

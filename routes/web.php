@@ -72,7 +72,7 @@ Route::prefix('api')->group(function () {
 Route::middleware(['auth'])->prefix('client')->group(function () {
     // Dashboard client
     Route::prefix('dashboard')->controller(DashboardController::class)->group(function () {
-        Route::get('/', 'index')->name('dashboard.index');
+        Route::get('/', 'index')->name('dashboard.client');
         Route::get('/bookings', 'bookings')->name('dashboard.bookings');
         Route::get('/bookings/{booking}', 'bookingShow')->name('dashboard.booking.show');
         Route::get('/bookings/{booking}/receipt', 'bookingReceipt')->name('dashboard.booking.receipt');
@@ -119,7 +119,7 @@ Route::middleware(['admin'])->prefix('admin')->group(function () {
     // login and logout
     Route::controller(AdminController::class)->group(function () {
         route::get('/login', 'login')->name('admin.login')->withoutMiddleware('admin'); // page formulaire de connexion
-        route::post('/login', 'login')->name('admin.login')->withoutMiddleware('admin'); // envoi du formulaire
+        route::post('/login', 'login')->name('admin.login.submit')->withoutMiddleware('admin'); // envoi du formulaire
         route::post('/logout', 'logout')->name('admin.logout');
     });
 
