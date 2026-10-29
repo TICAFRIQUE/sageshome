@@ -100,23 +100,29 @@
             display: flex;
             gap: .6rem;
             overflow-x: auto;
-            padding: .15rem .15rem .7rem;
+            padding: .15rem;
             scroll-snap-type: x proximity;
             scroll-behavior: smooth;
             overscroll-behavior-x: contain;
             -webkit-overflow-scrolling: touch;
             cursor: grab;
-            scrollbar-width: thin;
-            scrollbar-color: var(--sage-gold-end) transparent;
+            scrollbar-width: none;
         }
+        .thumbnail-gallery::-webkit-scrollbar { display: none; }
         .thumbnail-gallery.is-dragging { cursor: grabbing; scroll-snap-type: none; scroll-behavior: auto; user-select: none; }
-        .thumbnail-gallery::-webkit-scrollbar { height: 6px; }
-        .thumbnail-gallery::-webkit-scrollbar-track { background: var(--sage-bg-light); border-radius: 999px; }
-        .thumbnail-gallery::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--sage-gold-start), var(--sage-gold-end)); border-radius: 999px; }
-        .thumbnail-gallery::-webkit-scrollbar-thumb:hover { background: var(--sage-gold-deep); }
         /* Bords estompés : indiquent qu'il reste des photos de chaque côté */
+        .thumbs-nav {
+            position: absolute; top: 50%; z-index: 3; width: 32px; height: 32px; margin-top: -16px;
+            border: 0; border-radius: 50%; background: #fff; color: var(--sage-green-dark);
+            box-shadow: 0 2px 10px rgba(27,33,23,.25); display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; opacity: 0; visibility: hidden;
+            transition: opacity .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
+        }
+        .thumbs-nav:hover { background: var(--sage-gold-start); transform: scale(1.08); }
+        .thumbs-nav.prev { left: 4px; } .thumbs-nav.next { right: 4px; }
+        .thumbs-wrap.can-left .thumbs-nav.prev, .thumbs-wrap.can-right .thumbs-nav.next { opacity: 1; visibility: visible; }
         .thumbs-wrap::before, .thumbs-wrap::after {
-            content: ''; position: absolute; top: 0; bottom: .7rem; width: 36px; z-index: 2; pointer-events: none;
+            content: ''; position: absolute; top: 0; bottom: 0; width: 36px; z-index: 2; pointer-events: none;
             opacity: 0; transition: opacity .2s var(--ease);
         }
         .thumbs-wrap::before { left: 0; background: linear-gradient(90deg, #fff 15%, rgba(255,255,255,0)); }
@@ -346,6 +352,8 @@
 
                         @if ($images->count() > 1)
                             <div class="thumbs-wrap" id="thumbsWrap">
+                            <button type="button" class="thumbs-nav prev" data-thumbs="-1" aria-label="Photos précédentes"><i class="fas fa-chevron-left"></i></button>
+                            <button type="button" class="thumbs-nav next" data-thumbs="1" aria-label="Photos suivantes"><i class="fas fa-chevron-right"></i></button>
                             <div class="thumbnail-gallery" id="thumbsScroller" role="list" aria-label="Miniatures des photos">
                                 @foreach ($images as $index => $image)
                                     <img src="{{ $image->full_url }}" class="thumbnail {{ $index === 0 ? 'active' : '' }}"
@@ -1310,11 +1318,11 @@
                 window.addEventListener('resize', updateEdges);
                 updateEdges();
 
-                scroller.addEventListener('wheel', e => {
-                    if (scroller.scrollWidth <= scroller.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-                    e.preventDefault();
-                    scroller.scrollLeft += e.deltaY;
-                }, { passive: false });
+                wrap.querySelectorAll('[data-thumbs]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        scroller.scrollBy({ left: Number(btn.dataset.thumbs) * Math.max(scroller.clientWidth * 0.8, 120), behavior: 'smooth' });
+                    });
+                });
 
                 let down = false, moved = false, startX = 0, startLeft = 0;
                 scroller.addEventListener('mousedown', e => { down = true; moved = false; startX = e.pageX; startLeft = scroller.scrollLeft; });
