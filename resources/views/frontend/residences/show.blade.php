@@ -95,15 +95,33 @@
         }
         .gallery-counter { left: 14px; }
         .gallery-expand { right: 14px; }
+        .thumbs-wrap { position: relative; margin-top: .75rem; }
         .thumbnail-gallery {
             display: flex;
             gap: .6rem;
-            margin-top: .75rem;
             overflow-x: auto;
-            padding-bottom: .25rem;
-            scroll-snap-type: x mandatory;
+            padding: .15rem .15rem .7rem;
+            scroll-snap-type: x proximity;
+            scroll-behavior: smooth;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
+            cursor: grab;
             scrollbar-width: thin;
+            scrollbar-color: var(--sage-gold-end) transparent;
         }
+        .thumbnail-gallery.is-dragging { cursor: grabbing; scroll-snap-type: none; scroll-behavior: auto; user-select: none; }
+        .thumbnail-gallery::-webkit-scrollbar { height: 6px; }
+        .thumbnail-gallery::-webkit-scrollbar-track { background: var(--sage-bg-light); border-radius: 999px; }
+        .thumbnail-gallery::-webkit-scrollbar-thumb { background: linear-gradient(90deg, var(--sage-gold-start), var(--sage-gold-end)); border-radius: 999px; }
+        .thumbnail-gallery::-webkit-scrollbar-thumb:hover { background: var(--sage-gold-deep); }
+        /* Bords estompés : indiquent qu'il reste des photos de chaque côté */
+        .thumbs-wrap::before, .thumbs-wrap::after {
+            content: ''; position: absolute; top: 0; bottom: .7rem; width: 36px; z-index: 2; pointer-events: none;
+            opacity: 0; transition: opacity .2s var(--ease);
+        }
+        .thumbs-wrap::before { left: 0; background: linear-gradient(90deg, #fff 15%, rgba(255,255,255,0)); }
+        .thumbs-wrap::after { right: 0; background: linear-gradient(270deg, #fff 15%, rgba(255,255,255,0)); }
+        .thumbs-wrap.can-left::before, .thumbs-wrap.can-right::after { opacity: 1; }
         .thumbnail {
             flex: 0 0 auto;
             width: 96px;
@@ -113,9 +131,11 @@
             cursor: pointer;
             opacity: .6;
             border: 2px solid transparent;
-            scroll-snap-align: start;
-            transition: opacity .2s var(--ease), border-color .2s var(--ease);
+            scroll-snap-align: center;
+            -webkit-user-drag: none;
+            transition: opacity .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease);
         }
+        .thumbnail:hover { transform: translateY(-2px); }
         .thumbnail:hover, .thumbnail.active { opacity: 1; }
         .thumbnail.active { border-color: var(--sage-gold-end); }
 
@@ -325,13 +345,15 @@
                         </div>
 
                         @if ($images->count() > 1)
-                            <div class="thumbnail-gallery" role="list">
+                            <div class="thumbs-wrap" id="thumbsWrap">
+                            <div class="thumbnail-gallery" id="thumbsScroller" role="list" aria-label="Miniatures des photos">
                                 @foreach ($images as $index => $image)
                                     <img src="{{ $image->full_url }}" class="thumbnail {{ $index === 0 ? 'active' : '' }}"
                                         alt="Miniature {{ $index + 1 }}" width="96" height="68" loading="lazy" decoding="async"
                                         role="listitem" tabindex="0" data-index="{{ $index }}"
                                         onclick="changeMainImage('{{ $image->full_url }}', this)">
                                 @endforeach
+                            </div>
                             </div>
                         @endif
                     @else
@@ -1274,6 +1296,38 @@
                     startX = null;
                 }, { passive: true });
             });
+
+            // Miniatures : bords estompés, molette verticale -> horizontale, glisser à la souris
+            const scroller = document.getElementById('thumbsScroller');
+            const wrap = document.getElementById('thumbsWrap');
+            if (scroller && wrap) {
+                const updateEdges = () => {
+                    const max = scroller.scrollWidth - scroller.clientWidth;
+                    wrap.classList.toggle('can-left', scroller.scrollLeft > 4);
+                    wrap.classList.toggle('can-right', scroller.scrollLeft < max - 4);
+                };
+                scroller.addEventListener('scroll', updateEdges, { passive: true });
+                window.addEventListener('resize', updateEdges);
+                updateEdges();
+
+                scroller.addEventListener('wheel', e => {
+                    if (scroller.scrollWidth <= scroller.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+                    e.preventDefault();
+                    scroller.scrollLeft += e.deltaY;
+                }, { passive: false });
+
+                let down = false, moved = false, startX = 0, startLeft = 0;
+                scroller.addEventListener('mousedown', e => { down = true; moved = false; startX = e.pageX; startLeft = scroller.scrollLeft; });
+                window.addEventListener('mousemove', e => {
+                    if (!down) return;
+                    const dx = e.pageX - startX;
+                    if (Math.abs(dx) > 5) { moved = true; scroller.classList.add('is-dragging'); }
+                    if (moved) scroller.scrollLeft = startLeft - dx;
+                });
+                window.addEventListener('mouseup', () => { down = false; scroller.classList.remove('is-dragging'); });
+                // Un glisser ne doit pas être pris pour un clic sur une miniature
+                scroller.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+            }
 
             // Précharger les photos suivantes quand la page est au repos
             const idle = window.requestIdleCallback || (cb => setTimeout(cb, 1500));
