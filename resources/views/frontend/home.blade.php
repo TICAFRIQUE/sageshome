@@ -188,7 +188,7 @@
     {{-- ================= POURQUOI ================= --}}
     <section class="section bg-sage-light" id="pourquoi">
         <div class="container">
-            <div class="row g-5 align-items-center">
+            <div class="row g-4 g-lg-5 align-items-center">
                 <div class="col-lg-5" data-reveal>
                     <span class="eyebrow">Pourquoi Sages Home</span>
                     <h2 class="section-title">Le confort d'un hôtel, la liberté d'un chez-soi</h2>

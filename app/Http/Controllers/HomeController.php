@@ -12,6 +12,15 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
+        // Données de l'accueil en cache 10 min ; vidées automatiquement dès qu'une
+        // résidence, un type ou une photo est modifié (voir AppServiceProvider)
+        $data = \Illuminate\Support\Facades\Cache::remember('site.home', 600, fn () => $this->homeData());
+
+        return view('frontend.home', $data);
+    }
+
+    private function homeData(): array
+    {
         // Récupérer les résidences en vedette
         $featuredResidences = Residence::available()
             ->featured()
@@ -38,7 +47,7 @@ class HomeController extends Controller
             'communes' => Residence::available()->whereNotNull('commune')->distinct()->count('commune'),
         ];
 
-        return view('frontend.home', compact('featuredResidences', 'allResidenceTypes', 'stats'));
+        return compact('featuredResidences', 'allResidenceTypes', 'stats');
     }
 
     public function search(Request $request)

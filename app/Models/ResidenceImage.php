@@ -44,6 +44,17 @@ class ResidenceImage extends Model
     }
 
     // Méthodes utilitaires
+    /** URL d'une version redimensionnée (WebP, mise en cache) */
+    public function thumb(int $width): string
+    {
+        return \App\Support\ImageVariants::url($this->image_path, $width) ?? $this->full_url;
+    }
+
+    public function srcset(array $widths = [480, 800]): ?string
+    {
+        return \App\Support\ImageVariants::srcset($this->image_path, $widths);
+    }
+
     public function getFullUrlAttribute()
     {
         return asset('storage/' . $this->image_path);

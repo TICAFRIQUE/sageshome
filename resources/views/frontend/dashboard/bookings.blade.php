@@ -41,7 +41,7 @@
             <article class="my-booking">
                 <a href="{{ route('dashboard.booking.show', $booking) }}" class="my-booking-img" tabindex="-1" aria-hidden="true">
                     @if ($booking->residence?->primaryImage)
-                        <img src="{{ $booking->residence->primaryImage->full_url }}" alt="" loading="lazy" width="160" height="120">
+                        <img src="{{ $booking->residence->primaryImage->thumb(480) }}" alt="" loading="lazy" width="160" height="120">
                     @else
                         <span class="rc-placeholder"><img src="{{ asset('images/logo-mark.webp') }}" alt="" width="40" height="40"></span>
                     @endif

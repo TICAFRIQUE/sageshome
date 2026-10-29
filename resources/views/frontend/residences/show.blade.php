@@ -46,7 +46,7 @@
 @endphp
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" media="print" onload="this.media='all'">
     <style>
         /* ---------- Galerie ---------- */
         .gallery-stage {
@@ -340,7 +340,7 @@
                     @if ($images->count() > 0)
                         <div class="gallery-stage" id="galleryStage" role="button" tabindex="0"
                             aria-label="Agrandir les photos de {{ $residence->name }}">
-                            <img id="mainImage" src="{{ $images->first()->full_url }}" alt="{{ $residence->name }} - photo 1"
+                            <img id="mainImage" src="{{ $images->first()->thumb(1280) }}" srcset="{{ $images->first()->srcset([800, 1280]) }}" sizes="(max-width: 991px) 100vw, 720px" alt="{{ $residence->name }} - photo 1"
                                 width="1200" height="750" fetchpriority="high" decoding="async" class="img-fade">
                             @if ($images->count() > 1)
                                 <button type="button" class="gallery-nav prev" data-gallery-step="-1" aria-label="Photo précédente"><i class="fas fa-chevron-left"></i></button>
@@ -356,10 +356,10 @@
                             <button type="button" class="thumbs-nav next" data-thumbs="1" aria-label="Photos suivantes"><i class="fas fa-chevron-right"></i></button>
                             <div class="thumbnail-gallery" id="thumbsScroller" role="list" aria-label="Miniatures des photos">
                                 @foreach ($images as $index => $image)
-                                    <img src="{{ $image->full_url }}" class="thumbnail {{ $index === 0 ? 'active' : '' }}"
+                                    <img src="{{ $image->thumb(200) }}" class="thumbnail {{ $index === 0 ? 'active' : '' }}"
                                         alt="Miniature {{ $index + 1 }}" width="96" height="68" loading="lazy" decoding="async"
                                         role="listitem" tabindex="0" data-index="{{ $index }}"
-                                        onclick="changeMainImage('{{ $image->full_url }}', this)">
+                                        onclick="changeMainImage('', this)">
                                 @endforeach
                             </div>
                             </div>
@@ -559,7 +559,7 @@
                             <button type="button" class="gallery-nav prev" data-gallery-step="-1" aria-label="Photo précédente"><i class="fas fa-chevron-left"></i></button>
                             <button type="button" class="gallery-nav next" data-gallery-step="1" aria-label="Photo suivante"><i class="fas fa-chevron-right"></i></button>
                         @endif
-                        <img id="lightboxImage" class="lightbox-img" src="{{ $images->first()->full_url }}" alt="{{ $residence->name }}">
+                        <img id="lightboxImage" class="lightbox-img" src="{{ $images->first()->thumb(1600) }}" alt="{{ $residence->name }}">
                     </div>
                 </div>
             </div>
@@ -1224,7 +1224,7 @@
         });
 
         /* ---------- Galerie photos ---------- */
-        const galleryImages = @json($images->map(fn ($img) => $img->full_url)->values());
+        const galleryImages = @json($images->map(fn ($img) => $img->thumb(1280))->values());
         let galleryIndex = 0;
 
         function showImage(index) {
@@ -1237,6 +1237,7 @@
                 main.classList.add('is-switching');
                 const preload = new Image();
                 preload.onload = preload.onerror = () => {
+                    main.removeAttribute('srcset'); // sinon le navigateur garde l'ancienne image
                     main.src = src;
                     main.alt = main.alt.replace(/photo \d+$/, 'photo ' + (galleryIndex + 1));
                     main.classList.remove('is-switching');
@@ -1407,6 +1408,6 @@
     </script>
 
     <!-- Flatpickr JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/fr.js" defer></script>
 @endpush

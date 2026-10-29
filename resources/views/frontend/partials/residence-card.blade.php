@@ -21,8 +21,9 @@
 <article class="residence-card">
     <div class="rc-media">
         @if ($residence->primaryImage)
-            <img src="{{ $residence->primaryImage->full_url }}" alt="{{ $residence->name }}"
-                class="img-fade" width="640" height="480"
+            <img src="{{ $residence->primaryImage->thumb(800) }}" srcset="{{ $residence->primaryImage->srcset([480, 800]) }}"
+                sizes="(max-width: 575px) 92vw, (max-width: 991px) 46vw, 380px" alt="{{ $residence->name }}"
+                class="img-fade" width="800" height="600"
                 loading="{{ $eager ? 'eager' : 'lazy' }}" decoding="async"
                 @if ($eager) fetchpriority="high" @endif>
         @else

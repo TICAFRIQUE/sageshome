@@ -73,10 +73,23 @@ class AppServiceProvider extends ServiceProvider
         // qui interroge information_schema à chaque requête)
         $data_parametre = null;
         try {
-            $data_parametre = Parametre::with('media')->first();
+            // Mis en cache 1 h : lu à chaque page du site ; vidé quand l'admin enregistre
+            $data_parametre = \Illuminate\Support\Facades\Cache::remember('site.parametre', 3600, fn () => Parametre::with('media')->first());
         } catch (Throwable $e) {
             // Table absente (installation / migration en cours)
         }
+
+        // Vider les caches du site quand le contenu change
+        $flushHome = fn () => \Illuminate\Support\Facades\Cache::forget('site.home');
+        foreach ([\App\Models\Residence::class, \App\Models\ResidenceType::class, \App\Models\ResidenceImage::class] as $model) {
+            $model::saved($flushHome);
+            $model::deleted($flushHome);
+        }
+        $flushParametre = fn () => \Illuminate\Support\Facades\Cache::forget('site.parametre');
+        Parametre::saved($flushParametre);
+        Parametre::deleted($flushParametre);
+        \Spatie\MediaLibrary\MediaCollections\Models\Media::saved($flushParametre);
+        \Spatie\MediaLibrary\MediaCollections\Models\Media::deleted($flushParametre);
 
         view()->share([
             'parametre' => $data_parametre ?? null,

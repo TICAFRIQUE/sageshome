@@ -1240,6 +1240,21 @@ main#main-content { padding-top: var(--header-h); min-height: 60vh; }
 }
 
 /* --------------------------------------------------------------------------
+   Mobile : évite le zoom automatique d'iOS dans les champs (police < 16px)
+   et les débordements horizontaux
+   -------------------------------------------------------------------------- */
+html, body { max-width: 100%; overflow-x: clip; }
+@media (max-width: 991.98px) {
+    .form-control, .form-select, .search-box .form-control, .search-box .form-select,
+    .flatpickr-input, textarea, input[type="date"], input[type="number"], input[type="search"] { font-size: 16px; }
+    .search-panel { max-height: calc(100dvh - var(--header-h)); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .search-panel .search-panel-inner { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+}
+/* Avancement des animations d'apparition : pas de hauteur de page qui bouge en bas */
+.js [data-reveal] { transform: translateY(14px); }
+@media (max-width: 767.98px) { .js [data-reveal] { transition-duration: .4s; } }
+
+/* --------------------------------------------------------------------------
    Accessibilité : mouvement réduit
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {

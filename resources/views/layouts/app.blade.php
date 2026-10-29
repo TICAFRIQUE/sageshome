@@ -50,8 +50,9 @@
     @stack('preload')
 
     {{-- Polices (graisses limitées au strict nécessaire) --}}
-    <link rel="stylesheet"
+    <link rel="stylesheet" media="print" onload="this.media='all'"
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap"></noscript>
 
     {{-- Styles --}}
     <link rel="stylesheet" href="{{ asset('vendor/bootstrap-5.3.3/bootstrap.min.css') }}">

@@ -29,6 +29,9 @@ Route::get('/test-email', [TestEmailController::class, 'testEmail'])->name('test
 Route::get('/test-admin-email', [TestEmailController::class, 'testAdminEmail'])->name('test.admin.email');
 
 // Routes publiques (front-end)
+// Photos redimensionnées (générées une fois puis servies en cache)
+Route::get('/media/{width}/{path}', [\App\Http\Controllers\MediaController::class, 'variant'])
+    ->whereNumber('width')->where('path', '.+')->name('media.variant');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 

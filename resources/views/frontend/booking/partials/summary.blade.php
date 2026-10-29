@@ -16,7 +16,7 @@
 <aside class="summary-card">
     <div class="summary-residence">
         @if ($residence->primaryImage)
-            <img src="{{ $residence->primaryImage->full_url }}" alt="" width="72" height="72" loading="lazy">
+            <img src="{{ $residence->primaryImage->thumb(200) }}" alt="" width="72" height="72" loading="lazy">
         @endif
         <div class="min-w-0">
             <div class="summary-title">{{ $residence->name }}</div>
